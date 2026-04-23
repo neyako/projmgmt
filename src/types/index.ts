@@ -40,6 +40,23 @@ export type ProjectCardData = Pick<
   assignedCameramanId?: string | null;
   assignedEditorId?: string | null;
   assignedTalentId?: string | null;
+
+  // Ideation / planning metadata
+  productLinks?: string | null;
+
+  // Publishing checklist
+  finalTitle?: string | null;
+  hashtags?: string | null;
+  publishedAt?: Date | string | null;
+  publishDate?: Date | string | null;
+  baseCaption?: string | null;
+  abTitles?: string | null; // JSON-stringified string[]
+  thumbnails?: string | null; // JSON-stringified string[]
+
+  // Aggregate analytics rollup
+  views?: number;
+  likes?: number;
+  comments?: number;
 };
 
 // Shot item shape for JSON fields

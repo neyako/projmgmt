@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import KanbanBoard from "./KanbanBoard";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
+import PublishModal from "@/components/modals/PublishModal";
 import type { ProjectCardData } from "@/types";
 
 interface KanbanBoardWrapperProps {
@@ -12,10 +14,12 @@ interface KanbanBoardWrapperProps {
 export default function KanbanBoardWrapper({
   initialProjects,
 }: KanbanBoardWrapperProps) {
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [projects, setProjects] = useState<ProjectCardData[]>(initialProjects);
+  const [publishingProject, setPublishingProject] = useState<ProjectCardData | null>(null);
 
   const selectedProject = selectedProjectId
     ? projects.find((p) => p.id === selectedProjectId) ?? null
@@ -76,6 +80,31 @@ export default function KanbanBoardWrapper({
     );
   }
 
+  function handleRequestPublish(project: ProjectCardData) {
+    // Pin the pre-publish snapshot so the modal keeps its context even when
+    // the card gets optimistically removed from the board.
+    setPublishingProject(project);
+  }
+
+  function handlePublishClose() {
+    if (!publishingProject) return;
+    // User cancelled — revert any optimistic Published status on the board.
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === publishingProject.id ? { ...p, status: publishingProject.status } : p
+      )
+    );
+    setPublishingProject(null);
+  }
+
+  function handlePublished(updated: Partial<ProjectCardData> & { id: string }) {
+    // Published cards leave the pipeline view entirely.
+    setProjects((prev) => prev.filter((p) => p.id !== updated.id));
+    setPublishingProject(null);
+    // Let the Analytics / Archive views pick up the new row.
+    router.refresh();
+  }
+
   return (
     <>
       {/* Scrollable board area */}
@@ -85,6 +114,7 @@ export default function KanbanBoardWrapper({
           setProjects={setProjects}
           onNewProjectClick={handleNewProjectClick}
           onCardClick={handleCardClick}
+          onRequestPublish={handleRequestPublish}
         />
       </div>
 
@@ -95,6 +125,14 @@ export default function KanbanBoardWrapper({
           onClose={handleCloseModal}
           onCreated={handleProjectCreated}
           onProjectUpdate={handleProjectUpdate}
+        />
+      )}
+
+      {publishingProject && (
+        <PublishModal
+          project={publishingProject}
+          onClose={handlePublishClose}
+          onPublished={handlePublished}
         />
       )}
     </>

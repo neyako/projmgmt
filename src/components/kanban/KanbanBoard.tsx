@@ -33,9 +33,10 @@ interface KanbanBoardProps {
   setProjects: React.Dispatch<React.SetStateAction<ProjectCardData[]>>;
   onNewProjectClick?: () => void;
   onCardClick?: (project: ProjectCardData) => void;
+  onRequestPublish?: (project: ProjectCardData) => void;
 }
 
-export default function KanbanBoard({ projects, setProjects, onNewProjectClick, onCardClick }: KanbanBoardProps) {
+export default function KanbanBoard({ projects, setProjects, onNewProjectClick, onCardClick, onRequestPublish }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const { showToast } = useToast();
@@ -185,6 +186,19 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
         return;
       }
 
+      // ─── Intercept: Published requires the checklist modal ─────
+      if (draggedProject.status === "Published") {
+        if (onRequestPublish) {
+          // Keep optimistic view (card already moved into Published column),
+          // the parent will either confirm (server publish) or revert on cancel.
+          onRequestPublish(originalProject);
+          return;
+        }
+        // No handler wired → revert, since publish must not bypass the modal.
+        setProjects(snapshot);
+        return;
+      }
+
       startTransition(async () => {
         const result = await updateProjectStatus(
           draggedProject.id,
@@ -202,7 +216,7 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
         }
       });
     },
-    [projects, snapshot, showToast]
+    [projects, snapshot, showToast, onRequestPublish]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -248,6 +262,7 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
                 onProjectUpdate={handleProjectUpdate}
                 onRemove={handleProjectRemove}
                 onClick={handleCardClick}
+                onRequestPublish={onRequestPublish}
               />
             ))}
           </KanbanColumn>

@@ -23,7 +23,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
         className={cn(
           "w-3.5 h-3.5 flex items-center justify-center border shrink-0 bg-transparent transition-colors",
           shot.isCompleted
-            ? "border-green-500 text-green-500"
+            ? "border-success text-success"
             : "border-gray-600 group-hover:border-gray-400"
         )}
       >
@@ -51,7 +51,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
         <button
           type="button"
           onClick={() => onDelete(shot.id)}
-          className="text-gray-700 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 text-[10px] font-mono shrink-0"
+          className="text-gray-700 hover:text-accent transition-colors opacity-0 group-hover:opacity-100 text-[10px] font-mono shrink-0"
           aria-label="Delete shot"
         >
           ✕

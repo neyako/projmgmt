@@ -169,7 +169,7 @@ export default function FilmingSplitCard({
             total={Math.max(bRollShots.length, 1)}
             filled={bRollDone}
             height="h-[4px]"
-            filledColor="bg-warning"
+            filledColor="bg-success"
           />
           {bRollShots.length > 0 && (
             <div className="mt-2 flex flex-col gap-0.5">

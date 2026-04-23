@@ -12,15 +12,15 @@ const TABS: TabKey[] = ["All", "Active", "Pending", "Archived"];
 function statusDotColor(status: string): string {
   switch (status) {
     case "Active":
-      return "bg-emerald-500";
+      return "bg-success";
     case "Pending":
-      return "bg-yellow-500";
+      return "bg-warning";
     case "Completed":
-      return "bg-blue-500";
+      return "bg-interactive";
     case "Cancelled":
-      return "bg-red-500";
+      return "bg-accent";
     default:
-      return "bg-gray-500";
+      return "bg-text-disabled";
   }
 }
 
@@ -171,7 +171,7 @@ export default function SponsorshipsClient({
                   <td className="p-4 text-xs font-mono text-gray-400">
                     {formatDate(s.dueDate)}
                   </td>
-                  <td className="p-4 text-sm font-mono text-emerald-400 text-right">
+                  <td className="p-4 text-sm font-mono text-success text-right">
                     ${s.budget.toLocaleString()}
                   </td>
                 </tr>

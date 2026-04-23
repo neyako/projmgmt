@@ -16,6 +16,7 @@ interface KanbanCardProps {
   onProjectUpdate?: (updated: Partial<ProjectCardData> & { id: string }) => void;
   onRemove?: (id: string) => void;
   onClick?: (project: ProjectCardData) => void;
+  onRequestPublish?: (project: ProjectCardData) => void;
 }
 
 export default function KanbanCard({
@@ -24,6 +25,7 @@ export default function KanbanCard({
   onProjectUpdate,
   onRemove,
   onClick,
+  onRequestPublish,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -77,7 +79,7 @@ export default function KanbanCard({
       className={cn(
         "bg-surface border p-md flex flex-col gap-sm hover:border-border-visible transition-colors cursor-pointer group",
         project.status === "Editing" && project.reviewFeedback
-          ? "border-red-900 shadow-[0_0_10px_rgba(220,38,38,0.1)]"
+          ? "border-accent/30 shadow-[0_0_10px_rgba(215,25,33,0.1)]"
           : "border-border",
         isDragging && "opacity-30"
       )}
@@ -101,11 +103,11 @@ export default function KanbanCard({
 
       {/* Rejection feedback alert */}
       {project.status === "Editing" && project.reviewFeedback && (
-        <div className="mt-3 p-2 bg-red-950/30 border-l-2 border-red-500 rounded-sm">
-          <span className="text-[9px] font-mono text-red-400 uppercase tracking-widest mb-1 block">
+        <div className="mt-3 p-2 bg-accent-subtle border-l-2 border-accent rounded-sm">
+          <span className="text-[9px] font-mono text-accent uppercase tracking-widest mb-1 block">
             REVISION NOTES
           </span>
-          <p className="text-xs font-mono text-red-200 line-clamp-3">
+          <p className="text-xs font-mono text-accent/80 line-clamp-3">
             {project.reviewFeedback}
           </p>
         </div>
@@ -113,7 +115,11 @@ export default function KanbanCard({
 
       {/* Review: Interactive approve/reject UI */}
       {project.status === "Review" && (
-        <ReviewPanel project={project} onProjectUpdate={onProjectUpdate} />
+        <ReviewPanel
+          project={project}
+          onProjectUpdate={onProjectUpdate}
+          onRequestPublish={onRequestPublish}
+        />
       )}
 
       {/* Footer */}

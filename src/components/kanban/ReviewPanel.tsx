@@ -9,44 +9,61 @@ import type { ProjectCardData } from "@/types";
 interface ReviewPanelProps {
   project: ProjectCardData;
   onProjectUpdate?: (updated: Partial<ProjectCardData> & { id: string }) => void;
+  onRequestPublish?: (project: ProjectCardData) => void;
 }
 
-export default function ReviewPanel({ project, onProjectUpdate }: ReviewPanelProps) {
+export default function ReviewPanel({
+  project,
+  onProjectUpdate,
+  onRequestPublish,
+}: ReviewPanelProps) {
   const [feedback, setFeedback] = useState("");
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
-  function handleAction(action: "approve" | "reject") {
+  function handleApprove() {
+    // Intercept: publish must go through the checklist modal, not a direct
+    // status update. The parent owns the modal + server action.
+    if (onRequestPublish) {
+      onRequestPublish(project);
+      return;
+    }
+    // No intercept wired → fall back to legacy approve path (kept for safety).
+    onProjectUpdate?.({ id: project.id, status: "Published" });
+    startTransition(async () => {
+      const result = await submitReview(project.id, "approve");
+      if (!result.success) {
+        onProjectUpdate?.({ id: project.id, status: "Review" });
+        showToast(result.error, "error");
+        return;
+      }
+      showToast(`Approved "${project.title}".`, "success");
+    });
+  }
+
+  function handleReject() {
     const trimmed = feedback.trim();
-    if (action === "reject" && !trimmed) {
+    if (!trimmed) {
       showToast("Add feedback before rejecting.", "error");
       return;
     }
-    const newStatus = action === "approve" ? "Published" : "Editing";
-    // Optimistic parent update
     onProjectUpdate?.({
       id: project.id,
-      status: newStatus,
-      ...(action === "reject" && { reviewFeedback: trimmed }),
+      status: "Editing",
+      reviewFeedback: trimmed,
     });
     startTransition(async () => {
-      const result = await submitReview(project.id, action, trimmed || undefined);
+      const result = await submitReview(project.id, "reject", trimmed);
       if (!result.success) {
-        // Revert
         onProjectUpdate?.({
           id: project.id,
           status: "Review",
-          ...(action === "reject" && { reviewFeedback: project.reviewFeedback ?? null }),
+          reviewFeedback: project.reviewFeedback ?? null,
         });
         showToast(result.error, "error");
         return;
       }
-      showToast(
-        action === "approve"
-          ? `Approved "${project.title}".`
-          : `Rejected "${project.title}" → Editing.`,
-        "success"
-      );
+      showToast(`Rejected "${project.title}" → Editing.`, "success");
     });
   }
 
@@ -65,10 +82,10 @@ export default function ReviewPanel({ project, onProjectUpdate }: ReviewPanelPro
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => handleAction("reject")}
+          onClick={handleReject}
           disabled={isPending}
           className={cn(
-            "flex-1 border border-red-500/40 text-red-400 hover:bg-red-500/10 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
+            "flex-1 border border-accent/40 text-accent hover:bg-accent-subtle py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
             isPending && "opacity-50 cursor-wait"
           )}
         >
@@ -76,10 +93,10 @@ export default function ReviewPanel({ project, onProjectUpdate }: ReviewPanelPro
         </button>
         <button
           type="button"
-          onClick={() => handleAction("approve")}
+          onClick={handleApprove}
           disabled={isPending}
           className={cn(
-            "flex-1 border border-green-500/40 text-green-400 hover:bg-green-500/10 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
+            "flex-1 border border-success/40 text-success hover:bg-success/10 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
             isPending && "opacity-50 cursor-wait"
           )}
         >

@@ -212,7 +212,7 @@ export async function getUsers() {
   return prisma.user.findMany({ orderBy: { name: "asc" } });
 }
 
-// ─── UPDATE PROJECT METADATA (Due Date + Assignees) ─────
+// ─── UPDATE PROJECT METADATA (Due Date + Assignees + Product Links) ─────
 export async function updateProjectMetadata(
   projectId: string,
   data: {
@@ -220,6 +220,7 @@ export async function updateProjectMetadata(
     assignedEditorId?: string | null;
     assignedCameramanId?: string | null;
     assignedTalentId?: string | null;
+    productLinks?: string | null;
   }
 ): Promise<ActionResult> {
   try {
@@ -237,6 +238,9 @@ export async function updateProjectMetadata(
         }),
         ...(data.assignedTalentId !== undefined && {
           assignedTalentId: data.assignedTalentId || null,
+        }),
+        ...(data.productLinks !== undefined && {
+          productLinks: data.productLinks?.trim() || null,
         }),
       },
     });
@@ -351,6 +355,71 @@ export async function restoreProjectToPipeline(projectId: string): Promise<Actio
   } catch (err) {
     console.error("[restoreProjectToPipeline]", err);
     return { success: false, error: "Failed to restore project." };
+  }
+}
+
+// ─── PUBLISH PROJECT (Checklist intercept) ──────────────
+export async function publishProject(
+  projectId: string,
+  data: {
+    finalTitle: string;
+    publishedAt?: string | null;
+    // Short-Form
+    baseCaption?: string;
+    hashtags?: string;
+    // Long-Form
+    abTitles?: string[];
+    thumbnails?: string[];
+  }
+): Promise<ActionResult> {
+  if (!data.finalTitle?.trim()) {
+    return { success: false, error: "Final video title is required." };
+  }
+
+  const project = await prisma.project.findUnique({ where: { id: projectId } });
+  if (!project) return { success: false, error: "Project not found." };
+
+  const resolvedPublishedAt = data.publishedAt ? new Date(data.publishedAt) : new Date();
+
+  const isShort = project.format === "Short_Form";
+  const isLong = project.format === "Long_Form";
+
+  // Normalize arrays: keep trimmed non-empty entries, JSON-stringify.
+  const cleanedAbTitles = (data.abTitles ?? [])
+    .map((t) => t?.trim() ?? "")
+    .filter(Boolean);
+  const cleanedThumbnails = (data.thumbnails ?? [])
+    .map((t) => t?.trim() ?? "")
+    .filter(Boolean);
+
+  try {
+    const updated = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        status: "Published",
+        finalTitle: data.finalTitle.trim(),
+        publishedAt: resolvedPublishedAt,
+        publishDate: resolvedPublishedAt,
+        reviewFeedback: null,
+        // Short-Form only
+        baseCaption: isShort ? data.baseCaption?.trim() || null : null,
+        hashtags: isShort ? data.hashtags?.trim() || null : null,
+        // Long-Form only
+        abTitles: isLong && cleanedAbTitles.length
+          ? JSON.stringify(cleanedAbTitles)
+          : null,
+        thumbnails: isLong && cleanedThumbnails.length
+          ? JSON.stringify(cleanedThumbnails)
+          : null,
+      },
+    });
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
+    revalidatePath("/analytics");
+    return { success: true, data: updated };
+  } catch (err) {
+    console.error("[publishProject]", err);
+    return { success: false, error: "Failed to publish project." };
   }
 }
 

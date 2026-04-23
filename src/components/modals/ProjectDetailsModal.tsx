@@ -13,8 +13,42 @@ import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
+import CopyBlock from "@/components/ui/CopyBlock";
 import type { User } from "@prisma/client";
 import type { ProjectCardData, ShotItem } from "@/types";
+
+function parseJsonArray(json?: string | null): string[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function normalizeHashtags(raw?: string | null): string {
+  if (!raw) return "";
+  return raw
+    .split(/[\s,]+/)
+    .map((t) => t.trim().replace(/^#+/, ""))
+    .filter(Boolean)
+    .map((t) => `#${t}`)
+    .join(" ");
+}
+
+function formatPublishDate(d?: Date | string | null): string {
+  if (!d) return "Unscheduled";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(dt.getTime())) return "Unscheduled";
+  return dt
+    .toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    })
+    .toUpperCase();
+}
 
 interface ProjectDetailsModalProps {
   project: ProjectCardData | null; // null = create mode
@@ -29,6 +63,26 @@ function parseShotItems(json?: string): ShotItem[] {
   } catch {
     return [];
   }
+}
+
+// Custom chevron for `<select>` fields (native arrow hidden via `appearance-none`).
+function ChevronDown() {
+  return (
+    <svg
+      className="pointer-events-none absolute right-0 bottom-2 w-3 h-3 text-gray-500"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 9l-7 7-7-7"
+      />
+    </svg>
+  );
 }
 
 function toDateInputValue(d?: Date | string | null): string {
@@ -78,6 +132,9 @@ export default function ProjectDetailsModal({
   const [storagePath, setStoragePath] = useState("");
   const [reviewLink, setReviewLink] = useState("");
 
+  // Ideation metadata
+  const [productLinks, setProductLinks] = useState("");
+
   useEffect(() => {
     getUsers().then(setUsers);
   }, []);
@@ -105,6 +162,7 @@ export default function ProjectDetailsModal({
       setTalentId(project.assignedTalent?.id || project.assignedTalentId || "");
       setStoragePath(project.storagePath || "");
       setReviewLink(project.reviewLink || "");
+      setProductLinks(project.productLinks || "");
     } else {
       setTitle("");
       setContentType("Organic");
@@ -119,6 +177,7 @@ export default function ProjectDetailsModal({
       setTalentId("");
       setStoragePath("");
       setReviewLink("");
+      setProductLinks("");
     }
     setARollDraft("");
     setBRollDraft("");
@@ -168,6 +227,7 @@ export default function ProjectDetailsModal({
     assignedEditorId?: string | null;
     assignedCameramanId?: string | null;
     assignedTalentId?: string | null;
+    productLinks?: string | null;
   }) {
     if (!project) return;
     startTransition(async () => {
@@ -199,6 +259,9 @@ export default function ProjectDetailsModal({
         parentPatch.assignedTalent = patch.assignedTalentId
           ? users.find((u) => u.id === patch.assignedTalentId) ?? null
           : null;
+      }
+      if (patch.productLinks !== undefined) {
+        parentPatch.productLinks = patch.productLinks;
       }
       onProjectUpdate?.(parentPatch);
     });
@@ -335,12 +398,12 @@ export default function ProjectDetailsModal({
 
   // Determine status color
   const statusColors: Record<string, string> = {
-    Ideation: "bg-blue-500",
-    Scripting: "bg-purple-500",
-    Filming: "bg-yellow-500",
-    Editing: "bg-orange-500",
-    Review: "bg-green-500",
-    Published: "bg-emerald-500",
+    Ideation: "bg-interactive",
+    Scripting: "bg-interactive",
+    Filming: "bg-warning",
+    Editing: "bg-warning",
+    Review: "bg-success",
+    Published: "bg-success",
   };
 
   return (
@@ -445,7 +508,7 @@ export default function ProjectDetailsModal({
                 {contentType === "Sponsored" && (
                   <div>
                     <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
-                      Briefing Notes<span className="text-red-500 ml-1">*</span>
+                      Briefing Notes<span className="text-accent ml-1">*</span>
                     </label>
                     <textarea
                       value={briefingNotes}
@@ -475,11 +538,114 @@ export default function ProjectDetailsModal({
             {isEditing && (
               <div className="flex flex-col gap-8">
 
+                {/* ── EXPORT ASSETS (Published only) ── */}
+                {project.status === "Published" && (() => {
+                  const caption = project.baseCaption?.trim() || "";
+                  const hashtagLine = normalizeHashtags(project.hashtags);
+                  const tiktokCopy = [caption, hashtagLine].filter(Boolean).join(" ").trim();
+                  const abTitlesList = parseJsonArray(project.abTitles);
+                  const thumbnailsList = parseJsonArray(project.thumbnails);
+                  return (
+                    <div className="border border-white/10 bg-[#0a0a0a] p-4 flex flex-col gap-4">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                          Export Assets
+                        </h3>
+                        <div className="text-right">
+                          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">
+                            Scheduled
+                          </span>
+                          <span className="text-sm font-mono text-white tracking-widest">
+                            {formatPublishDate(project.publishedAt ?? project.publishDate)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Short-Form export blocks */}
+                      {project.format === "Short_Form" && (
+                        <div className="flex flex-col gap-3">
+                          <CopyBlock
+                            label="TIKTOK / REELS"
+                            copyValue={tiktokCopy || "—"}
+                          >
+                            {tiktokCopy || (
+                              <span className="text-gray-600 italic">
+                                No caption or hashtags captured.
+                              </span>
+                            )}
+                          </CopyBlock>
+                          <CopyBlock
+                            label="YT SHORTS"
+                            copyValue={caption || "—"}
+                          >
+                            {caption || (
+                              <span className="text-gray-600 italic">
+                                No caption captured.
+                              </span>
+                            )}
+                          </CopyBlock>
+                        </div>
+                      )}
+
+                      {/* Long-Form export blocks */}
+                      {project.format === "Long_Form" && (
+                        <div className="flex flex-col gap-3">
+                          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                            A/B Titles
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {abTitlesList.length > 0 ? (
+                              abTitlesList.map((title, i) => (
+                                <CopyBlock
+                                  key={`ab-${i}`}
+                                  label={`TITLE ${i + 1}`}
+                                  copyValue={title}
+                                />
+                              ))
+                            ) : (
+                              <div className="bg-[#0a0a0a] border border-white/10 p-4 text-xs font-mono text-gray-600 italic">
+                                No A/B titles captured.
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-2">
+                            Thumbnails
+                          </div>
+                          {thumbnailsList.length > 0 ? (
+                            <ul className="flex flex-col gap-1 bg-[#0a0a0a] border border-white/10 p-4">
+                              {thumbnailsList.map((t, i) => (
+                                <li
+                                  key={`thumb-${i}`}
+                                  className="text-xs font-mono text-gray-300 break-all"
+                                >
+                                  <span className="text-gray-600 mr-2">{i + 1}.</span>
+                                  {t}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="bg-[#0a0a0a] border border-white/10 p-4 text-xs font-mono text-gray-600 italic">
+                              No thumbnails captured.
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {project.format !== "Short_Form" && project.format !== "Long_Form" && (
+                        <div className="text-xs font-mono text-gray-600 italic">
+                          No export template for format: {project.format.replace("_", " ")}.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* ── Rejection Feedback Alert ── */}
                 {project.reviewFeedback && (
-                  <div className="bg-red-950/20 border border-red-900 p-4 mb-6 rounded-sm">
-                    <h3 className="text-xs font-bold text-red-500 uppercase font-mono">REVISION REQUIRED</h3>
-                    <p className="text-sm text-red-200 mt-2 whitespace-pre-wrap">{project.reviewFeedback}</p>
+                  <div className="bg-accent-subtle border border-accent/40 p-4 mb-6 rounded-sm">
+                    <h3 className="text-xs font-bold text-accent uppercase font-mono">REVISION REQUIRED</h3>
+                    <p className="text-sm text-accent/80 mt-2 whitespace-pre-wrap">{project.reviewFeedback}</p>
                   </div>
                 )}
 
@@ -559,7 +725,7 @@ export default function ProjectDetailsModal({
                     <div>
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                          <span className={cn("w-1.5 h-1.5 rounded-full", project.aRollComplete ? "bg-green-500" : "bg-yellow-500")} />
+                          <span className={cn("w-1.5 h-1.5 rounded-full", project.aRollComplete ? "bg-success" : "bg-warning")} />
                           A-ROLL
                         </span>
                         <span className="text-[10px] font-mono text-gray-600">
@@ -597,7 +763,7 @@ export default function ProjectDetailsModal({
                     <div>
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                          <span className={cn("w-1.5 h-1.5 rounded-full", project.bRollComplete ? "bg-green-500" : "bg-yellow-500")} />
+                          <span className={cn("w-1.5 h-1.5 rounded-full", project.bRollComplete ? "bg-success" : "bg-warning")} />
                           B-ROLL
                         </span>
                         <span className="text-[10px] font-mono text-gray-600">
@@ -641,112 +807,183 @@ export default function ProjectDetailsModal({
 
             {/* ── Metadata ── */}
             <div className="flex flex-col">
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-1">Created By</label>
-              <span className="text-xs font-bold text-white uppercase tracking-wider mb-4 block">
-                {isEditing && project.creator ? project.creator.name : "—"}
-              </span>
+              {/* Created By */}
+              <div className="mb-6">
+                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                  Created By
+                </label>
+                <span className="text-xs font-bold text-white uppercase tracking-wider block truncate">
+                  {isEditing && project.creator ? project.creator.name : "—"}
+                </span>
+              </div>
 
+              {/* Client / Brand (Sponsored only) */}
               {isEditing && project.contentType === "Sponsored" && (
-                <>
-                  <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-1">Client / Brand</label>
-                  <span className="text-xs font-bold text-white uppercase tracking-wider mb-4 block">
-                    {project.briefingNotes?.split("\n")[0]?.replace(/^Client:\s*/i, "") || "—"}
+                <div className="mb-6">
+                  <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                    Client / Brand
+                  </label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={
+                      project.briefingNotes?.split("\n")[0]?.replace(/^Client:\s*/i, "") ||
+                      ""
+                    }
+                    placeholder="—"
+                    className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors whitespace-nowrap overflow-x-auto"
+                  />
+                </div>
+              )}
+
+              {/* Due Date */}
+              <div className="mb-6">
+                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                  Due Date
+                </label>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setDueDate(value);
+                      saveMetadata({ dueDate: value || null });
+                    }}
+                    className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors color-scheme-dark"
+                    style={{ colorScheme: "dark" }}
+                  />
+                ) : (
+                  <span className="text-xs font-bold text-white uppercase tracking-wider block">
+                    Not set
                   </span>
-                </>
-              )}
+                )}
+              </div>
 
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-1">Due Date</label>
-              {isEditing ? (
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setDueDate(value);
-                    saveMetadata({ dueDate: value || null });
-                  }}
-                  className="bg-transparent text-white font-mono text-xs outline-none border-b border-white/10 focus:border-white/50 w-full color-scheme-dark mb-4"
-                  style={{ colorScheme: "dark" }}
-                />
-              ) : (
-                <span className="text-xs font-bold text-white uppercase tracking-wider mb-4 block">Not set</span>
-              )}
+              {/* Lead Editor */}
+              <div className="mb-6 relative">
+                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                  Lead Editor
+                </label>
+                {isEditing ? (
+                  <>
+                    <select
+                      value={editorId}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setEditorId(value);
+                        saveMetadata({ assignedEditorId: value || null });
+                      }}
+                      className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors appearance-none cursor-pointer pr-6"
+                    >
+                      <option value="" className="bg-black">Unassigned</option>
+                      {users
+                        .filter((u) => u.role === "Editor_Shorts" || u.role === "Editor_FullStack")
+                        .map((u) => (
+                          <option key={u.id} value={u.id} className="bg-black">
+                            {u.name}
+                          </option>
+                        ))}
+                    </select>
+                    <ChevronDown />
+                  </>
+                ) : (
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider block">
+                    Auto-assigned
+                  </span>
+                )}
+              </div>
 
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-1">Lead Editor</label>
-              {isEditing ? (
-                <select
-                  value={editorId}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setEditorId(value);
-                    saveMetadata({ assignedEditorId: value || null });
-                  }}
-                  className="bg-transparent text-white font-mono text-xs outline-none border-b border-white/10 w-full appearance-none cursor-pointer mb-4"
-                >
-                  <option value="" className="bg-black">Unassigned</option>
-                  {users
-                    .filter((u) => u.role === "Editor_Shorts" || u.role === "Editor_FullStack")
-                    .map((u) => (
-                      <option key={u.id} value={u.id} className="bg-black">
-                        {u.name}
-                      </option>
-                    ))}
-                </select>
-              ) : (
-                <span className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-4 block">Auto-assigned</span>
-              )}
+              {/* Cameraman */}
+              <div className="mb-6 relative">
+                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                  Cameraman
+                </label>
+                {isEditing ? (
+                  <>
+                    <select
+                      value={cameramanId}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setCameramanId(value);
+                        saveMetadata({ assignedCameramanId: value || null });
+                      }}
+                      className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors appearance-none cursor-pointer pr-6"
+                    >
+                      <option value="" className="bg-black">Unassigned</option>
+                      {users
+                        .filter((u) => u.role === "Cameraman")
+                        .map((u) => (
+                          <option key={u.id} value={u.id} className="bg-black">
+                            {u.name}
+                          </option>
+                        ))}
+                    </select>
+                    <ChevronDown />
+                  </>
+                ) : (
+                  <span className="text-xs font-bold text-white uppercase tracking-wider block">—</span>
+                )}
+              </div>
 
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-1">Cameraman</label>
-              {isEditing ? (
-                <select
-                  value={cameramanId}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCameramanId(value);
-                    saveMetadata({ assignedCameramanId: value || null });
-                  }}
-                  className="bg-transparent text-white font-mono text-xs outline-none border-b border-white/10 w-full appearance-none cursor-pointer mb-4"
-                >
-                  <option value="" className="bg-black">Unassigned</option>
-                  {users
-                    .filter((u) => u.role === "Cameraman")
-                    .map((u) => (
-                      <option key={u.id} value={u.id} className="bg-black">
-                        {u.name}
-                      </option>
-                    ))}
-                </select>
-              ) : (
-                <span className="text-xs font-bold text-white uppercase tracking-wider mb-4 block">—</span>
-              )}
-
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-1">A-Roll Talent</label>
-              {isEditing ? (
-                <select
-                  value={talentId}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setTalentId(value);
-                    saveMetadata({ assignedTalentId: value || null });
-                  }}
-                  className="bg-transparent text-white font-mono text-xs outline-none border-b border-white/10 w-full appearance-none cursor-pointer mb-4"
-                >
-                  <option value="" className="bg-black">Unassigned</option>
-                  {users
-                    .filter((u) => u.role === "Talent")
-                    .map((u) => (
-                      <option key={u.id} value={u.id} className="bg-black">
-                        {u.name}
-                      </option>
-                    ))}
-                </select>
-              ) : (
-                <span className="text-xs font-bold text-white uppercase tracking-wider mb-4 block">—</span>
-              )}
+              {/* A-Roll Talent */}
+              <div className="mb-6 relative">
+                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                  A-Roll Talent
+                </label>
+                {isEditing ? (
+                  <>
+                    <select
+                      value={talentId}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setTalentId(value);
+                        saveMetadata({ assignedTalentId: value || null });
+                      }}
+                      className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors appearance-none cursor-pointer pr-6"
+                    >
+                      <option value="" className="bg-black">Unassigned</option>
+                      {users
+                        .filter((u) => u.role === "Talent")
+                        .map((u) => (
+                          <option key={u.id} value={u.id} className="bg-black">
+                            {u.name}
+                          </option>
+                        ))}
+                    </select>
+                    <ChevronDown />
+                  </>
+                ) : (
+                  <span className="text-xs font-bold text-white uppercase tracking-wider block">—</span>
+                )}
+              </div>
             </div>
 
             {/* ── Divider ── */}
             <div className="border-t border-white/10 my-4" />
+
+            {/* ── Product / Affiliate Links (Ideation planning) ── */}
+            {isEditing && (
+              <div className="mb-6">
+                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                  Product / Affiliate Links
+                </label>
+                <textarea
+                  value={productLinks}
+                  onChange={(e) => setProductLinks(e.target.value)}
+                  onBlur={() => {
+                    const next = productLinks.trim();
+                    if (next === (project.productLinks?.trim() || "")) return;
+                    saveMetadata({ productLinks: next });
+                  }}
+                  placeholder={`Keychron K2 — https://...\nElgato Key Light — https://...`}
+                  className="w-full bg-[#0a0a0a] border border-gray-800 p-3 text-xs font-mono text-gray-300 uppercase focus:outline-none focus:border-white transition-colors min-h-[80px] resize-y mt-1"
+                />
+              </div>
+            )}
+
+            {/* ── Divider ── */}
+            {isEditing && <div className="border-t border-white/10 my-4" />}
 
             {/* ── Platforms ── */}
             <div>
