@@ -1,3 +1,6 @@
+design/
+.claude/
+
 # dependencies
 /node_modules
 /.pnp
@@ -31,3 +34,4 @@ yarn-error.log*
 # sqlite database (DO NOT COMMIT THE DB)
 *.db
 *.db-journal
+
