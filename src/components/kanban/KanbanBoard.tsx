@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useRef } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -42,6 +42,9 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
 
   // Keep a snapshot to revert on failed moves
   const [snapshot, setSnapshot] = useState<ProjectCardData[]>(projects);
+
+  // Track last invalid drop attempt so we can surface a toast on drag end
+  const attemptedRef = useRef<{ target: string; error: string } | null>(null);
 
   // ─── Sensor: delay + tolerance so clicks are NOT intercepted ──
   const sensors = useSensors(
@@ -90,12 +93,6 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
       }
     }
 
-    if (from === "Scripting" && to === "Filming") {
-      if (!project.aRollAssignee && !project.bRollAssignee) {
-        return { ok: false, error: "A-Roll and B-Roll assignees are required before Filming." };
-      }
-    }
-
     if (from === "Editing" && to === "Review") {
       if (!project.reviewLink) {
         return { ok: false, error: "A Nextcloud Review Link is required before Review." };
@@ -115,6 +112,7 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
     (event: DragStartEvent) => {
       setActiveId(event.active.id as string);
       setSnapshot([...projects]);
+      attemptedRef.current = null;
     },
     [projects]
   );
@@ -136,7 +134,11 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
       if (!targetStatus || targetStatus === draggedProject.status) return;
 
       const check = canMove(draggedProject, targetStatus);
-      if (!check.ok) return;
+      if (!check.ok) {
+        attemptedRef.current = { target: targetStatus, error: check.error! };
+        return;
+      }
+      attemptedRef.current = null;
 
       setProjects((prev) =>
         prev.map((p) =>
@@ -166,6 +168,11 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
 
       const originalProject = snapshot.find((p) => p.id === active.id);
       if (!originalProject || originalProject.status === draggedProject.status) {
+        // Surface silent rejection from handleDragOver (e.g. invalid transition)
+        if (attemptedRef.current) {
+          showToast(attemptedRef.current.error, "error");
+          attemptedRef.current = null;
+        }
         return;
       }
 

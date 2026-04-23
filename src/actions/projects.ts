@@ -103,12 +103,6 @@ export async function updateProjectStatus(
     }
   }
 
-  if (from === "Scripting" && to === "Filming") {
-    if (!project.aRollAssigneeId || !project.bRollAssigneeId) {
-      return { success: false, error: "A-Roll and B-Roll assignees are required before Filming." };
-    }
-  }
-
   // *** CRUCIAL: Filming → Editing gate ***
   if (from === "Filming" && to === "Editing") {
     const aShots = parseShotItemsJSON(project.aRollShots);
@@ -317,7 +311,7 @@ export async function archiveProject(projectId: string): Promise<ActionResult> {
   try {
     await prisma.project.update({
       where: { id: projectId },
-      data: { status: "Published", publishDate: new Date() },
+      data: { status: "Scrapped" },
     });
     revalidatePath("/pipeline");
     revalidatePath("/archive");
@@ -338,6 +332,25 @@ export async function deleteProject(projectId: string): Promise<ActionResult> {
   } catch (err) {
     console.error("[deleteProject]", err);
     return { success: false, error: "Failed to delete project." };
+  }
+}
+
+export async function restoreProjectToPipeline(projectId: string): Promise<ActionResult> {
+  try {
+    const project = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        status: "Ideation",
+        reviewFeedback: null,
+        publishDate: null,
+      },
+    });
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
+    return { success: true, data: project };
+  } catch (err) {
+    console.error("[restoreProjectToPipeline]", err);
+    return { success: false, error: "Failed to restore project." };
   }
 }
 

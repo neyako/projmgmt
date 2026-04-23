@@ -40,30 +40,21 @@ export default function KanbanColumn({
   return (
     <div className="w-[320px] flex flex-col flex-shrink-0 h-full">
       {/* Column Header */}
-      <div
-        className={cn(
-          "flex items-center justify-between mb-md border-b pb-2",
-          isFilming
-            ? "border-text-primary"
-            : "border-border-visible"
-        )}
-      >
+      <div className="flex items-center justify-between mb-md border-b border-border-visible pb-2 h-7">
         <div className="flex items-center gap-2">
           <span className="text-style-label text-text-primary">{title}</span>
           <span className="text-style-label text-text-secondary">
             [ {count} ]
           </span>
+          {isFilming && <StatusDot color="accent" pulse />}
         </div>
-        {isFilming ? (
-          <StatusDot color="accent" pulse />
-        ) : (
-          <button
-            onClick={onAddClick}
-            className="text-text-secondary hover:text-text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-          </button>
-        )}
+        <button
+          onClick={onAddClick}
+          className="text-text-secondary hover:text-text-primary transition-colors"
+          aria-label={`Add project to ${title}`}
+        >
+          <span className="material-symbols-outlined text-[16px]">add</span>
+        </button>
       </div>
 
       {/* Drop Zone */}

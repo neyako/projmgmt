@@ -52,10 +52,10 @@ export type Platform = (typeof PLATFORMS)[number];
 
 // ─── COLUMN TRANSITION RULES ────────────────────────────
 export const VALID_TRANSITIONS: Record<KanbanStage, KanbanStage[]> = {
-  Ideation: ["Scripting"],
+  Ideation: ["Scripting", "Filming"],
   Scripting: ["Filming", "Ideation"],
-  Filming: ["Editing", "Scripting"],
-  Editing: ["Review", "Filming"],
+  Filming: ["Editing", "Scripting", "Ideation"],
+  Editing: ["Review", "Filming", "Scripting"],
   Review: ["Published", "Editing"],
   Published: [],
 };
