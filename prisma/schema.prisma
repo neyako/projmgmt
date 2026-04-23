@@ -1,0 +1,115 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── USERS ──────────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  avatarUrl String?
+  role      String   // Talent | Manager | Cameraman | Editor_Shorts | Editor_FullStack
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projectsCreated     Project[]      @relation("ProjectCreator")
+  assignedARoll       Project[]      @relation("ARollAssignee")
+  assignedBRoll       Project[]      @relation("BRollAssignee")
+  assignedEditing     Project[]      @relation("EditingAssignee")
+  assignedCameraman   Project[]      @relation("CameramanAssignee")
+  assignedEditor      Project[]      @relation("EditorAssignee")
+  assignedTalent      Project[]      @relation("TalentAssignee")
+}
+
+// ─── PROJECTS (Kanban Cards) ────────────────────────────
+model Project {
+  id                String   @id @default(cuid())
+  title             String
+  contentType       String   // Organic | Sponsored | Product_Seeding
+  format            String   // Short_Form | Long_Form | Static
+  status            String   @default("Ideation") // Ideation | Scripting | Filming | Editing | Review | Published
+  publishDate       DateTime?
+  briefingNotes     String?  // Required when contentType == "Sponsored"
+  platformsTargeted String   @default("[]") // JSON array as string: ["TikTok","YT_Shorts"]
+
+  // Kanban ordering
+  columnOrder       Int      @default(0)
+
+  // Asset Management
+  storagePath       String?  // NAS path, e.g. \\truenas\projects\vid01
+  reviewLink        String?  // Nextcloud share URL
+
+  // Review feedback (populated on Reject)
+  reviewFeedback    String?
+
+  // Filming Split-State
+  aRollComplete     Boolean  @default(false)
+  bRollComplete     Boolean  @default(false)
+
+  // Shot Lists (JSON-stringified arrays: [{id, text, isCompleted}])
+  aRollShots        String   @default("[]")
+  bRollShots        String   @default("[]")
+
+  // Scheduling
+  dueDate           DateTime?
+
+  // Assignees
+  creatorId         String
+  creator           User     @relation("ProjectCreator", fields: [creatorId], references: [id])
+
+  aRollAssigneeId   String?
+  aRollAssignee     User?    @relation("ARollAssignee", fields: [aRollAssigneeId], references: [id])
+
+  bRollAssigneeId   String?
+  bRollAssignee     User?    @relation("BRollAssignee", fields: [bRollAssigneeId], references: [id])
+
+  editingAssigneeId String?
+  editingAssignee   User?    @relation("EditingAssignee", fields: [editingAssigneeId], references: [id])
+
+  assignedCameramanId String?
+  assignedCameraman   User?  @relation("CameramanAssignee", fields: [assignedCameramanId], references: [id])
+
+  assignedEditorId    String?
+  assignedEditor      User?  @relation("EditorAssignee", fields: [assignedEditorId], references: [id])
+
+  assignedTalentId    String?
+  assignedTalent      User?  @relation("TalentAssignee", fields: [assignedTalentId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  analytics         Analytics[]
+  shotlistItems     ShotlistItem[]
+}
+
+// ─── SHOTLIST (B-Roll Checklist) ────────────────────────
+model ShotlistItem {
+  id        String  @id @default(cuid())
+  label     String
+  completed Boolean @default(false)
+  order     Int     @default(0)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ─── ANALYTICS ──────────────────────────────────────────
+model Analytics {
+  id        String   @id @default(cuid())
+  platform  String   // YouTube | TikTok | Instagram | Meta
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  comments  Int      @default(0)
+  fetchedAt DateTime @default(now())
+  isManual  Boolean  @default(false) // true = manually entered by Manager
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

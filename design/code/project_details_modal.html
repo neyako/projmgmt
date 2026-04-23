@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Studio Management Dashboard - Project Detail</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@400;700&amp;family=Space+Grotesk:wght@400;500;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "accent-subtle": "rgba(215,25,33,0.15)",
+                    "inverse-primary": "#5d5f5f",
+                    "surface-variant": "#353434",
+                    "inverse-surface": "#e5e2e1",
+                    "warning": "#D4A843",
+                    "interactive": "#5B9BF6",
+                    "on-tertiary-container": "#636565",
+                    "text-primary": "#E8E8E8",
+                    "on-surface": "#e5e2e1",
+                    "outline-variant": "#444748",
+                    "error": "#ffb4ab",
+                    "primary-fixed": "#e2e2e2",
+                    "tertiary-fixed": "#e2e2e2",
+                    "surface-bright": "#3a3939",
+                    "surface-raised": "#1A1A1A",
+                    "tertiary": "#ffffff",
+                    "text-display": "#FFFFFF",
+                    "black": "#000000",
+                    "surface-container": "#201f1f",
+                    "on-secondary-fixed-variant": "#464747",
+                    "surface-container-low": "#1c1b1b",
+                    "secondary": "#c7c6c6",
+                    "text-secondary": "#999999",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-primary": "#2f3131",
+                    "light-border": "#CCCCCC",
+                    "on-error": "#690005",
+                    "secondary-fixed": "#e3e2e2",
+                    "surface-tint": "#c6c6c7",
+                    "secondary-fixed-dim": "#c7c6c6",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8e9192",
+                    "on-secondary-fixed": "#1a1c1c",
+                    "success": "#4A9E5C",
+                    "surface-container-highest": "#353434",
+                    "on-surface-variant": "#c4c7c8",
+                    "light-surface": "#FFFFFF",
+                    "on-secondary-container": "#b5b5b5",
+                    "primary-container": "#e2e2e2",
+                    "on-primary-fixed": "#1a1c1c",
+                    "on-primary-container": "#636565",
+                    "on-secondary": "#2f3131",
+                    "tertiary-container": "#e2e2e2",
+                    "surface-dim": "#141313",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "primary": "#ffffff",
+                    "border-visible": "#333333",
+                    "light-bg": "#F5F5F5",
+                    "surface": "#111111",
+                    "accent": "#D71921",
+                    "surface-container-high": "#2a2a2a",
+                    "on-tertiary": "#2f3131",
+                    "inverse-on-surface": "#313030",
+                    "on-background": "#e5e2e1",
+                    "error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-primary-fixed-variant": "#454747",
+                    "secondary-container": "#464747",
+                    "text-disabled": "#666666",
+                    "background": "#141313",
+                    "primary-fixed-dim": "#c6c6c7",
+                    "border": "#222222"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "xl": "32px",
+                    "2xs": "2px",
+                    "4xl": "96px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "2xl": "48px",
+                    "sm": "8px",
+                    "3xl": "64px"
+            },
+            "fontFamily": {
+                    "heading": [
+                            "Space Grotesk"
+                    ],
+                    "label": [
+                            "Space Mono"
+                    ],
+                    "display-lg": [
+                            "Doto"
+                    ],
+                    "display-md": [
+                            "Space Grotesk"
+                    ],
+                    "body": [
+                            "Space Grotesk"
+                    ],
+                    "display-xl": [
+                            "Doto"
+                    ],
+                    "body-sm": [
+                            "Space Grotesk"
+                    ],
+                    "caption": [
+                            "Space Mono"
+                    ],
+                    "subheading": [
+                            "Space Grotesk"
+                    ]
+            },
+            "fontSize": {
+                    "heading": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label": [
+                            "11px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "0.08em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.05",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-md": [
+                            "36px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-xl": [
+                            "72px",
+                            {
+                                    "lineHeight": "1.0",
+                                    "letterSpacing": "-0.03em",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "letterSpacing": "0.04em",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "subheading": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for mechanical feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111111; 
+            border-left: 1px solid #222222;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333333; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444748; 
+        }
+    </style>
+</head>
+<body class="bg-black text-text-primary antialiased h-screen overflow-hidden flex font-body">
+<!-- SHARED COMPONENT: SideNavBar -->
+<nav class="hidden md:flex flex-col gap-2 p-4 h-full fixed left-0 top-0 w-64 border-r border-zinc-800 bg-black z-10">
+<div class="mb-xl flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-raised border border-border flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">camera</span>
+</div>
+<div>
+<h1 class="font-['Space_Mono'] text-xl font-black text-white">STUDIO</h1>
+<div class="font-['Space_Mono'] text-[11px] font-medium tracking-widest text-text-secondary mt-2xs">V2.0.4-SYS</div>
+</div>
+</div>
+<!-- Active Navigation: PIPELINE -->
+<a class="text-white border border-zinc-700 bg-zinc-900 px-3 py-2 flex items-center gap-4 font-['Space_Mono'] text-[11px] font-medium tracking-widest active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">view_kanban</span>
+            PIPELINE
+        </a>
+<!-- Inactive Navigation -->
+<a class="text-zinc-500 px-3 py-2 flex items-center gap-4 font-['Space_Mono'] text-[11px] font-medium tracking-widest hover:text-white hover:bg-zinc-900 transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+            ANALYTICS
+        </a>
+<a class="text-zinc-500 px-3 py-2 flex items-center gap-4 font-['Space_Mono'] text-[11px] font-medium tracking-widest hover:text-white hover:bg-zinc-900 transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">handshake</span>
+            SPONSORSHIPS
+        </a>
+<a class="text-zinc-500 px-3 py-2 flex items-center gap-4 font-['Space_Mono'] text-[11px] font-medium tracking-widest hover:text-white hover:bg-zinc-900 transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">group</span>
+            TEAM
+        </a>
+<div class="mt-auto">
+<a class="text-zinc-500 px-3 py-2 flex items-center gap-4 font-['Space_Mono'] text-[11px] font-medium tracking-widest hover:text-white hover:bg-zinc-900 transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">settings</span>
+                SETTINGS
+            </a>
+</div>
+</nav>
+<!-- SHARED COMPONENT: TopAppBar -->
+<header class="hidden md:flex items-center justify-between px-6 h-16 w-full ml-64 docked full-width top-0 border-b border-zinc-800 bg-black z-10">
+<div class="font-['Space_Mono'] text-lg font-bold tracking-widest text-white">STUDIO_OS</div>
+<button class="font-['Space_Grotesk'] tracking-tight uppercase text-black bg-white hover:bg-zinc-200 transition-colors duration-200 px-md py-sm font-bold text-sm">
+            NEW PROJECT
+        </button>
+</header>
+<!-- Main Canvas Context (blurred/darkened by modal) -->
+<main class="ml-64 mt-16 p-xl w-full h-full opacity-20 pointer-events-none flex flex-col gap-lg">
+<!-- Abstract representation of the background dashboard -->
+<div class="h-16 border border-border w-full"></div>
+<div class="grid grid-cols-4 gap-md h-full">
+<div class="border border-border h-full"></div>
+<div class="border border-border h-full"></div>
+<div class="border border-border h-full"></div>
+<div class="border border-border h-full"></div>
+</div>
+</main>
+<!-- MODAL OVERLAY -->
+<div class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-md md:p-xl backdrop-blur-sm">
+<!-- MODAL CONTAINER -->
+<div class="bg-surface border border-border-visible w-full max-w-5xl max-h-[972px] flex flex-col relative overflow-hidden">
+<!-- CLOSE BUTTON -->
+<button class="absolute top-md right-md font-label text-label text-text-secondary hover:text-text-primary z-20 transition-colors bg-surface px-2 py-1 border border-transparent hover:border-border">
+                [ X ]
+            </button>
+<!-- MODAL HEADER -->
+<div class="p-xl border-b border-border-visible flex justify-between items-end bg-surface-raised relative z-10">
+<div>
+<div class="font-label text-label text-text-secondary mb-xs flex items-center gap-sm">
+<span class="w-2 h-2 bg-interactive inline-block rounded-full"></span>
+                        ID: PRJ-0892-A
+                    </div>
+<h2 class="font-heading text-heading text-text-display uppercase tracking-tight">KINETIC_TYPOGRAPHY_V4</h2>
+</div>
+<!-- The "One Moment" - Oversized Metric -->
+<div class="text-right hidden sm:block">
+<div class="font-label text-label text-text-secondary mb-2xs tracking-widest">COMPLETION</div>
+<div class="font-display-lg text-display-lg text-text-display leading-none">68%</div>
+</div>
+</div>
+<!-- MODAL BODY (Scrollable) -->
+<div class="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-3 gap-0">
+<!-- LEFT COLUMN: Workspace (Span 2) -->
+<div class="lg:col-span-2 border-r border-border-visible p-xl flex flex-col gap-2xl">
+<!-- SECTION: ASSET MANAGEMENT -->
+<section>
+<div class="flex items-center gap-sm mb-md pb-xs border-b border-border">
+<span class="material-symbols-outlined text-[16px] text-text-secondary">folder_data</span>
+<h3 class="font-label text-label text-text-secondary uppercase">ASSET MANAGEMENT</h3>
+</div>
+<div class="flex flex-col gap-md">
+<!-- RAW STORAGE PATH (Copy to clipboard style) -->
+<div>
+<label class="font-label text-label text-text-primary block mb-xs">RAW STORAGE PATH</label>
+<div class="flex items-center bg-black border border-border group relative">
+<div class="px-sm py-sm border-r border-border bg-surface-raised flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-text-secondary">hard_drive</span>
+</div>
+<input class="bg-transparent border-none outline-none font-label text-label text-text-secondary flex-1 px-md truncate w-full" readonly="" type="text" value="/mnt/studio_san/2023/kinetic_v4/raw_ingest/"/>
+<button class="px-md py-sm border-l border-border bg-surface-raised hover:bg-surface-variant text-text-secondary hover:text-text-primary transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span class="font-label text-label hidden sm:inline">COPY</span>
+</button>
+</div>
+</div>
+<!-- NEXTCLOUD REVIEW LINK -->
+<div>
+<label class="font-label text-label text-text-primary block mb-xs">NEXTCLOUD REVIEW LINK</label>
+<a class="flex items-center bg-black border border-border group hover:border-interactive transition-colors" href="#">
+<div class="px-sm py-sm border-r border-border bg-surface-raised flex items-center justify-center group-hover:border-interactive transition-colors">
+<span class="material-symbols-outlined text-[18px] text-interactive">cloud</span>
+</div>
+<div class="font-label text-label text-text-secondary flex-1 px-md truncate group-hover:text-interactive transition-colors">
+                                        https://nc.studio.local/s/k8jH9fM2xQ
+                                    </div>
+<div class="px-sm py-sm border-l border-border bg-surface-raised text-text-secondary group-hover:border-interactive group-hover:text-interactive transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</div>
+</a>
+</div>
+</div>
+</section>
+<!-- SECTION: TASK PROGRESS -->
+<section>
+<div class="flex items-center gap-sm mb-md pb-xs border-b border-border">
+<span class="material-symbols-outlined text-[16px] text-text-secondary">checklist</span>
+<h3 class="font-label text-label text-text-secondary uppercase">TASK PROGRESS</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-xl">
+<!-- A-ROLL CHECKLIST -->
+<div>
+<div class="font-label text-label text-text-primary mb-sm flex justify-between items-center border border-border px-2 py-1 bg-surface-raised">
+<span>[ A-ROLL ]</span>
+<span class="text-text-secondary">3/4</span>
+</div>
+<div class="flex flex-col gap-sm">
+<!-- Checked Item -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="mt-1 flex-shrink-0 w-4 h-4 border border-text-secondary flex items-center justify-center bg-text-primary group-hover:border-text-primary transition-colors">
+<span class="material-symbols-outlined text-black text-[12px]" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-text-secondary line-through group-hover:text-text-primary transition-colors">Ingest &amp; Sync Audio (TC)</span>
+</label>
+<!-- Checked Item -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="mt-1 flex-shrink-0 w-4 h-4 border border-text-secondary flex items-center justify-center bg-text-primary group-hover:border-text-primary transition-colors">
+<span class="material-symbols-outlined text-black text-[12px]" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-text-secondary line-through group-hover:text-text-primary transition-colors">Rough Cut Assembly</span>
+</label>
+<!-- Checked Item -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="mt-1 flex-shrink-0 w-4 h-4 border border-text-secondary flex items-center justify-center bg-text-primary group-hover:border-text-primary transition-colors">
+<span class="material-symbols-outlined text-black text-[12px]" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-text-secondary line-through group-hover:text-text-primary transition-colors">Client Review V1 Feedback</span>
+</label>
+<!-- Unchecked Item -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="mt-1 flex-shrink-0 w-4 h-4 border border-text-secondary flex items-center justify-center group-hover:border-text-primary transition-colors">
+<!-- Empty -->
+</div>
+<span class="font-body-sm text-body-sm text-text-primary">Final Color Pass (Rec709)</span>
+</label>
+</div>
+</div>
+<!-- B-ROLL CHECKLIST -->
+<div>
+<div class="font-label text-label text-text-primary mb-sm flex justify-between items-center border border-border px-2 py-1 bg-surface-raised">
+<span>[ B-ROLL ]</span>
+<span class="text-text-secondary">1/3</span>
+</div>
+<div class="flex flex-col gap-sm">
+<!-- Checked Item -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="mt-1 flex-shrink-0 w-4 h-4 border border-text-secondary flex items-center justify-center bg-text-primary group-hover:border-text-primary transition-colors">
+<span class="material-symbols-outlined text-black text-[12px]" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-text-secondary line-through group-hover:text-text-primary transition-colors">Motion Graphics Intros</span>
+</label>
+<!-- Unchecked Item -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="mt-1 flex-shrink-0 w-4 h-4 border border-text-secondary flex items-center justify-center group-hover:border-text-primary transition-colors"></div>
+<span class="font-body-sm text-body-sm text-text-primary">Stock Footage Selection</span>
+</label>
+<!-- Unchecked Item -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="mt-1 flex-shrink-0 w-4 h-4 border border-text-secondary flex items-center justify-center group-hover:border-text-primary transition-colors"></div>
+<span class="font-body-sm text-body-sm text-text-primary">Sound Design Overlay</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT COLUMN: Metadata & Tags (Span 1) -->
+<div class="p-xl bg-black flex flex-col gap-2xl">
+<!-- SECTION: METADATA -->
+<section>
+<div class="flex items-center gap-sm mb-md pb-xs border-b border-border">
+<span class="material-symbols-outlined text-[16px] text-text-secondary">data_object</span>
+<h3 class="font-label text-label text-text-secondary uppercase">METADATA</h3>
+</div>
+<div class="flex flex-col gap-md">
+<div>
+<div class="font-label text-label text-text-secondary mb-2xs">CLIENT</div>
+<div class="font-label text-label text-text-primary tracking-widest">NEXUS DYNAMICS</div>
+</div>
+<div>
+<div class="font-label text-label text-text-secondary mb-2xs">DUE DATE</div>
+<div class="font-label text-label text-text-primary tracking-widest flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px] text-warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+                                    2023.11.14
+                                </div>
+</div>
+<div>
+<div class="font-label text-label text-text-secondary mb-2xs">LEAD EDITOR</div>
+<div class="font-label text-label text-text-primary tracking-widest">SARAH JENKINS</div>
+</div>
+<div>
+<div class="font-label text-label text-text-secondary mb-2xs">RESOLUTION</div>
+<div class="font-label text-label text-text-primary tracking-widest border border-border inline-block px-2 py-1 bg-surface-raised mt-xs">
+                                    4K DCI (4096x2160)
+                                </div>
+</div>
+</div>
+</section>
+<!-- SECTION: PLATFORMS -->
+<section>
+<div class="flex items-center gap-sm mb-md pb-xs border-b border-border">
+<span class="material-symbols-outlined text-[16px] text-text-secondary">share</span>
+<h3 class="font-label text-label text-text-secondary uppercase">PLATFORMS</h3>
+</div>
+<div class="flex flex-wrap gap-sm">
+<span class="border border-border-visible bg-surface-raised px-3 py-1 font-label text-label text-text-primary hover:bg-surface-variant transition-colors cursor-default">
+                                TIKTOK
+                            </span>
+<span class="border border-border-visible bg-surface-raised px-3 py-1 font-label text-label text-text-primary hover:bg-surface-variant transition-colors cursor-default">
+                                YT SHORTS
+                            </span>
+<span class="border border-border px-3 py-1 font-label text-label text-text-secondary opacity-40 line-through cursor-not-allowed">
+                                IG REELS
+                            </span>
+</div>
+</section>
+<!-- Spacer to push button to bottom -->
+<div class="flex-1"></div>
+<!-- ACTION -->
+<button class="w-full bg-text-display text-black font-label text-label py-md uppercase tracking-widest hover:bg-secondary transition-colors border border-transparent mt-xl">
+                        EDIT PROJECT CONFIG
+                    </button>
+</div>
+</div>
+<!-- Structural line at bottom of modal -->
+<div class="h-1 bg-surface-raised border-t border-border-visible w-full absolute bottom-0 left-0"></div>
+</div>
+</div>
+</body></html>
