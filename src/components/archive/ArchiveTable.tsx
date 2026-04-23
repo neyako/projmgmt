@@ -160,7 +160,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                     <td className="p-4 text-sm font-mono text-gray-300">{p.title}</td>
                     <td className="p-4 text-sm font-mono text-gray-300">
                       <span className="inline-flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-emerald-500" : "bg-gray-500"}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
                         <span className="uppercase tracking-widest text-[10px]">
                           {p.status}
                         </span>

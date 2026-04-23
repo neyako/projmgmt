@@ -131,7 +131,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
         <div className="flex justify-between p-6 border-t border-white/10 shrink-0">
           {isEditing ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-red-500 border border-red-900/50 hover:bg-red-950/30 transition-colors">
+            <button type="button" onClick={handleDelete} disabled={isPending} className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-accent border border-accent/40 hover:bg-accent-subtle transition-colors">
               DELETE
             </button>
           ) : (

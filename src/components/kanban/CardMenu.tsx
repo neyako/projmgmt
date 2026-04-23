@@ -82,7 +82,7 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
           </button>
           <button
             onClick={handleDelete}
-            className="text-left px-3 py-2 text-[10px] font-mono text-red-500/80 uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 transition-colors border-t border-white/5"
+            className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent-subtle hover:text-accent transition-colors border-t border-white/5"
           >
             Delete
           </button>

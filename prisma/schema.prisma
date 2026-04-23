@@ -35,6 +35,25 @@ model Project {
   format            String   // Short_Form | Long_Form | Static
   status            String   @default("Ideation") // Ideation | Scripting | Filming | Editing | Review | Published
   publishDate       DateTime?
+
+  // Publishing checklist metadata (captured when transitioning to Published)
+  finalTitle        String?
+  hashtags          String?
+  productLinks      String?   // captured during Ideation (Project Details modal)
+  publishedAt       DateTime?
+
+  // Short-Form publishing
+  baseCaption       String?
+
+  // Long-Form publishing (JSON-stringified string[] of up to 3 entries each)
+  abTitles          String?
+  thumbnails        String?
+
+  // Aggregate analytics (per-project rollup; per-platform rows live on Analytics)
+  views             Int      @default(0)
+  likes             Int      @default(0)
+  comments          Int      @default(0)
+
   briefingNotes     String?  // Required when contentType == "Sponsored"
   platformsTargeted String   @default("[]") // JSON array as string: ["TikTok","YT_Shorts"]
 

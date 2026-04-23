@@ -1,165 +1,120 @@
 import Shell from "@/components/layout/Shell";
 import { prisma } from "@/lib/prisma";
-import { formatNumber } from "@/lib/utils";
+
+function formatNumber(n: number) {
+  return n.toLocaleString("en-US");
+}
+
+function formatDate(d?: Date | string | null) {
+  if (!d) return "—";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(dt.getTime())) return "—";
+  return dt
+    .toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" })
+    .toUpperCase();
+}
 
 export default async function AnalyticsPage() {
-  // Fetch aggregated analytics
-  const analytics = await prisma.analytics.findMany({
-    orderBy: { fetchedAt: "desc" },
+  const published = await prisma.project.findMany({
+    where: { status: "Published" },
+    orderBy: { views: "desc" },
   });
 
-  const totalViews = analytics.reduce((sum, a) => sum + a.views, 0);
-  const totalLikes = analytics.reduce((sum, a) => sum + a.likes, 0);
-  const totalComments = analytics.reduce((sum, a) => sum + a.comments, 0);
+  const totalViews = published.reduce((sum, p) => sum + (p.views ?? 0), 0);
+  const totalLikes = published.reduce((sum, p) => sum + (p.likes ?? 0), 0);
+  const totalComments = published.reduce((sum, p) => sum + (p.comments ?? 0), 0);
 
   const metrics = [
-    {
-      label: "TOTAL VIEWS",
-      value: formatNumber(totalViews || 4200000),
-      icon: "visibility",
-      trend: "+12.4%",
-      trendUp: true,
-    },
-    {
-      label: "RETENTION",
-      value: "68%",
-      icon: "hourglass_top",
-      trend: "+2.1%",
-      trendUp: true,
-    },
-    {
-      label: "REVENUE",
-      value: `$${formatNumber(12400)}`,
-      icon: "payments",
-      trend: "-1.4%",
-      trendUp: false,
-    },
+    { label: "TOTAL VIEWS", value: totalViews },
+    { label: "TOTAL LIKES", value: totalLikes },
+    { label: "TOTAL COMMENTS", value: totalComments },
   ];
 
   return (
     <Shell>
-      <div className="flex-1 overflow-y-auto bg-black p-xl">
-        <div className="max-w-[1400px] mx-auto flex flex-col gap-3xl">
-          {/* Context Header */}
-          <div className="flex items-end justify-between border-b border-border pb-lg">
-            <div>
-              <h2 className="text-style-heading text-text-display mb-xs">
-                GLOBAL PERFORMANCE
-              </h2>
-              <p className="text-style-caption text-text-secondary uppercase">
-                SYS_TIME:{" "}
-                <span className="text-text-primary">
-                  {new Date().toISOString().split("T")[0].replace(/-/g, ".")}{" "}
-                  {new Date().toISOString().split("T")[1].slice(0, 5)}Z
-                </span>
-              </p>
-            </div>
-            <div className="flex gap-md text-style-label text-text-secondary">
-              <span className="text-text-primary border-b border-text-primary pb-xs cursor-pointer">
-                [ 30D ]
-              </span>
-              <span className="cursor-pointer hover:text-text-primary pb-xs">
-                [ 90D ]
-              </span>
-              <span className="cursor-pointer hover:text-text-primary pb-xs">
-                [ YTD ]
-              </span>
-            </div>
+      <div className="h-full w-full overflow-auto p-lg">
+        <div className="mb-6">
+          <h1 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">
+            Performance
+          </h1>
+          <div className="text-2xl font-bold text-white uppercase tracking-wider">
+            Analytics Dashboard
           </div>
-
-          {/* Hero Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-border">
-            {metrics.map((m) => (
-              <div
-                key={m.label}
-                className="bg-surface p-xl flex flex-col justify-between min-h-[240px]"
-              >
-                <div className="flex justify-between items-start">
-                  <span className="text-style-label text-text-secondary tracking-widest">
-                    {m.label}
-                  </span>
-                  <span className="material-symbols-outlined text-text-secondary text-[16px]">
-                    {m.icon}
-                  </span>
-                </div>
-                <div>
-                  <div className="text-style-display-xl text-text-display leading-none mb-sm">
-                    {m.value}
-                  </div>
-                  <div className="flex items-center gap-xs text-style-caption">
-                    <span
-                      className={`material-symbols-outlined text-[14px] ${m.trendUp ? "text-success" : "text-accent"}`}
-                    >
-                      {m.trendUp ? "arrow_upward" : "arrow_downward"}
-                    </span>
-                    <span className={m.trendUp ? "text-success" : "text-accent"}>
-                      {m.trend}
-                    </span>
-                    <span className="text-text-secondary ml-sm">
-                      VS PREV PERIOD
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="text-xs font-mono text-gray-500 mt-1">
+            {published.length} {published.length === 1 ? "video" : "videos"} published
           </div>
+        </div>
 
-          {/* Segmented Goal */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3xl">
-            <div className="flex flex-col gap-lg">
-              <div className="flex justify-between items-end border-b border-border pb-sm">
-                <span className="text-style-label text-text-display tracking-widest">
-                  MONTHLY GOAL: 10M VIEWS
-                </span>
-                <span className="text-style-caption text-text-secondary">
-                  72%
-                </span>
+        {/* ─── Aggregate Metrics ───────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {metrics.map((m) => (
+            <div
+              key={m.label}
+              className="border border-white/10 bg-[#0a0a0a] p-6 flex flex-col"
+            >
+              <span className="text-[10px] text-gray-500 uppercase font-mono tracking-widest">
+                {m.label}
+              </span>
+              <span className="text-4xl font-mono text-white tracking-widest mt-2">
+                {formatNumber(m.value)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* ─── Top Performers ──────────────────────────────── */}
+        <div>
+          <h2 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-4">
+            Top Performers
+          </h2>
+
+          {published.length === 0 ? (
+            <div className="border border-white/10 p-12 text-center">
+              <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                No Published Videos Yet
               </div>
-              <div className="flex gap-[2px] h-12 w-full">
-                {Array.from({ length: 14 }, (_, i) => (
-                  <div
-                    key={i}
-                    className={`flex-1 ${i < 10 ? "bg-text-display" : "border border-border-visible bg-transparent"}`}
-                  />
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                    Title
+                  </th>
+                  <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4 text-right">
+                    Views
+                  </th>
+                  <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4 text-right">
+                    Likes
+                  </th>
+                  <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                    Publish Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {published.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                  >
+                    <td className="p-4 text-sm font-mono text-gray-300 font-bold">
+                      {p.finalTitle ?? p.title}
+                    </td>
+                    <td className="p-4 text-sm font-mono text-success text-right">
+                      {formatNumber(p.views ?? 0)}
+                    </td>
+                    <td className="p-4 text-sm font-mono text-gray-300 text-right">
+                      {formatNumber(p.likes ?? 0)}
+                    </td>
+                    <td className="p-4 text-xs font-mono text-gray-400">
+                      {formatDate(p.publishedAt ?? p.publishDate)}
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-
-            {/* Platform Distribution */}
-            <div className="flex flex-col gap-lg">
-              <div className="flex justify-between items-end border-b border-border pb-sm">
-                <span className="text-style-label text-text-display tracking-widest">
-                  PLATFORM DISTRIBUTION
-                </span>
-                <span className="material-symbols-outlined text-text-secondary text-[16px]">
-                  share
-                </span>
-              </div>
-              <div className="flex flex-col gap-md pt-sm">
-                {[
-                  { name: "TIKTOK", pct: 55 },
-                  { name: "YT SHORTS", pct: 30 },
-                  { name: "INSTAGRAM", pct: 15 },
-                ].map((p) => (
-                  <div key={p.name} className="flex items-center gap-md">
-                    <span className="text-style-caption text-text-primary w-24">
-                      {p.name}
-                    </span>
-                    <div className="flex-1 h-[24px] relative flex items-center">
-                      <div
-                        className="absolute h-[1.5px] bg-text-display left-0 top-1/2 -translate-y-1/2"
-                        style={{ width: `${p.pct}%` }}
-                      />
-                      <div className="absolute w-full h-[1px] bg-border-visible left-0 top-1/2 -translate-y-1/2 -z-10" />
-                    </div>
-                    <span className="text-style-caption text-text-secondary w-16 text-right">
-                      {p.pct}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </Shell>
