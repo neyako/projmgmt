@@ -1,11 +1,21 @@
 import Shell from "@/components/layout/Shell";
 import KanbanBoardWrapper from "@/components/kanban/KanbanBoardWrapper";
 import { prisma } from "@/lib/prisma";
-import { ToastProvider } from "@/components/ui/Toast";
 
-export default async function PipelinePage() {
+
+export default async function PipelinePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
+  const params = await searchParams;
+  const q = params?.q?.trim();
+
   const projects = await prisma.project.findMany({
-    where: { status: { not: "Published" } },
+    where: {
+      status: { notIn: ["Published", "Scrapped"] },
+      ...(q && { title: { contains: q } }),
+    },
     include: {
       creator: true,
       aRollAssignee: true,
@@ -21,9 +31,9 @@ export default async function PipelinePage() {
 
   return (
     <Shell>
-      <ToastProvider>
+      
         <KanbanBoardWrapper initialProjects={projects} />
-      </ToastProvider>
+      
     </Shell>
   );
 }

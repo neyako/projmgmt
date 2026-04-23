@@ -36,7 +36,7 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
     startTransition(async () => {
       const result = await archiveProject(projectId);
       if (result.success) {
-        showToast("Project archived successfully.", "success");
+        showToast("Project scrapped.", "success");
       } else {
         showToast(result.error || "Failed to archive project.", "error");
       }
@@ -78,7 +78,7 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
             onClick={handleArchive}
             className="text-left px-3 py-2 text-[10px] font-mono text-gray-400 uppercase tracking-widest hover:bg-white/5 hover:text-white transition-colors"
           >
-            Archive
+            Scrap
           </button>
           <button
             onClick={handleDelete}

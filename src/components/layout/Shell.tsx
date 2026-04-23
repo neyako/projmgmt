@@ -1,14 +1,19 @@
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <div className="h-screen flex flex-col w-full md:ml-64 overflow-hidden">
-        <TopBar />
-        <main className="flex-1 w-full overflow-x-auto overflow-y-hidden">{children}</main>
+    <ToastProvider>
+      <div className="flex h-screen w-full bg-[#0a0a0a] overflow-hidden text-white">
+        <Sidebar />
+        <div className="flex-1 min-w-0 h-full flex flex-col md:ml-64">
+          <TopBar />
+          <main className="flex-1 min-w-0 w-full h-full overflow-y-auto">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 }

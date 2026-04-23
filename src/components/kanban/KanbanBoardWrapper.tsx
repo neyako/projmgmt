@@ -26,6 +26,11 @@ export default function KanbanBoardWrapper({
     setIsMounted(true);
   }, []);
 
+  // Sync with server-filtered project list (search query updates)
+  useEffect(() => {
+    setProjects(initialProjects);
+  }, [initialProjects]);
+
   if (!isMounted) {
     return (
       <div className="h-full w-max min-w-full p-lg">

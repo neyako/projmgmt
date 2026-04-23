@@ -1,7 +1,7 @@
 export default function LoginPage() {
   return (
     <body className="bg-black text-text-primary min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      <main className="w-full max-w-sm px-lg flex flex-col items-center gap-4xl">
+      <main className="w-full max-w-[24rem] px-lg flex flex-col items-center gap-4xl">
         <header className="text-center flex flex-col items-center gap-xs">
           <h1 className="text-style-display-xl text-text-display tracking-tighter">STUDIO_OS</h1>
           <div className="flex items-center gap-sm opacity-50">

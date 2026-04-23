@@ -81,6 +81,10 @@ model Project {
   assignedTalentId    String?
   assignedTalent      User?  @relation("TalentAssignee", fields: [assignedTalentId], references: [id])
 
+  // Sponsorship relation
+  sponsorshipId     String?
+  sponsorship       Sponsorship? @relation(fields: [sponsorshipId], references: [id])
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -100,7 +104,20 @@ model ShotlistItem {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
-// ─── ANALYTICS ──────────────────────────────────────────
+// ─── SPONSORSHIPS ─────────────────────────────────────────
+model Sponsorship {
+  id            String   @id @default(cuid())
+  brandName     String
+  contactEmail  String?
+  budget        Int      @default(0)
+  status        String   @default("Active") // Active | Completed | Cancelled
+  dueDate       DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  projects      Project[]
+}
 model Analytics {
   id        String   @id @default(cuid())
   platform  String   // YouTube | TikTok | Instagram | Meta
