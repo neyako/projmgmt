@@ -13,9 +13,9 @@ Off-the-shelf project management tools (like Notion or Trello) are either too ge
 ## Deep-Dive Features
 
 * **Split-State Kanban:** The pipeline features advanced column transition logic. The `Filming` stage enforces parallel A-Roll and B-Roll tracking. A project cannot progress to `Editing` until 100% of the JSON-driven shotlist items are marked complete by the cameramen.
-* **Hybrid Asset Tracking:** Bridges the gap between local infrastructure and external delivery. Tracks raw high-speed 10Gbps NAS paths (`\\truenas\projects\...`) alongside external Nextcloud review links, ensuring editors and managers always know exactly where the multi-terabyte source files live.
+* **Hybrid Asset Tracking:** Bridges local infrastructure and external delivery. Editors set a project `folderName` once in the RAW asset row; Studio_OS generates OS-aware NAS paths for SMB (`smb://...` on macOS, `\\server\share\...` on Windows) from `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR`. Nextcloud review links remain beside the RAW path.
 * **Review Pipeline:** Built-in feedback loops. When a manager rejects a cut, the project automatically returns to `Editing`, visually flagging the card with a red glow and injecting the revision notes directly into the editor's Kanban view. Feedback is automatically cleared upon resubmission.
-* **Archive & Analytics:** Published projects automatically move off the board and into a tabular Archive view. Scrapped projects are retained. Views, Likes, and Comments are displayed as platform grand totals by summing YouTube, Meta, and TikTok metrics (`youtube* + meta* + tiktok*`) with locale-formatted numbers.
+* **Archive & Analytics:** Published projects automatically move off the board and into a tabular Archive view. Scrapped projects are retained. Views, Likes, and Comments are displayed as platform grand totals by summing YouTube, Meta, and TikTok metrics (`youtube* + meta* + tiktok*`) with locale-formatted numbers. Analytics performer rows only render platform chips and per-platform metrics for platforms actually targeted or synced, and they classify each video as Short Form / Long Form from `platformsTargeted`.
 * **Sponsorship CRM:** Integrated tracking pipeline for brand deals tied to the main production schedule.
 * **Team Roster:** Integrated RBAC mapping to actual production capabilities.
 
@@ -48,19 +48,26 @@ This application is designed to run bare-metal or inside a self-hosted container
    npm install
    ```
 
-3. **Initialize Database:**
+3. **Configure NAS Environment Variables (.env):**
+   ```bash
+   NEXT_PUBLIC_NAS_IP=192.168.1.10
+   NEXT_PUBLIC_NAS_SHARE=projects
+   NEXT_PUBLIC_NAS_ROOT_DIR=Studio
+   ```
+
+4. **Initialize Database:**
    This will push the Prisma schema to a local SQLite file (`prisma/dev.db`) and seed the database with initial users and sample tasks.
    ```bash
    npm run db:push
    npm run db:seed
    ```
 
-4. **Start Development Server:**
+5. **Start Development Server:**
    ```bash
    npm run dev
    ```
 
-5. **Access Studio_OS:**
+6. **Access Studio_OS:**
    Open `http://localhost:3000` in your browser. You will be redirected to the `/pipeline` board.
 
 ## License

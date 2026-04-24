@@ -8,6 +8,8 @@ import {
   updateProjectShotlist,
   updateProjectAssets,
   updatePlatformIds,
+  updateProjectStatusDirect,
+  toggleProjectPlatform,
 } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
@@ -15,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
 import CopyBlock from "@/components/ui/CopyBlock";
+import { generateNasPaths } from "@/utils/nasPaths";
 import type { User } from "@prisma/client";
 import type { ProjectCardData, ShotItem } from "@/types";
 
@@ -130,8 +133,8 @@ export default function ProjectDetailsModal({
   const [talentId, setTalentId] = useState("");
 
   // Asset Management state
-  const [storagePath, setStoragePath] = useState("");
   const [reviewLink, setReviewLink] = useState("");
+  const [detectedOS, setDetectedOS] = useState<"mac" | "win" | "unknown">("unknown");
 
   // Ideation metadata
   const [productLinks, setProductLinks] = useState("");
@@ -140,6 +143,9 @@ export default function ProjectDetailsModal({
   const [youtubeId, setYoutubeId] = useState("");
   const [metaId, setMetaId] = useState("");
   const [tiktokId, setTiktokId] = useState("");
+  const [folderName, setFolderName] = useState("");
+  const [isEditingRaw, setIsEditingRaw] = useState(!project?.folderName);
+  const [tempFolderName, setTempFolderName] = useState(project?.folderName || "");
   const [isSavingIds, startSaveIds] = useTransition();
 
   useEffect(() => {
@@ -155,6 +161,19 @@ export default function ProjectDetailsModal({
   }, [onClose]);
 
   useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes("mac")) {
+      setDetectedOS("mac");
+      return;
+    }
+    if (ua.includes("win")) {
+      setDetectedOS("win");
+      return;
+    }
+    setDetectedOS("unknown");
+  }, []);
+
+  useEffect(() => {
     if (project) {
       setTitle(project.title);
       setContentType(project.contentType);
@@ -167,12 +186,14 @@ export default function ProjectDetailsModal({
       setEditorId(project.assignedEditor?.id || project.assignedEditorId || "");
       setCameramanId(project.assignedCameraman?.id || project.assignedCameramanId || "");
       setTalentId(project.assignedTalent?.id || project.assignedTalentId || "");
-      setStoragePath(project.storagePath || "");
       setReviewLink(project.reviewLink || "");
       setProductLinks(project.productLinks || "");
       setYoutubeId(project.youtubeId || "");
       setMetaId(project.metaId || "");
       setTiktokId(project.tiktokId || "");
+      setFolderName(project.folderName || "");
+      setTempFolderName(project.folderName || "");
+      setIsEditingRaw(!project.folderName);
     } else {
       setTitle("");
       setContentType("Organic");
@@ -185,12 +206,14 @@ export default function ProjectDetailsModal({
       setEditorId("");
       setCameramanId("");
       setTalentId("");
-      setStoragePath("");
       setReviewLink("");
       setProductLinks("");
       setYoutubeId("");
       setMetaId("");
       setTiktokId("");
+      setFolderName("");
+      setTempFolderName("");
+      setIsEditingRaw(true);
     }
     setARollDraft("");
     setBRollDraft("");
@@ -280,14 +303,9 @@ export default function ProjectDetailsModal({
     });
   }
 
-  function saveAssets(patch: { storagePath?: string; reviewLink?: string }) {
+  function saveAssets(patch: { reviewLink?: string }) {
     if (!project) return;
-    const normalized: { storagePath?: string | null; reviewLink?: string | null } = {};
-    if (patch.storagePath !== undefined) {
-      const trimmed = patch.storagePath.trim();
-      if (trimmed === (project.storagePath || "")) return;
-      normalized.storagePath = trimmed || null;
-    }
+    const normalized: { reviewLink?: string | null } = {};
     if (patch.reviewLink !== undefined) {
       const trimmed = patch.reviewLink.trim();
       if (trimmed === (project.reviewLink || "")) return;
@@ -301,6 +319,27 @@ export default function ProjectDetailsModal({
         return;
       }
       onProjectUpdate?.({ id: project.id, ...normalized });
+    });
+  }
+
+  function saveRawFolderName() {
+    if (!project) return;
+    const nextFolderName = tempFolderName.trim();
+    startSaveIds(async () => {
+      const result = await updatePlatformIds(project.id, {
+        folderName: nextFolderName,
+      });
+      if (!result.success) {
+        showToast(result.error, "error");
+        return;
+      }
+      setFolderName(nextFolderName);
+      onProjectUpdate?.({
+        id: project.id,
+        folderName: nextFolderName || null,
+      });
+      setIsEditingRaw(!nextFolderName);
+      showToast("NAS folder updated.", "success");
     });
   }
 
@@ -326,7 +365,56 @@ export default function ProjectDetailsModal({
         metaId: nextMeta || null,
         tiktokId: nextTiktok || null,
       });
-      showToast("Platform IDs updated.", "success");
+      showToast("Project details updated.", "success");
+    });
+  }
+
+  function handlePlatformToggle(platform: string) {
+    if (!project) return;
+    const prevPlatforms = [...platforms];
+    const nextPlatforms = prevPlatforms.includes(platform)
+      ? prevPlatforms.filter((p) => p !== platform)
+      : [...prevPlatforms, platform];
+
+    setPlatforms(nextPlatforms);
+    onProjectUpdate?.({
+      id: project.id,
+      platformsTargeted: JSON.stringify(nextPlatforms),
+    });
+
+    startTransition(async () => {
+      const result = await toggleProjectPlatform(project.id, platform);
+      if (!result.success) {
+        setPlatforms(prevPlatforms);
+        onProjectUpdate?.({
+          id: project.id,
+          platformsTargeted: JSON.stringify(prevPlatforms),
+        });
+        showToast(result.error, "error");
+      }
+    });
+  }
+
+  function handleStageSelect(stage: string) {
+    if (!project || stage === project.status) return;
+    const prevStatus = project.status;
+    const prevPublishDate = project.publishDate ?? null;
+
+    onProjectUpdate?.({
+      id: project.id,
+      status: stage,
+      ...(stage === "Published" && { publishDate: new Date() }),
+    });
+    startTransition(async () => {
+      const result = await updateProjectStatusDirect(project.id, stage);
+      if (!result.success) {
+        onProjectUpdate?.({
+          id: project.id,
+          status: prevStatus,
+          publishDate: prevPublishDate,
+        });
+        showToast(result.error, "error");
+      }
     });
   }
 
@@ -434,6 +522,12 @@ export default function ProjectDetailsModal({
   const allShots = [...aRollShots, ...bRollShots];
   const completedShots = allShots.filter((s) => s.isCompleted).length;
   const completionPct = allShots.length > 0 ? Math.round((completedShots / allShots.length) * 100) : 0;
+  const currentFolderName = isEditing ? folderName.trim() || project.folderName || "" : "";
+  const nasPaths = isEditing && currentFolderName
+    ? generateNasPaths(currentFolderName, project.status, project.publishDate)
+    : null;
+  const rawPath = detectedOS === "mac" ? nasPaths?.macPath : detectedOS === "win" ? nasPaths?.winPath : "";
+  const osBadge = detectedOS === "mac" ? "[  ]" : detectedOS === "win" ? "[ ⊞ ]" : "[ ? ]";
 
   // Determine status color
   const statusColors: Record<string, string> = {
@@ -747,7 +841,7 @@ export default function ProjectDetailsModal({
                           isSavingIds && "opacity-50 cursor-wait"
                         )}
                       >
-                        {isSavingIds ? "[ UPDATING... ]" : "[ UPDATE IDs ]"}
+                        {isSavingIds ? "[ UPDATING... ]" : "[ UPDATE IDS ]"}
                       </button>
                     </div>
                   </form>
@@ -766,25 +860,60 @@ export default function ProjectDetailsModal({
                   <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Asset Management</label>
 
                   {/* Raw Storage Path */}
-                  <div className="bg-black border border-white/10 flex items-center mb-2">
+                  <div className="bg-black border border-white/10 flex items-stretch mb-2">
                     <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest px-3 shrink-0 border-r border-white/10 py-2.5">
                       RAW
                     </span>
-                    <input
-                      type="text"
-                      value={storagePath}
-                      onChange={(e) => setStoragePath(e.target.value)}
-                      onBlur={() => saveAssets({ storagePath })}
-                      placeholder="\\truenas\projects\..."
-                      className="flex-1 bg-transparent text-xs font-mono text-gray-300 px-3 py-2.5 outline-none placeholder:text-gray-700"
-                    />
-                    {storagePath && (
-                      <button
-                        onClick={() => copyToClipboard(storagePath)}
-                        className="text-[10px] font-mono text-gray-500 hover:text-white px-3 py-2.5 border-l border-white/10 transition-colors shrink-0"
-                      >
-                        [ COPY ]
-                      </button>
+                    {isEditingRaw ? (
+                      <input
+                        type="text"
+                        value={tempFolderName}
+                        onChange={(e) => setTempFolderName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            saveRawFolderName();
+                          }
+                        }}
+                        placeholder="Enter NAS folder name and press Enter..."
+                        className="flex-1 min-w-0 bg-transparent text-xs font-mono text-gray-300 px-3 py-2.5 outline-none placeholder:text-gray-700"
+                        autoFocus
+                      />
+                    ) : (
+                      <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2.5 bg-transparent">
+                        <span className="text-[10px] font-mono text-gray-600 shrink-0">
+                          {osBadge}
+                        </span>
+                        <span className={cn(
+                          "text-xs font-mono truncate",
+                          rawPath ? "text-gray-300" : "text-gray-700"
+                        )}>
+                          {rawPath || "Set Folder Name to generate path..."}
+                        </span>
+                      </div>
+                    )}
+                    {!isEditingRaw && (
+                      <div className="flex shrink-0 border-l border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTempFolderName(folderName);
+                            setIsEditingRaw(true);
+                          }}
+                          className="text-[10px] font-mono text-gray-500 hover:text-white px-3 py-2.5 transition-colors"
+                        >
+                          [ EDIT ]
+                        </button>
+                        {rawPath && (
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(rawPath)}
+                            className="text-[10px] font-mono text-gray-500 hover:text-white px-3 py-2.5 border-l border-white/10 transition-colors"
+                          >
+                            [ COPY ]
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -1105,12 +1234,13 @@ export default function ProjectDetailsModal({
                   <button
                     key={p}
                     type="button"
-                    onClick={() => !isEditing && togglePlatform(p)}
+                    onClick={() => (isEditing ? handlePlatformToggle(p) : togglePlatform(p))}
+                    disabled={isPending}
                     className={cn(
-                      "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
+                      "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors disabled:opacity-50",
                       platforms.includes(p)
                         ? "border border-white text-white"
-                        : "border border-gray-800 text-gray-600 hover:border-gray-600"
+                        : "border border-gray-800 text-gray-600 hover:border-gray-500 hover:text-gray-300"
                     )}
                   >
                     {p}
@@ -1134,21 +1264,30 @@ export default function ProjectDetailsModal({
                     const isCurrent = stage === project.status;
 
                     return (
-                      <div key={stage} className="flex items-center gap-2 py-1">
+                      <button
+                        key={stage}
+                        type="button"
+                        onClick={() => handleStageSelect(stage)}
+                        disabled={isPending || isCurrent}
+                        className={cn(
+                          "group flex items-center gap-2 py-1 w-full text-left transition-colors disabled:cursor-default",
+                          !isCurrent && "cursor-pointer"
+                        )}
+                      >
                         <div className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0",
                           isCurrent ? statusColors[stage] || "bg-white" : isPast ? "bg-gray-600" : "bg-gray-800"
                         )} />
                         <span className={cn(
-                          "text-[10px] font-mono uppercase tracking-widest",
-                          isCurrent ? "text-white" : isPast ? "text-gray-500" : "text-gray-700"
+                          "text-[10px] font-mono uppercase tracking-widest transition-colors",
+                          isCurrent ? "text-white" : isPast ? "text-gray-500 group-hover:text-white" : "text-gray-700 group-hover:text-white"
                         )}>
                           {stage}
                         </span>
                         {isCurrent && (
                           <span className="text-[10px] font-mono text-gray-500 ml-auto">←</span>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

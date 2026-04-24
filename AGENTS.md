@@ -19,9 +19,12 @@ Do not attempt to "normalize" or "refactor" the UI to standard web defaults. The
 
 ## IV. State Management & Next.js Actions
 * **Rule:** Server Actions mutate the database (`src/actions/*`). When calling them from within a modal or a child component, you MUST trigger a local React state update in the parent component (via callbacks like `onProjectUpdate` or `onPublished`) OR use `router.refresh()` / `revalidatePath` on the server. This ensures Optimistic UI accurately syncs with SQLite without requiring a hard browser refresh.
+* **Project Details Panel:** Platform chips and Pipeline Stage rows are interactive controls, not static metadata. Keep optimistic updates in sync with `platformsTargeted` JSON and `status`; rollback on failed Server Actions.
 
 ## V. Database Schema Quirks
 * **Shotlists:** `aRollShots` and `bRollShots` are stored in SQLite as JSON strings. You MUST parse them on the frontend (`JSON.parse`) and re-stringify them before passing them to Server Actions. Same applies to `platformsTargeted`, `abTitles`, and `thumbnails`.
+* **NAS Paths:** `folderName` is source of truth for local media location. UI generates OS-aware RAW paths from `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR`; do not hardcode SMB roots in components.
+* **Analytics Formatting:** Top performer rows must render per-platform chips, metric text, and Short Form / Long Form badges conditionally from `platformsTargeted` plus available platform IDs.
 * **Transition Validation:** Strict Kanban column gating exists. For example, cards CANNOT move from `Filming` to `Editing` unless all items in both the parsed `aRollShots` and `bRollShots` arrays are marked `isCompleted: true`. Review rejection automatically loops cards back to `Editing` and captures the rejection payload.
 * **Platform Metrics Display:** Archive and Analytics metric displays MUST compute per-project totals from platform-specific columns (`youtubeViews/metaViews/tiktokViews`, `youtubeLikes/metaLikes/tiktokLikes`, `youtubeComments/metaComments/tiktokComments`). Do not trust legacy single-field rollups for UI totals.
 * **Publishing Checklist:** Moving to the `Published` state requires intercepting the flow to capture final metadata (actual publish date, final titles, copy) before the transition completes.

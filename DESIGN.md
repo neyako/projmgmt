@@ -96,6 +96,8 @@ Spacing conveys relationship and hierarchy. We rely heavily on exact rhythm over
 - **Overlay & Window**: `fixed inset-0`, `bg-black/90` with `backdrop-blur-md`. Modal Container is `max-w-5xl` (or smaller variant), `bg-[#0f0f0f]`, surrounded by `border-white/10` acting as a rigid layer without drop shadows.
 - **Header Structure**: `p-6 border-b border-white/10` background. Active status dot matches pipeline semantic colors, Mono ID, and uppercase title. Right side has a Doto percentage metric or standard "X" close.
 - **Workspace**: Inputs built from structural elements (`bg-black border border-white/10` or transparent border-bottom). Buttons use bracket notation `[ APPROVE ]` or sharp high-contrast fills (`bg-white text-black`).
+- **Asset Management RAW Row**: Single attached control strip (`bg-black border border-white/10`) with left `RAW` label cell, center editable/view state, and right utility actions. View state shows OS badge (`[  ]` / `[ ⊞ ]`) and generated NAS path. Edit state is inline text input with Enter-to-save behavior.
+- **Interactive Metadata Sidebar**: Platform chips and Pipeline Stage list support click-to-update with hover color transitions and disabled pending states, while preserving terminal typography.
 - **Destructive Actions**: ALWAYS map to `text-accent border-accent/40 hover:bg-accent-subtle`. No raw `red-500` palette colors.
 
 ### C. Authentication (Login)
@@ -109,6 +111,7 @@ Spacing conveys relationship and hierarchy. We rely heavily on exact rhythm over
 - **Data Tables**: `w-full border-collapse`. Header row with `p-4` and `font-label uppercase tracking-widest text-gray-500 text-[10px]`.
 - **Rows**: `border-b border-white/5 hover:bg-white/5`. Data is structured with hierarchy (e.g. Subheading for title, Caption for details).
 - **Archive Metric Cells**: Views/Likes/Comments in Archive tables must render grand totals from platform columns (`youtube* + meta* + tiktok*`) and display with locale separators (e.g. `toLocaleString()`).
+- **Analytics Performer Rows**: Platform chips (`YT`, `IG`, `TT`) and per-platform metric strings render only for selected/synced platforms. Format badges (`Short Form`, `Long Form`) sit inline with the title using tiny bordered uppercase tokens.
 - **Status Cells**: Inline text links `font-label text-text-secondary`, featuring a `w-1.5 h-1.5 rounded-full` token-colored dot.
 - **Tab Filters**: Huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive tabs use `text-gray-600`, active uses `text-white` bracketed `[ ACTIVE ]`. Header actions (like `NEW SPONSORSHIP`) align to the right side of the bottom-bordered tab row.
 

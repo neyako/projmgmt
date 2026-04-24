@@ -157,6 +157,66 @@ export async function updateProjectStatus(
   }
 }
 
+// ─── DIRECT PROJECT PANEL UPDATES ───────────────────────
+export async function updateProjectStatusDirect(
+  projectId: string,
+  newStatus: string
+): Promise<ActionResult> {
+  try {
+    const updated = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        status: newStatus,
+        ...(newStatus === "Published" && { publishDate: new Date() }),
+      },
+    });
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
+    return { success: true, data: updated };
+  } catch (err) {
+    console.error("[updateProjectStatusDirect]", err);
+    return { success: false, error: "Failed to update project status." };
+  }
+}
+
+export async function toggleProjectPlatform(
+  projectId: string,
+  platform: string
+): Promise<ActionResult<string[]>> {
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { platformsTargeted: true },
+    });
+    if (!project) {
+      return { success: false, error: "Project not found." };
+    }
+
+    let current: string[] = [];
+    try {
+      const parsed = JSON.parse(project.platformsTargeted || "[]");
+      current = Array.isArray(parsed) ? parsed.filter((p) => typeof p === "string") : [];
+    } catch {
+      current = [];
+    }
+
+    const next = current.includes(platform)
+      ? current.filter((p) => p !== platform)
+      : [...current, platform];
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { platformsTargeted: JSON.stringify(next) },
+    });
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
+    return { success: true, data: next };
+  } catch (err) {
+    console.error("[toggleProjectPlatform]", err);
+    return { success: false, error: "Failed to update project platforms." };
+  }
+}
+
 // ─── TOGGLE A-ROLL COMPLETE ─────────────────────────────
 export async function toggleARoll(
   projectId: string,
@@ -731,7 +791,12 @@ export async function syncTikTokStats(): Promise<
 // ─── UPDATE PLATFORM IDS (Post-publish ID edits) ───────
 export async function updatePlatformIds(
   projectId: string,
-  ids: { youtubeId?: string; metaId?: string; tiktokId?: string }
+  ids: {
+    youtubeId?: string;
+    metaId?: string;
+    tiktokId?: string;
+    folderName?: string;
+  }
 ): Promise<ActionResult> {
   const clean = (v: string | undefined) => {
     if (v === undefined) return undefined;
@@ -746,10 +811,12 @@ export async function updatePlatformIds(
         ...(ids.youtubeId !== undefined && { youtubeId: clean(ids.youtubeId) }),
         ...(ids.metaId !== undefined && { metaId: clean(ids.metaId) }),
         ...(ids.tiktokId !== undefined && { tiktokId: clean(ids.tiktokId) }),
+        ...(ids.folderName !== undefined && { folderName: clean(ids.folderName) }),
       },
     });
     revalidatePath("/archive");
     revalidatePath("/analytics");
+    revalidatePath("/pipeline");
     return { success: true, data: updated };
   } catch (err) {
     console.error("[updatePlatformIds]", err);

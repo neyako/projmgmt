@@ -80,6 +80,7 @@ model Project {
 
   // Asset Management
   storagePath       String?  // NAS path, e.g. \\truenas\projects\vid01
+  folderName        String?
   reviewLink        String?  // Nextcloud share URL
 
   // Review feedback (populated on Reject)

@@ -22,6 +22,7 @@ export type ProjectCardData = Pick<
   | "aRollComplete"
   | "bRollComplete"
   | "storagePath"
+  | "folderName"
   | "reviewLink"
   | "briefingNotes"
   | "reviewFeedback"

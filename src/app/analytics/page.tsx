@@ -15,6 +15,21 @@ function formatDate(d?: Date | string | null) {
     .toUpperCase();
 }
 
+function parsePlatformTags(json: string): string[] {
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed)
+      ? parsed.filter((p) => typeof p === "string").map((p) => p.toUpperCase())
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function hasPlatform(platforms: string[], names: string[]) {
+  return names.some((name) => platforms.includes(name));
+}
+
 export default async function AnalyticsPage() {
   const publishedRaw = await prisma.project.findMany({
     where: { status: "Published" },
@@ -32,7 +47,13 @@ export default async function AnalyticsPage() {
         (p.youtubeComments ?? 0) +
         (p.metaComments ?? 0) +
         (p.tiktokComments ?? 0);
-      return { ...p, totalViews, totalLikes, totalComments };
+      return {
+        ...p,
+        platforms: parsePlatformTags(p.platformsTargeted),
+        totalViews,
+        totalLikes,
+        totalComments,
+      };
     })
     .sort((a, b) => b.totalViews - a.totalViews);
 
@@ -111,10 +132,24 @@ export default async function AnalyticsPage() {
                 {published.map((p) => {
                   const widthPct =
                     maxViews > 0 ? (p.totalViews / maxViews) * 100 : 0;
+                  const hasYoutube = Boolean(p.youtubeId) || hasPlatform(p.platforms, ["YOUTUBE", "YT_SHORTS"]);
+                  const hasTikTok = Boolean(p.tiktokId) || hasPlatform(p.platforms, ["TIKTOK"]);
+                  const hasInstagram = Boolean(p.metaId) || hasPlatform(p.platforms, ["INSTAGRAM", "META"]);
+
                   const tags: string[] = [];
-                  if (p.youtubeId) tags.push("YT");
-                  if (p.metaId) tags.push("IG");
-                  if (p.tiktokId) tags.push("TT");
+                  if (hasYoutube) tags.push("YT");
+                  if (hasInstagram) tags.push("IG");
+                  if (hasTikTok) tags.push("TT");
+
+                  const rowMetrics: string[] = [];
+                  if (hasYoutube) rowMetrics.push(`YT: ${formatNumber(p.youtubeViews ?? 0)}`);
+                  if (hasTikTok) rowMetrics.push(`TT: ${formatNumber(p.tiktokViews ?? 0)}`);
+                  if (hasInstagram) rowMetrics.push(`IG: ${formatNumber(p.metaViews ?? 0)}`);
+                  const metricString = rowMetrics.length > 0 ? rowMetrics.join(" | ") : "NO PLATFORM DATA";
+
+                  const isShortForm = hasPlatform(p.platforms, ["TIKTOK", "YT_SHORTS", "INSTAGRAM", "META"]);
+                  const isLongForm = hasPlatform(p.platforms, ["YOUTUBE"]);
+
                   return (
                     <div key={p.id} className="mb-6 w-full">
                       {/* Row header: title + views */}
@@ -136,14 +171,20 @@ export default async function AnalyticsPage() {
                             <span className="text-sm font-mono text-white tracking-wider truncate">
                               {p.finalTitle ?? p.title}
                             </span>
+                            {isShortForm && (
+                              <span className="ml-3 px-1.5 py-0.5 border border-gray-700 text-gray-400 text-[9px] uppercase rounded shrink-0">
+                                Short Form
+                              </span>
+                            )}
+                            {isLongForm && (
+                              <span className="ml-2 px-1.5 py-0.5 border border-gray-700 text-gray-400 text-[9px] uppercase rounded shrink-0">
+                                Long Form
+                              </span>
+                            )}
                           </div>
                           {/* Per-platform breakdown */}
                           <span className="text-[9px] font-mono text-gray-500 mt-1 uppercase tracking-widest">
-                            YT: {formatNumber(p.youtubeViews ?? 0)}
-                            <span className="mx-2 text-gray-700">|</span>
-                            TT: {formatNumber(p.tiktokViews ?? 0)}
-                            <span className="mx-2 text-gray-700">|</span>
-                            IG: {formatNumber(p.metaViews ?? 0)}
+                            {metricString}
                           </span>
                           {/* Publish date + likes/comments roll-up */}
                           <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">
