@@ -23,24 +23,12 @@ export default function Sidebar() {
 
   return (
     <nav className="hidden md:flex flex-col gap-2 p-4 h-full fixed left-0 top-0 w-64 border-r border-border bg-background z-50">
-      {/* Logo */}
-      <div className="mb-xl flex items-center gap-sm">
-        <div className="w-8 h-8 bg-surface-raised border border-border flex items-center justify-center">
-          <span className="material-symbols-outlined text-[18px] text-text-secondary">
-            camera
-          </span>
-        </div>
-        <div>
-          <h1 className="font-[family-name:var(--font-label)] text-xl font-black text-text-display">
-            projmgmt
-          </h1>
-          <div className="text-style-label text-text-secondary mt-[2px]">
-            V2.0.4-SYS
-          </div>
-        </div>
+      <div className="mb-xl px-3">
+        <h1 className="font-[family-name:var(--font-label)] text-[44px] font-black text-text-display tracking-tight">
+          projmgmt
+        </h1>
       </div>
 
-      {/* Main Nav */}
       <div className="flex-1 flex flex-col gap-sm">
         {visibleNavItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
