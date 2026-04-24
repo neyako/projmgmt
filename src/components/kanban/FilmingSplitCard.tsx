@@ -73,7 +73,7 @@ export default function FilmingSplitCard({
   }
 
   return (
-    <div className="bg-surface-raised border border-border-visible p-md flex flex-col gap-sm relative group overflow-hidden">
+    <div className="ui-filming-card-surface border border-border-visible p-md flex flex-col gap-sm relative group overflow-hidden">
       {/* Left accent border */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-subtle" />
 

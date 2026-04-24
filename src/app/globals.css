@@ -305,6 +305,45 @@ body {
   color: var(--color-text-primary);
 }
 
+.ui-filming-card-surface {
+  background-color: var(--color-surface-raised);
+}
+
+.light .ui-filming-card-surface {
+  background-color: var(--color-surface);
+}
+
+.ui-user-dropdown {
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.light .ui-user-dropdown {
+  color: var(--color-text-primary);
+}
+
+.ui-user-dropdown-heading {
+  color: var(--color-text-display);
+}
+
+.ui-user-dropdown-row {
+  color: inherit;
+  background-color: transparent;
+}
+
+.ui-user-dropdown-row:hover {
+  color: var(--color-text-display);
+  background-color: var(--color-hover-surface);
+}
+
+.ui-user-dropdown-toggle {
+  color: var(--color-text-secondary);
+}
+
+.ui-user-dropdown-row:hover .ui-user-dropdown-toggle {
+  color: var(--color-text-display);
+}
+
 .ui-modal-backdrop {
   background-color: color-mix(in srgb, var(--color-background) 92%, transparent);
 }

@@ -5,14 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
+import { Sun, Moon, Settings, LogOut } from "lucide-react";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
-
-const themeOptions = [
-  { label: "LIGHT", value: "light" },
-  { label: "DARK", value: "dark" },
-  { label: "AUTO", value: "system" },
-] as const;
 
 export default function TopBar() {
   const router = useRouter();
@@ -21,6 +15,7 @@ export default function TopBar() {
   const currentSearch = searchParams.get("q") || "";
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -106,54 +101,46 @@ export default function TopBar() {
             </button>
 
             {isMenuOpen ? (
-              <div className="absolute right-0 top-full mt-2 z-50 w-48 border border-border-visible bg-surface text-text-secondary font-mono text-xs">
-                <div className="px-3 py-3 border-b border-border-visible">
-                  <div className="text-text-display font-bold tracking-widest truncate">
+              <div className="ui-user-dropdown absolute right-0 top-full mt-2 z-50 w-56 border border-border-visible text-xs font-mono">
+                <div className="px-4 py-3 border-b border-border-visible">
+                  <div className="ui-user-dropdown-heading font-bold tracking-widest truncate whitespace-nowrap">
                     {session?.user?.username || session?.user?.name || "GUEST"}
                   </div>
                 </div>
 
-                <div className="flex flex-col py-1 border-b border-border-visible">
+                <div className="border-b border-border-visible">
                   <Link
                     href="/settings"
                     onClick={() => setIsMenuOpen(false)}
-                    className="px-3 py-2 hover:text-text-display transition-colors tracking-widest"
+                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors whitespace-nowrap tracking-widest"
                   >
-                    [ SETTINGS ]
+                    <Settings className="w-4 h-4" />
+                    <span>SETTINGS</span>
                   </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+                    className="ui-user-dropdown-row group flex items-center justify-between w-full px-4 py-3 text-left transition-colors whitespace-nowrap cursor-pointer tracking-widest"
+                  >
+                    <div className="flex items-center gap-3">
+                      {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                      <span>{isDarkMode ? "DARK MODE" : "LIGHT MODE"}</span>
+                    </div>
+                    <span className="ui-user-dropdown-toggle transition-colors">
+                      [{isDarkMode ? "LIGHT" : "DARK"}]
+                    </span>
+                  </button>
                 </div>
 
-                <div className="px-3 py-3 border-b border-border-visible flex flex-col gap-2">
-                  <div className="text-[10px] tracking-widest text-text-secondary">THEME</div>
-                  <div className="flex flex-wrap gap-2">
-                    {themeOptions.map((option) => {
-                      const isActive = theme === option.value;
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setTheme(option.value)}
-                          className={cn(
-                            "px-2 py-1 border text-[10px] tracking-widest transition-colors",
-                            isActive
-                              ? "border-text-display text-text-display"
-                              : "border-border-visible text-text-disabled hover:text-text-display hover:border-outline-variant"
-                          )}
-                        >
-                          [ {option.label} ]
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="py-1">
+                <div>
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className="w-full text-left px-3 py-2 tracking-widest transition-colors hover:text-danger-hover"
+                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors whitespace-nowrap tracking-widest"
                   >
-                    [ LOG OUT ]
+                    <LogOut className="w-4 h-4" />
+                    <span>LOG OUT</span>
                   </button>
                 </div>
               </div>
