@@ -108,6 +108,7 @@ Spacing conveys relationship and hierarchy. We rely heavily on exact rhythm over
 - **Page Container Layout**: Unified to `<div className="h-full w-full overflow-auto p-lg">` with a `mb-6` header wrapper block across all tabular data screens to ensure width parity.
 - **Data Tables**: `w-full border-collapse`. Header row with `p-4` and `font-label uppercase tracking-widest text-gray-500 text-[10px]`.
 - **Rows**: `border-b border-white/5 hover:bg-white/5`. Data is structured with hierarchy (e.g. Subheading for title, Caption for details).
+- **Archive Metric Cells**: Views/Likes/Comments in Archive tables must render grand totals from platform columns (`youtube* + meta* + tiktok*`) and display with locale separators (e.g. `toLocaleString()`).
 - **Status Cells**: Inline text links `font-label text-text-secondary`, featuring a `w-1.5 h-1.5 rounded-full` token-colored dot.
 - **Tab Filters**: Huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive tabs use `text-gray-600`, active uses `text-white` bracketed `[ ACTIVE ]`. Header actions (like `NEW SPONSORSHIP`) align to the right side of the bottom-bordered tab row.
 

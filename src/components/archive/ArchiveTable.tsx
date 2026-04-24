@@ -6,26 +6,23 @@ import UpdateStatsModal from "@/components/modals/UpdateStatsModal";
 import { restoreProjectToPipeline } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import type { ProjectCardData } from "@/types";
-import type { Analytics } from "@prisma/client";
 
 type ArchiveProject = ProjectCardData & {
   publishDate?: Date | string | null;
   updatedAt?: Date | string | null;
-  analytics?: Analytics[];
+  youtubeViews?: number;
+  metaViews?: number;
+  tiktokViews?: number;
+  youtubeLikes?: number;
+  metaLikes?: number;
+  tiktokLikes?: number;
+  youtubeComments?: number;
+  metaComments?: number;
+  tiktokComments?: number;
 };
-
 interface ArchiveTableProps {
   published: ArchiveProject[];
   scrapped: ArchiveProject[];
-}
-
-function sumAnalytics(items: Analytics[] | undefined, key: "views" | "likes" | "comments") {
-  if (!items || items.length === 0) return 0;
-  return items.reduce((acc, a) => acc + (a[key] ?? 0), 0);
-}
-
-function formatNumber(n: number) {
-  return n.toLocaleString("en-US");
 }
 
 function formatDate(d?: Date | string | null) {
@@ -162,48 +159,46 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
               </tr>
             </thead>
             <tbody>
-              {activeData.map((p) => {
-                // Published rows use the direct per-project rollup that the
-                // manual Update Stats modal writes to; Scrapped rows fall
-                // back to aggregated Analytics rows if any exist.
-                const views =
-                  activeTab === "Published"
-                    ? p.views ?? 0
-                    : sumAnalytics(p.analytics, "views");
-                const likes =
-                  activeTab === "Published"
-                    ? p.likes ?? 0
-                    : sumAnalytics(p.analytics, "likes");
-                const comments =
-                  activeTab === "Published"
-                    ? p.comments ?? 0
-                    : sumAnalytics(p.analytics, "comments");
+              {activeData.map((project) => {
+                const totalViews =
+                  (project.youtubeViews || 0) +
+                  (project.metaViews || 0) +
+                  (project.tiktokViews || 0);
+                const totalLikes =
+                  (project.youtubeLikes || 0) +
+                  (project.metaLikes || 0) +
+                  (project.tiktokLikes || 0);
+                const totalComments =
+                  (project.youtubeComments || 0) +
+                  (project.metaComments || 0) +
+                  (project.tiktokComments || 0);
+
                 return (
                   <tr
-                    key={p.id}
-                    onClick={() => setSelectedId(p.id)}
+                    key={project.id}
+                    onClick={() => setSelectedId(project.id)}
                     className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
                   >
-                    <td className="p-4 text-sm font-mono text-gray-300">{p.title}</td>
+                    <td className="p-4 text-sm font-mono text-gray-300">{project.title}</td>
                     <td className="p-4 text-sm font-mono text-gray-300">
                       <span className="inline-flex items-center gap-2">
                         <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
                         <span className="uppercase tracking-widest text-[10px]">
-                          {p.status}
+                          {project.status}
                         </span>
                       </span>
                     </td>
                     <td className="p-4 text-sm font-mono text-gray-300">
-                      {formatDate(activeTab === "Published" ? p.publishDate : p.updatedAt)}
+                      {formatDate(activeTab === "Published" ? project.publishDate : project.updatedAt)}
                     </td>
                     <td className="p-4 text-sm font-mono text-gray-300 text-right">
-                      {formatNumber(views)}
+                      {totalViews.toLocaleString()}
                     </td>
                     <td className="p-4 text-sm font-mono text-gray-300 text-right">
-                      {formatNumber(likes)}
+                      {totalLikes.toLocaleString()}
                     </td>
                     <td className="p-4 text-sm font-mono text-gray-300 text-right">
-                      {formatNumber(comments)}
+                      {totalComments.toLocaleString()}
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex gap-2 justify-end">
@@ -211,7 +206,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setStatsTargetId(p.id);
+                              setStatsTargetId(project.id);
                             }}
                             disabled={isPending}
                             className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
@@ -222,7 +217,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleRestore(p.id);
+                            handleRestore(project.id);
                           }}
                           disabled={isPending}
                           className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"

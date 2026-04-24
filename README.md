@@ -15,7 +15,7 @@ Off-the-shelf project management tools (like Notion or Trello) are either too ge
 * **Split-State Kanban:** The pipeline features advanced column transition logic. The `Filming` stage enforces parallel A-Roll and B-Roll tracking. A project cannot progress to `Editing` until 100% of the JSON-driven shotlist items are marked complete by the cameramen.
 * **Hybrid Asset Tracking:** Bridges the gap between local infrastructure and external delivery. Tracks raw high-speed 10Gbps NAS paths (`\\truenas\projects\...`) alongside external Nextcloud review links, ensuring editors and managers always know exactly where the multi-terabyte source files live.
 * **Review Pipeline:** Built-in feedback loops. When a manager rejects a cut, the project automatically returns to `Editing`, visually flagging the card with a red glow and injecting the revision notes directly into the editor's Kanban view. Feedback is automatically cleared upon resubmission.
-* **Archive & Analytics:** Published projects automatically move off the board and into a tabular Archive view. Scrapped projects are retained. Includes a high-density ledger of completed work and basic performance analytics (Views, Likes, Comments).
+* **Archive & Analytics:** Published projects automatically move off the board and into a tabular Archive view. Scrapped projects are retained. Views, Likes, and Comments are displayed as platform grand totals by summing YouTube, Meta, and TikTok metrics (`youtube* + meta* + tiktok*`) with locale-formatted numbers.
 * **Sponsorship CRM:** Integrated tracking pipeline for brand deals tied to the main production schedule.
 * **Team Roster:** Integrated RBAC mapping to actual production capabilities.
 
