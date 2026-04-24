@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTransition } from "react";
 import { cn } from "@/lib/utils";
 import Tag from "@/components/ui/Tag";
@@ -40,6 +41,43 @@ export default function FilmingSplitCard({
   const { showToast } = useToast();
 
   const platforms = parsePlatforms(project.platformsTargeted);
+  const assignmentValues: Array<
+    string | { id: string; name?: string | null; avatarUrl?: string | null } | null | undefined
+  > = [
+    project.assignedEditor,
+    project.assignedCameraman,
+    project.assignedTalent,
+    project.aRollAssignee,
+    project.bRollAssignee,
+    project.editingAssignee,
+  ];
+  const assignees = assignmentValues.reduce<
+    Array<{ id: string; name: string; avatarUrl?: string | null }>
+  >((list, value, index) => {
+    if (!value) {
+      return list;
+    }
+
+    const name = typeof value === "string" ? value.trim() : value.name?.trim();
+
+    if (!name || name.toUpperCase() === "UNASSIGNED") {
+      return list;
+    }
+
+    const id = typeof value === "string" ? name.toUpperCase() : value.id;
+
+    if (list.some((assignee) => assignee.id === id)) {
+      return list;
+    }
+
+    list.push({
+      id,
+      name,
+      avatarUrl: typeof value === "string" ? null : value.avatarUrl,
+    });
+
+    return list;
+  }, []);
   const aRollShots = parseShotItems(project.aRollShots);
   const bRollShots = parseShotItems(project.bRollShots);
 
@@ -47,6 +85,16 @@ export default function FilmingSplitCard({
   const bRollPercent = calcPercent(bRollShots);
   const aRollDone = aRollShots.filter((s) => s.isCompleted).length;
   const bRollDone = bRollShots.filter((s) => s.isCompleted).length;
+
+  function getInitials(name: string) {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }
 
   function toggleShot(list: "a" | "b", shotId: string) {
     const current = list === "a" ? aRollShots : bRollShots;
@@ -190,28 +238,34 @@ export default function FilmingSplitCard({
         <div className="text-style-caption text-text-secondary">
           #{project.id.slice(-6).toUpperCase()}
         </div>
-        <div className="flex -space-x-2">
-          {project.aRollAssignee && (
-            <div className="w-6 h-6 rounded-full bg-surface-variant overflow-hidden border border-surface-raised z-10 flex items-center justify-center">
-              <span className="text-style-label text-[9px] text-text-primary">
-                {project.aRollAssignee.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </span>
-            </div>
-          )}
-          {project.bRollAssignee && (
-            <div className="w-6 h-6 rounded-full bg-surface-variant overflow-hidden border border-surface-raised z-0 flex items-center justify-center">
-              <span className="text-style-label text-[9px] text-text-primary">
-                {project.bRollAssignee.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </span>
-            </div>
-          )}
-        </div>
+        {assignees.length > 0 ? (
+          <div className="flex items-center">
+            {assignees.map((assignee, index) => (
+              <div
+                key={assignee.id}
+                className={cn(
+                  "w-7 h-7 border border-border-visible bg-surface-raised text-text-primary text-xs font-mono flex items-center justify-center overflow-hidden",
+                  index > 0 ? "-ml-2" : "ml-0"
+                )}
+                style={{ zIndex: assignees.length - index }}
+                title={assignee.name}
+              >
+                {assignee.avatarUrl ? (
+                  <Image
+                    src={assignee.avatarUrl}
+                    alt={assignee.name}
+                    width={28}
+                    height={28}
+                    className="w-7 h-7 object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <span>{getInitials(assignee.name)}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );

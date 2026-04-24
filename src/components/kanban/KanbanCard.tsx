@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,53 @@ export default function KanbanCard({
   };
 
   const platforms = parsePlatforms(project.platformsTargeted);
+  const assignmentValues: Array<
+    string | { id: string; name?: string | null; avatarUrl?: string | null } | null | undefined
+  > = [
+    project.assignedEditor,
+    project.assignedCameraman,
+    project.assignedTalent,
+    project.aRollAssignee,
+    project.bRollAssignee,
+    project.editingAssignee,
+  ];
+  const assignees = assignmentValues.reduce<
+    Array<{ id: string; name: string; avatarUrl?: string | null }>
+  >((list, value, index) => {
+    if (!value) {
+      return list;
+    }
+
+    const name = typeof value === "string" ? value.trim() : value.name?.trim();
+
+    if (!name || name.toUpperCase() === "UNASSIGNED") {
+      return list;
+    }
+
+    const id = typeof value === "string" ? name.toUpperCase() : value.id;
+
+    if (list.some((assignee) => assignee.id === id)) {
+      return list;
+    }
+
+    list.push({
+      id,
+      name,
+      avatarUrl: typeof value === "string" ? null : value.avatarUrl,
+    });
+
+    return list;
+  }, []);
+
+  function getInitials(name: string) {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }
 
   // ─── Click handler (fires on quick click, drag sensor uses delay) ──
   function handleClick() {
@@ -127,17 +175,34 @@ export default function KanbanCard({
         <div className="text-style-caption text-text-secondary">
           #{project.id.slice(-6).toUpperCase()}
         </div>
-        {project.creator && (
-          <div className="w-6 h-6 rounded-full bg-surface-variant overflow-hidden border border-border-visible flex items-center justify-center">
-            <span className="text-style-label text-[9px] text-text-primary">
-              {project.creator.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2)}
-            </span>
+        {assignees.length > 0 ? (
+          <div className="flex items-center">
+            {assignees.map((assignee, index) => (
+              <div
+                key={assignee.id}
+                className={cn(
+                  "w-7 h-7 border border-border-visible bg-surface-raised text-text-primary text-xs font-mono flex items-center justify-center overflow-hidden",
+                  index > 0 ? "-ml-2" : "ml-0"
+                )}
+                style={{ zIndex: assignees.length - index }}
+                title={assignee.name}
+              >
+                {assignee.avatarUrl ? (
+                  <Image
+                    src={assignee.avatarUrl}
+                    alt={assignee.name}
+                    width={28}
+                    height={28}
+                    className="w-7 h-7 object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <span>{getInitials(assignee.name)}</span>
+                )}
+              </div>
+            ))}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

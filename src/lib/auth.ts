@@ -45,6 +45,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: normalizeRole(user.role),
           username: user.username,
+          avatarUrl: user.avatarUrl,
         };
       },
     }),
@@ -55,6 +56,15 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = normalizeRole(user.role);
         token.username = user.username;
+        token.avatarUrl = user.avatarUrl;
+      }
+
+      if (token.id) {
+        const currentUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { avatarUrl: true },
+        });
+        token.avatarUrl = currentUser?.avatarUrl ?? null;
       }
 
       return token;
@@ -64,6 +74,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id;
         session.user.role = normalizeRole(token.role);
         session.user.username = token.username;
+        session.user.avatarUrl = token.avatarUrl;
       }
 
       return session;

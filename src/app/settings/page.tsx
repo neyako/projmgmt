@@ -1,7 +1,19 @@
+import { getServerSession } from "next-auth";
 import Shell from "@/components/layout/Shell";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import AvatarUploadForm from "./AvatarUploadForm";
 import ChangePasswordForm from "./ChangePasswordForm";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await getServerSession(authOptions);
+  const user = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, email: true, avatarUrl: true },
+      })
+    : null;
+
   return (
     <Shell>
       <div className="flex-1 w-full h-full overflow-y-auto p-8">
@@ -17,30 +29,35 @@ export default function SettingsPage() {
 
           <section className="border-t border-border-visible pt-8">
             <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">PROFILE</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-              <div className="flex flex-col gap-2 w-full">
-                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                  DISPLAY NAME
-                </label>
-                <input
-                  type="text"
-                  defaultValue="System Admin"
-                  className="bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none px-0 py-2 text-xs font-mono text-text-display w-full"
-                />
-              </div>
-              <div className="flex flex-col gap-2 w-full">
-                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                  EMAIL ADDRESS
-                </label>
-                <input
-                  type="email"
-                  defaultValue="admin@projmgmt.local"
-                  className="bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none px-0 py-2 text-xs font-mono text-text-display w-full"
-                />
+            <div className="flex flex-col gap-8 w-full">
+              <AvatarUploadForm avatarUrl={user?.avatarUrl ?? null} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                <div className="flex flex-col gap-2 w-full">
+                  <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
+                    DISPLAY NAME
+                  </label>
+                  <input
+                    type="text"
+                    value={user?.name ?? ""}
+                    readOnly
+                    className="bg-transparent border-0 border-b border-border-visible focus:outline-none px-0 py-2 text-xs font-mono text-text-display w-full"
+                  />
+                </div>
+                <div className="flex flex-col gap-2 w-full">
+                  <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
+                    EMAIL ADDRESS
+                  </label>
+                  <input
+                    type="email"
+                    value={user?.email ?? ""}
+                    readOnly
+                    className="bg-transparent border-0 border-b border-border-visible focus:outline-none px-0 py-2 text-xs font-mono text-text-display w-full"
+                  />
+                </div>
               </div>
             </div>
           </section>
-
 
           <section className="border-t border-border-visible pt-8 w-full">
             <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">SECURITY</h3>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -91,13 +92,24 @@ export default function TopBar() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={handleToggleMenu}
-              className="w-8 h-8 bg-surface border border-border flex items-center justify-center hover:bg-surface-raised transition-colors"
+              className="w-8 h-8 bg-surface border border-border flex items-center justify-center hover:bg-surface-raised transition-colors overflow-hidden"
               aria-label="Open user menu"
               aria-expanded={isMenuOpen}
             >
-              <span className="material-symbols-outlined text-[16px] text-text-secondary">
-                person
-              </span>
+              {session?.user?.avatarUrl ? (
+                <Image
+                  src={session.user.avatarUrl}
+                  alt="User avatar"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 object-cover"
+                  unoptimized
+                />
+              ) : (
+                <span className="material-symbols-outlined text-[16px] text-text-secondary">
+                  person
+                </span>
+              )}
             </button>
 
             {isMenuOpen ? (

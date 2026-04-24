@@ -35,9 +35,9 @@ export type ProjectCardData = Pick<
   aRollShots?: string;
   bRollShots?: string;
   dueDate?: Date | string | null;
-  assignedCameraman?: { id: string; name: string; role: string } | null;
-  assignedEditor?: { id: string; name: string; role: string } | null;
-  assignedTalent?: { id: string; name: string; role: string } | null;
+  assignedCameraman?: { id: string; name: string; role: string; avatarUrl?: string | null } | null;
+  assignedEditor?: { id: string; name: string; role: string; avatarUrl?: string | null } | null;
+  assignedTalent?: { id: string; name: string; role: string; avatarUrl?: string | null } | null;
   assignedCameramanId?: string | null;
   assignedEditorId?: string | null;
   assignedTalentId?: string | null;
