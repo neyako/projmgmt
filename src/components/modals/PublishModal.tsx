@@ -45,6 +45,11 @@ export default function PublishModal({
   const [abTitles, setAbTitles] = useState<string[]>(["", "", ""]);
   const [thumbnails, setThumbnails] = useState<string[]>(["", "", ""]);
 
+  // Platform references (for API sync)
+  const [youtubeId, setYoutubeId] = useState("");
+  const [metaId, setMetaId] = useState("");
+  const [tiktokId, setTiktokId] = useState("");
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape" && !isPending) onClose();
@@ -72,6 +77,9 @@ export default function PublishModal({
       const result = await publishProject(project.id, {
         finalTitle: trimmedTitle,
         publishedAt: publishDate || null,
+        youtubeId: youtubeId.trim() || undefined,
+        metaId: metaId.trim() || undefined,
+        tiktokId: tiktokId.trim() || undefined,
         ...(isShort && {
           baseCaption: baseCaption.trim() || undefined,
           hashtags: hashtags.trim() || undefined,
@@ -232,6 +240,58 @@ export default function PublishModal({
               </div>
             </>
           )}
+
+          {/* ─── Platform IDs (for API sync) ─── */}
+          <div>
+            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+              YouTube Video ID
+            </label>
+            <input
+              type="text"
+              value={youtubeId}
+              onChange={(e) => setYoutubeId(e.target.value)}
+              placeholder="dQw4w9WgXcQ"
+              autoComplete="off"
+              className={INPUT_CLASS}
+            />
+            <p className="text-[10px] font-mono text-gray-600 mt-2">
+              11-char ID from the YouTube URL. Enables YT Data API v3 sync.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+              Meta Reel ID
+            </label>
+            <input
+              type="text"
+              value={metaId}
+              onChange={(e) => setMetaId(e.target.value)}
+              placeholder="17841400000000000"
+              autoComplete="off"
+              className={INPUT_CLASS}
+            />
+            <p className="text-[10px] font-mono text-gray-600 mt-2">
+              Media/Reel ID from the Meta Graph API (IG / FB).
+            </p>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+              TikTok Video ID
+            </label>
+            <input
+              type="text"
+              value={tiktokId}
+              onChange={(e) => setTiktokId(e.target.value)}
+              placeholder="7234567890123456789"
+              autoComplete="off"
+              className={INPUT_CLASS}
+            />
+            <p className="text-[10px] font-mono text-gray-600 mt-2">
+              Video ID from the TikTok Display API.
+            </p>
+          </div>
 
           {/* ─── Always ─── */}
           <div>

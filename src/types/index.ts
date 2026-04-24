@@ -57,6 +57,11 @@ export type ProjectCardData = Pick<
   views?: number;
   likes?: number;
   comments?: number;
+
+  // Platform references for external API sync
+  youtubeId?: string | null;
+  metaId?: string | null;
+  tiktokId?: string | null;
 };
 
 // Shot item shape for JSON fields

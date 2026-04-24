@@ -42,6 +42,11 @@ model Project {
   productLinks      String?   // captured during Ideation (Project Details modal)
   publishedAt       DateTime?
 
+  // Platform references (for external API sync)
+  youtubeId         String?  // YouTube Data API v3 video ID
+  metaId            String?  // Meta Graph API media ID (IG / FB Reels)
+  tiktokId          String?  // TikTok Display API video ID
+
   // Short-Form publishing
   baseCaption       String?
 
@@ -53,6 +58,19 @@ model Project {
   views             Int      @default(0)
   likes             Int      @default(0)
   comments          Int      @default(0)
+
+  // Platform-specific analytics (populated by respective sync actions)
+  youtubeViews      Int      @default(0)
+  youtubeLikes      Int      @default(0)
+  youtubeComments   Int      @default(0)
+
+  metaViews         Int      @default(0)
+  metaLikes         Int      @default(0)
+  metaComments      Int      @default(0)
+
+  tiktokViews       Int      @default(0)
+  tiktokLikes       Int      @default(0)
+  tiktokComments    Int      @default(0)
 
   briefingNotes     String?  // Required when contentType == "Sponsored"
   platformsTargeted String   @default("[]") // JSON array as string: ["TikTok","YT_Shorts"]

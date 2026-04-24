@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
+import UpdateStatsModal from "@/components/modals/UpdateStatsModal";
 import { restoreProjectToPipeline } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import type { ProjectCardData } from "@/types";
@@ -44,6 +45,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
   const [publishedData, setPublishedData] = useState<ArchiveProject[]>(published);
   const [scrappedData, setScrappedData] = useState<ArchiveProject[]>(scrapped);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [statsTargetId, setStatsTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     setPublishedData(published);
@@ -56,6 +58,19 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
   const selectedProject = selectedId
     ? activeData.find((p) => p.id === selectedId) ?? null
     : null;
+
+  const statsTargetProject = statsTargetId
+    ? publishedData.find((p) => p.id === statsTargetId) ?? null
+    : null;
+
+  function handleStatsUpdated(
+    projectId: string,
+    stats: { views: number; likes: number; comments: number }
+  ) {
+    setPublishedData((prev) =>
+      prev.map((p) => (p.id === projectId ? { ...p, ...stats } : p))
+    );
+  }
 
   function handleProjectUpdate(updated: Partial<ProjectCardData> & { id: string }) {
     if (activeTab === "Published") {
@@ -148,9 +163,21 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
             </thead>
             <tbody>
               {activeData.map((p) => {
-                const views = sumAnalytics(p.analytics, "views");
-                const likes = sumAnalytics(p.analytics, "likes");
-                const comments = sumAnalytics(p.analytics, "comments");
+                // Published rows use the direct per-project rollup that the
+                // manual Update Stats modal writes to; Scrapped rows fall
+                // back to aggregated Analytics rows if any exist.
+                const views =
+                  activeTab === "Published"
+                    ? p.views ?? 0
+                    : sumAnalytics(p.analytics, "views");
+                const likes =
+                  activeTab === "Published"
+                    ? p.likes ?? 0
+                    : sumAnalytics(p.analytics, "likes");
+                const comments =
+                  activeTab === "Published"
+                    ? p.comments ?? 0
+                    : sumAnalytics(p.analytics, "comments");
                 return (
                   <tr
                     key={p.id}
@@ -179,16 +206,30 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                       {formatNumber(comments)}
                     </td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRestore(p.id);
-                        }}
-                        disabled={isPending}
-                        className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
-                      >
-                        Restore to Pipeline
-                      </button>
+                      <div className="flex gap-2 justify-end">
+                        {activeTab === "Published" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setStatsTargetId(p.id);
+                            }}
+                            disabled={isPending}
+                            className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                          >
+                            [ UPDATE STATS ]
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRestore(p.id);
+                          }}
+                          disabled={isPending}
+                          className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                        >
+                          Restore to Pipeline
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -204,6 +245,23 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
           onClose={() => setSelectedId(null)}
           onCreated={() => setSelectedId(null)}
           onProjectUpdate={handleProjectUpdate}
+        />
+      )}
+
+      {statsTargetProject && (
+        <UpdateStatsModal
+          project={{
+            id: statsTargetProject.id,
+            title: statsTargetProject.title,
+            finalTitle: statsTargetProject.finalTitle ?? null,
+            views: statsTargetProject.views ?? 0,
+            likes: statsTargetProject.likes ?? 0,
+            comments: statsTargetProject.comments ?? 0,
+          }}
+          onClose={() => setStatsTargetId(null)}
+          onUpdated={(stats) =>
+            handleStatsUpdated(statsTargetProject.id, stats)
+          }
         />
       )}
     </>

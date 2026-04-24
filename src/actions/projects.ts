@@ -364,6 +364,9 @@ export async function publishProject(
   data: {
     finalTitle: string;
     publishedAt?: string | null;
+    youtubeId?: string;
+    metaId?: string;
+    tiktokId?: string;
     // Short-Form
     baseCaption?: string;
     hashtags?: string;
@@ -392,6 +395,10 @@ export async function publishProject(
     .map((t) => t?.trim() ?? "")
     .filter(Boolean);
 
+  const cleanedYoutubeId = data.youtubeId?.trim() || null;
+  const cleanedMetaId = data.metaId?.trim() || null;
+  const cleanedTiktokId = data.tiktokId?.trim() || null;
+
   try {
     const updated = await prisma.project.update({
       where: { id: projectId },
@@ -401,6 +408,9 @@ export async function publishProject(
         publishedAt: resolvedPublishedAt,
         publishDate: resolvedPublishedAt,
         reviewFeedback: null,
+        youtubeId: cleanedYoutubeId,
+        metaId: cleanedMetaId,
+        tiktokId: cleanedTiktokId,
         // Short-Form only
         baseCaption: isShort ? data.baseCaption?.trim() || null : null,
         hashtags: isShort ? data.hashtags?.trim() || null : null,
@@ -420,6 +430,353 @@ export async function publishProject(
   } catch (err) {
     console.error("[publishProject]", err);
     return { success: false, error: "Failed to publish project." };
+  }
+}
+
+// ─── SYNC YOUTUBE STATS (Bulk API pull) ─────────────────
+type YouTubeApiItem = {
+  id: string;
+  statistics?: {
+    viewCount?: string;
+    likeCount?: string;
+    commentCount?: string;
+  };
+};
+
+type YouTubeApiResponse = { items?: YouTubeApiItem[] };
+
+function parseCount(raw: unknown): number {
+  if (raw === null || raw === undefined) return 0;
+  const n =
+    typeof raw === "number" ? Math.floor(raw) : parseInt(String(raw), 10);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+export async function syncYouTubeStats(): Promise<
+  ActionResult<{ updated: number; total: number }>
+> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) {
+    return { success: false, error: "YOUTUBE_API_KEY env var missing." };
+  }
+
+  const projects = await prisma.project.findMany({
+    where: {
+      status: "Published",
+      youtubeId: { not: null },
+    },
+    select: { id: true, youtubeId: true },
+  });
+
+  if (projects.length === 0) {
+    return { success: true, data: { updated: 0, total: 0 } };
+  }
+
+  // YouTube Data API v3 allows up to 50 ids per call.
+  const idGroups = chunk(
+    projects.map((p) => p.youtubeId!).filter(Boolean),
+    50
+  );
+
+  const statsById = new Map<
+    string,
+    { views: number; likes: number; comments: number }
+  >();
+
+  try {
+    for (const group of idGroups) {
+      const joined = group.join(",");
+      const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${encodeURIComponent(
+        joined
+      )}&key=${apiKey}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        console.error(
+          "[syncYouTubeStats] YouTube API error",
+          res.status,
+          errText
+        );
+        return {
+          success: false,
+          error: `YouTube API responded ${res.status}.`,
+        };
+      }
+      const json = (await res.json()) as YouTubeApiResponse;
+      for (const item of json.items ?? []) {
+        statsById.set(item.id, {
+          views: parseCount(item.statistics?.viewCount),
+          likes: parseCount(item.statistics?.likeCount),
+          comments: parseCount(item.statistics?.commentCount),
+        });
+      }
+    }
+  } catch (err) {
+    console.error("[syncYouTubeStats] fetch failed", err);
+    return { success: false, error: "Failed to reach YouTube API." };
+  }
+
+  const writes = projects
+    .filter((p) => p.youtubeId && statsById.has(p.youtubeId))
+    .map((p) => {
+      const s = statsById.get(p.youtubeId!)!;
+      return prisma.project.update({
+        where: { id: p.id },
+        data: {
+          youtubeViews: s.views,
+          youtubeLikes: s.likes,
+          youtubeComments: s.comments,
+        },
+      });
+    });
+
+  try {
+    if (writes.length > 0) await prisma.$transaction(writes);
+    revalidatePath("/analytics");
+    revalidatePath("/archive");
+    return {
+      success: true,
+      data: { updated: writes.length, total: projects.length },
+    };
+  } catch (err) {
+    console.error("[syncYouTubeStats] db update failed", err);
+    return { success: false, error: "Failed to persist stats." };
+  }
+}
+
+// ─── SYNC META STATS (Instagram / Facebook Reels) ───────
+export async function syncMetaStats(): Promise<
+  ActionResult<{ updated: number; total: number }>
+> {
+  console.log("[META SYNC] 1. Action triggered.");
+
+  const accessToken = process.env.META_ACCESS_TOKEN;
+  if (!accessToken) {
+    return { success: false, error: "META_ACCESS_TOKEN env var missing." };
+  }
+
+  const projects = await prisma.project.findMany({
+    where: {
+      status: "Published",
+      metaId: { not: null },
+    },
+    select: { id: true, metaId: true },
+  });
+
+  console.log("[META SYNC] 2. Prisma found projects:", projects.length);
+  console.log(
+    "[META SYNC] Project Data:",
+    projects.map((p) => ({ id: p.id, metaId: p.metaId }))
+  );
+
+  if (projects.length === 0) {
+    return { success: true, data: { updated: 0, total: 0 } };
+  }
+
+  let updated = 0;
+
+  for (const project of projects) {
+    if (!project.metaId) continue;
+    try {
+      console.log("[META SYNC] 3. Fetching Meta ID:", project.metaId);
+      const res = await fetch(
+        `https://graph.facebook.com/v19.0/${project.metaId}?fields=views,likes.summary(total_count),comments.summary(total_count)&access_token=${process.env.META_ACCESS_TOKEN}`,
+        { cache: "no-store" }
+      );
+      const data = await res.json();
+      console.log("=== FB RAW DATA ===", JSON.stringify(data, null, 2));
+
+      if (data?.error) {
+        console.error(
+          "[syncMetaStats] Graph API error",
+          project.metaId,
+          data.error
+        );
+        continue;
+      }
+
+      const views = parseInt(data?.views || 0, 10);
+      const likes = parseInt(data?.likes?.summary?.total_count || 0, 10);
+      const comments = parseInt(data?.comments?.summary?.total_count || 0, 10);
+
+      await prisma.project.update({
+        where: { id: project.id },
+        data: {
+          metaViews: views,
+          metaLikes: likes,
+          metaComments: comments,
+        },
+      });
+      updated += 1;
+    } catch (error) {
+      console.error("[META SYNC] ❌ ERROR CAUGHT:", error);
+      console.error("[syncMetaStats] fetch/update failed", project.id, error);
+      // Swallow per-project errors so a single bad ID doesn't abort the batch.
+      continue;
+    }
+  }
+
+  revalidatePath("/analytics");
+  revalidatePath("/archive");
+
+  return {
+    success: true,
+    data: { updated, total: projects.length },
+  };
+}
+
+// ─── SYNC TIKTOK STATS (RapidAPI scraper) ───────────────
+export async function syncTikTokStats(): Promise<
+  ActionResult<{ updated: number; total: number }>
+> {
+  const rapidHost = process.env.TIKTOK_RAPIDAPI_HOST;
+  const rapidKey = process.env.TIKTOK_RAPIDAPI_KEY;
+  if (!rapidHost || !rapidKey) {
+    return {
+      success: false,
+      error: "TIKTOK_RAPIDAPI_HOST / TIKTOK_RAPIDAPI_KEY env vars missing.",
+    };
+  }
+
+  const projects = await prisma.project.findMany({
+    where: {
+      status: "Published",
+      tiktokId: { not: null },
+    },
+    select: { id: true, tiktokId: true },
+  });
+
+  if (projects.length === 0) {
+    return { success: true, data: { updated: 0, total: 0 } };
+  }
+
+  let updated = 0;
+
+  for (const project of projects) {
+    if (!project.tiktokId) continue;
+    try {
+      // tiktok-api23.p.rapidapi.com uses `/api/post/detail?videoId=...`.
+      // If switching RapidAPI providers, adjust the path/param name here.
+      const res = await fetch(
+        `https://${rapidHost}/api/post/detail?videoId=${encodeURIComponent(
+          project.tiktokId
+        )}`,
+        {
+          headers: {
+            "x-rapidapi-host": rapidHost,
+            "x-rapidapi-key": rapidKey,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+      const data = await res.json();
+
+      if (data?.error || data?.message === "error") {
+        console.error(
+          "[syncTikTokStats] API error",
+          project.tiktokId,
+          data?.error ?? data?.message
+        );
+        continue;
+      }
+
+      // tiktok-api23 nests stats under `itemInfo.itemStruct.stats` (numbers)
+      // with a string-valued mirror at `itemInfo.itemStruct.statsV2`.
+      // Fall back through other providers' shapes just in case.
+      const itemStruct = data?.itemInfo?.itemStruct;
+      const apiStats =
+        itemStruct?.stats ||
+        itemStruct?.statsV2 ||
+        data?.stats ||
+        data?.data?.stats ||
+        data?.aweme_detail?.stats ||
+        {};
+
+      // parseInt handles both number and string forms (statsV2 is stringified).
+      const views = parseInt(apiStats.playCount || 0, 10);
+      const likes = parseInt(apiStats.diggCount || 0, 10);
+      const comments = parseInt(apiStats.commentCount || 0, 10);
+
+      await prisma.project.update({
+        where: { id: project.id },
+        data: {
+          tiktokViews: views,
+          tiktokLikes: likes,
+          tiktokComments: comments,
+        },
+      });
+      updated += 1;
+    } catch (err) {
+      console.error("[syncTikTokStats] fetch/update failed", project.id, err);
+      continue;
+    }
+  }
+
+  revalidatePath("/analytics");
+  revalidatePath("/archive");
+
+  return {
+    success: true,
+    data: { updated, total: projects.length },
+  };
+}
+
+// ─── UPDATE PLATFORM IDS (Post-publish ID edits) ───────
+export async function updatePlatformIds(
+  projectId: string,
+  ids: { youtubeId?: string; metaId?: string; tiktokId?: string }
+): Promise<ActionResult> {
+  const clean = (v: string | undefined) => {
+    if (v === undefined) return undefined;
+    const trimmed = v.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  };
+
+  try {
+    const updated = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        ...(ids.youtubeId !== undefined && { youtubeId: clean(ids.youtubeId) }),
+        ...(ids.metaId !== undefined && { metaId: clean(ids.metaId) }),
+        ...(ids.tiktokId !== undefined && { tiktokId: clean(ids.tiktokId) }),
+      },
+    });
+    revalidatePath("/archive");
+    revalidatePath("/analytics");
+    return { success: true, data: updated };
+  } catch (err) {
+    console.error("[updatePlatformIds]", err);
+    return { success: false, error: "Failed to update platform IDs." };
+  }
+}
+
+// ─── UPDATE PROJECT STATS (Manual analytics entry) ─────
+export async function updateProjectStats(
+  projectId: string,
+  data: { views: number; likes: number; comments: number }
+): Promise<ActionResult> {
+  const views = Math.max(0, Math.floor(Number(data.views) || 0));
+  const likes = Math.max(0, Math.floor(Number(data.likes) || 0));
+  const comments = Math.max(0, Math.floor(Number(data.comments) || 0));
+
+  try {
+    const updated = await prisma.project.update({
+      where: { id: projectId },
+      data: { views, likes, comments },
+    });
+    revalidatePath("/analytics");
+    revalidatePath("/archive");
+    return { success: true, data: updated };
+  } catch (err) {
+    console.error("[updateProjectStats]", err);
+    return { success: false, error: "Failed to update stats." };
   }
 }
 

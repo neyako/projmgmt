@@ -7,6 +7,7 @@ import {
   updateProjectMetadata,
   updateProjectShotlist,
   updateProjectAssets,
+  updatePlatformIds,
 } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
@@ -135,6 +136,12 @@ export default function ProjectDetailsModal({
   // Ideation metadata
   const [productLinks, setProductLinks] = useState("");
 
+  // Platform API IDs (Published post-publish edit)
+  const [youtubeId, setYoutubeId] = useState("");
+  const [metaId, setMetaId] = useState("");
+  const [tiktokId, setTiktokId] = useState("");
+  const [isSavingIds, startSaveIds] = useTransition();
+
   useEffect(() => {
     getUsers().then(setUsers);
   }, []);
@@ -163,6 +170,9 @@ export default function ProjectDetailsModal({
       setStoragePath(project.storagePath || "");
       setReviewLink(project.reviewLink || "");
       setProductLinks(project.productLinks || "");
+      setYoutubeId(project.youtubeId || "");
+      setMetaId(project.metaId || "");
+      setTiktokId(project.tiktokId || "");
     } else {
       setTitle("");
       setContentType("Organic");
@@ -178,6 +188,9 @@ export default function ProjectDetailsModal({
       setStoragePath("");
       setReviewLink("");
       setProductLinks("");
+      setYoutubeId("");
+      setMetaId("");
+      setTiktokId("");
     }
     setARollDraft("");
     setBRollDraft("");
@@ -288,6 +301,32 @@ export default function ProjectDetailsModal({
         return;
       }
       onProjectUpdate?.({ id: project.id, ...normalized });
+    });
+  }
+
+  function savePlatformIds(e: React.FormEvent) {
+    e.preventDefault();
+    if (!project) return;
+    const nextYoutube = youtubeId.trim();
+    const nextMeta = metaId.trim();
+    const nextTiktok = tiktokId.trim();
+    startSaveIds(async () => {
+      const result = await updatePlatformIds(project.id, {
+        youtubeId: nextYoutube,
+        metaId: nextMeta,
+        tiktokId: nextTiktok,
+      });
+      if (!result.success) {
+        showToast(result.error, "error");
+        return;
+      }
+      onProjectUpdate?.({
+        id: project.id,
+        youtubeId: nextYoutube || null,
+        metaId: nextMeta || null,
+        tiktokId: nextTiktok || null,
+      });
+      showToast("Platform IDs updated.", "success");
     });
   }
 
@@ -640,6 +679,79 @@ export default function ProjectDetailsModal({
                     </div>
                   );
                 })()}
+
+                {/* ── PLATFORM API IDs (Published only) ── */}
+                {project.status === "Published" && (
+                  <form
+                    onSubmit={savePlatformIds}
+                    className="border border-white/10 bg-[#0a0a0a] p-4 flex flex-col"
+                  >
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+                      Platform API IDs
+                    </h3>
+
+                    <label
+                      htmlFor="platform-youtube"
+                      className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+                    >
+                      YouTube Video ID
+                    </label>
+                    <input
+                      id="platform-youtube"
+                      type="text"
+                      autoComplete="off"
+                      value={youtubeId}
+                      onChange={(e) => setYoutubeId(e.target.value)}
+                      placeholder="dQw4w9WgXcQ"
+                      className="w-full bg-transparent border-b border-gray-800 pb-2 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors mb-4"
+                    />
+
+                    <label
+                      htmlFor="platform-meta"
+                      className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+                    >
+                      Meta Reel ID
+                    </label>
+                    <input
+                      id="platform-meta"
+                      type="text"
+                      autoComplete="off"
+                      value={metaId}
+                      onChange={(e) => setMetaId(e.target.value)}
+                      placeholder="17841400000000000"
+                      className="w-full bg-transparent border-b border-gray-800 pb-2 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors mb-4"
+                    />
+
+                    <label
+                      htmlFor="platform-tiktok"
+                      className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+                    >
+                      TikTok Video ID
+                    </label>
+                    <input
+                      id="platform-tiktok"
+                      type="text"
+                      autoComplete="off"
+                      value={tiktokId}
+                      onChange={(e) => setTiktokId(e.target.value)}
+                      placeholder="7234567890123456789"
+                      className="w-full bg-transparent border-b border-gray-800 pb-2 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors mb-4"
+                    />
+
+                    <div className="flex justify-end mt-2">
+                      <button
+                        type="submit"
+                        disabled={isSavingIds}
+                        className={cn(
+                          "px-4 py-2 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:border-white transition-colors",
+                          isSavingIds && "opacity-50 cursor-wait"
+                        )}
+                      >
+                        {isSavingIds ? "[ UPDATING... ]" : "[ UPDATE IDs ]"}
+                      </button>
+                    </div>
+                  </form>
+                )}
 
                 {/* ── Rejection Feedback Alert ── */}
                 {project.reviewFeedback && (
