@@ -5,7 +5,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
-      <div className="flex h-screen w-full bg-[#0a0a0a] overflow-hidden text-white">
+      <div className="flex h-screen w-full bg-background overflow-hidden text-text-primary">
         <Sidebar />
         <div className="flex-1 min-w-0 h-full flex flex-col md:ml-64">
           <TopBar />

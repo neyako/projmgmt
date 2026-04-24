@@ -99,14 +99,14 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
     <>
       <div className="h-full w-full overflow-auto p-lg">
         <div className="mb-6">
-          <h1 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">
+          <h1 className="ui-page-kicker mb-1">
             Archive
           </h1>
-          <div className="flex gap-6 border-b border-white/10 pb-2">
+          <div className="flex gap-6 border-b border-border-visible pb-2">
             <button
               onClick={() => setActiveTab("Published")}
               className={`text-2xl font-bold uppercase tracking-wider transition-colors ${
-                activeTab === "Published" ? "text-white" : "text-gray-600 hover:text-gray-400"
+                activeTab === "Published" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
               }`}
             >
               [ PUBLISHED ]
@@ -114,20 +114,20 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
             <button
               onClick={() => setActiveTab("Scrapped")}
               className={`text-2xl font-bold uppercase tracking-wider transition-colors ${
-                activeTab === "Scrapped" ? "text-white" : "text-gray-600 hover:text-gray-400"
+                activeTab === "Scrapped" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
               }`}
             >
               [ SCRAPPED ]
             </button>
           </div>
-          <div className="text-xs font-mono text-gray-500 mt-2">
+          <div className="ui-page-meta mt-2">
             {activeData.length} {activeData.length === 1 ? "project" : "projects"}
           </div>
         </div>
 
         {activeData.length === 0 ? (
-          <div className="border border-white/10 p-12 text-center">
-            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+          <div className="ui-panel p-12 text-center">
+            <div className="ui-page-kicker">
               No {activeTab} Projects Found
             </div>
           </div>
@@ -135,25 +135,25 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                <th className="ui-table-head p-4">
                   Video Title
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                <th className="ui-table-head p-4">
                   Status
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                <th className="ui-table-head p-4">
                   {activeTab === "Published" ? "Publish Date" : "Last Updated"}
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4 text-right">
+                <th className="ui-table-head p-4 text-right">
                   Views
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4 text-right">
+                <th className="ui-table-head p-4 text-right">
                   Likes
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4 text-right">
+                <th className="ui-table-head p-4 text-right">
                   Comments
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4 text-right">
+                <th className="ui-table-head p-4 text-right">
                   Action
                 </th>
               </tr>
@@ -177,10 +177,10 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                   <tr
                     key={project.id}
                     onClick={() => setSelectedId(project.id)}
-                    className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                    className="ui-table-row cursor-pointer"
                   >
-                    <td className="p-4 text-sm font-mono text-gray-300">{project.title}</td>
-                    <td className="p-4 text-sm font-mono text-gray-300">
+                    <td className="p-4 ui-table-cell">{project.title}</td>
+                    <td className="p-4 ui-table-cell">
                       <span className="inline-flex items-center gap-2">
                         <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
                         <span className="uppercase tracking-widest text-[10px]">
@@ -188,16 +188,16 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                         </span>
                       </span>
                     </td>
-                    <td className="p-4 text-sm font-mono text-gray-300">
+                    <td className="p-4 ui-table-cell">
                       {formatDate(activeTab === "Published" ? project.publishDate : project.updatedAt)}
                     </td>
-                    <td className="p-4 text-sm font-mono text-gray-300 text-right">
+                    <td className="p-4 ui-table-cell text-right">
                       {totalViews.toLocaleString()}
                     </td>
-                    <td className="p-4 text-sm font-mono text-gray-300 text-right">
+                    <td className="p-4 ui-table-cell text-right">
                       {totalLikes.toLocaleString()}
                     </td>
-                    <td className="p-4 text-sm font-mono text-gray-300 text-right">
+                    <td className="p-4 ui-table-cell text-right">
                       {totalComments.toLocaleString()}
                     </td>
                     <td className="p-4 text-right">
@@ -209,7 +209,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                               setStatsTargetId(project.id);
                             }}
                             disabled={isPending}
-                            className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                            className="ui-button-outline px-3 py-1 disabled:opacity-50"
                           >
                             [ UPDATE STATS ]
                           </button>
@@ -220,7 +220,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                             handleRestore(project.id);
                           }}
                           disabled={isPending}
-                          className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                          className="ui-button-outline px-3 py-1 disabled:opacity-50"
                         >
                           Restore to Pipeline
                         </button>

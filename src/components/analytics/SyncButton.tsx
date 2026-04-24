@@ -68,7 +68,7 @@ export default function SyncButton({ platform }: { platform: Platform }) {
       type="button"
       onClick={handleSync}
       disabled={isPending}
-      className="px-3 py-1 text-[10px] font-mono border border-gray-800 text-gray-500 hover:text-white hover:border-white transition-colors disabled:opacity-50 disabled:cursor-wait uppercase tracking-widest"
+      className="ui-button-outline px-3 py-1 disabled:opacity-50 disabled:cursor-wait"
     >
       {isPending ? cfg.syncing : cfg.label}
     </button>

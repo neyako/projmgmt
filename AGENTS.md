@@ -1,4 +1,4 @@
-# AI Agent Constitution: Studio_OS
+# AI Agent Constitution: projmgmt
 
 **DO NOT DEVIATE FROM THESE RULES WHEN MODIFYING THIS CODEBASE.**
 

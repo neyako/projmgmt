@@ -79,7 +79,7 @@ export default function KanbanCard({
       className={cn(
         "bg-surface border p-md flex flex-col gap-sm hover:border-border-visible transition-colors cursor-pointer group",
         project.status === "Editing" && project.reviewFeedback
-          ? "border-accent/30 shadow-[0_0_10px_rgba(215,25,33,0.1)]"
+          ? "border-accent/30"
           : "border-border",
         isDragging && "opacity-30"
       )}

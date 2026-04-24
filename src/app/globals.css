@@ -3,23 +3,36 @@
 /* ─── NOTHING DESIGN SYSTEM: CSS CUSTOM PROPERTIES ───── */
 @theme {
   /* Backgrounds & Surfaces */
-  --color-black: #000000;
-  --color-background: #141313;
-  --color-surface: #111111;
-  --color-surface-raised: #1A1A1A;
-  --color-surface-variant: #353434;
-  --color-surface-bright: #3a3939;
+  --color-black: var(--theme-bg-root);
+  --color-background: var(--theme-bg);
+  --color-surface: var(--theme-surface);
+  --color-surface-raised: var(--theme-surface-raised);
+  --color-surface-variant: var(--theme-surface-variant);
+  --color-surface-bright: var(--theme-surface-bright);
 
   /* Borders */
-  --color-border: #222222;
-  --color-border-visible: #333333;
-  --color-outline-variant: #444748;
+  --color-border: var(--theme-border);
+  --color-border-visible: var(--theme-border-visible);
+  --color-outline-variant: var(--theme-outline-variant);
 
   /* Text Hierarchy */
-  --color-text-display: #FFFFFF;
-  --color-text-primary: #E8E8E8;
-  --color-text-secondary: #999999;
-  --color-text-disabled: #666666;
+  --color-text-display: var(--theme-text-display);
+  --color-text-primary: var(--theme-text-primary);
+  --color-text-secondary: var(--theme-text-secondary);
+  --color-text-disabled: var(--theme-text-disabled);
+
+  /* Accents & Status */
+  --color-background-inverse: var(--theme-bg-root);
+  --color-text-inverse: var(--theme-text-inverse);
+  --color-input-surface: var(--theme-input-surface);
+  --color-hover-surface: var(--theme-hover-surface);
+  --color-danger-hover: var(--theme-danger-hover);
+  --color-disabled-surface: var(--theme-disabled-surface);
+  --color-selection-bg: var(--theme-selection-bg);
+  --color-selection-text: var(--theme-selection-text);
+  --color-scrollbar-track: var(--theme-scrollbar-track);
+  --color-scrollbar-thumb: var(--theme-scrollbar-thumb);
+  --color-scrollbar-thumb-hover: var(--theme-scrollbar-thumb-hover);
 
   /* Accents & Status */
   --color-accent: #D71921;
@@ -88,9 +101,63 @@
   --duration-normal: 300ms;
 }
 
+/* ─── MODE PALETTES ──────────────────────────────────── */
+:root,
+.dark {
+  --theme-bg-root: #000000;
+  --theme-bg: #0a0a0a;
+  --theme-surface: #111111;
+  --theme-surface-raised: #1a1a1a;
+  --theme-surface-variant: #353434;
+  --theme-surface-bright: #3a3939;
+  --theme-border: #222222;
+  --theme-border-visible: #333333;
+  --theme-outline-variant: #444748;
+  --theme-text-display: #ffffff;
+  --theme-text-primary: #e8e8e8;
+  --theme-text-secondary: #999999;
+  --theme-text-disabled: #666666;
+  --theme-text-inverse: #000000;
+  --theme-input-surface: transparent;
+  --theme-hover-surface: rgba(255, 255, 255, 0.05);
+  --theme-danger-hover: #f87171;
+  --theme-disabled-surface: rgba(255, 255, 255, 0.5);
+  --theme-selection-bg: #1a1a1a;
+  --theme-selection-text: #ffffff;
+  --theme-scrollbar-track: #111111;
+  --theme-scrollbar-thumb: #333333;
+  --theme-scrollbar-thumb-hover: #444748;
+}
+
+.light {
+  --theme-bg-root: #f4f1ea;
+  --theme-bg: #f4f1ea;
+  --theme-surface: #ebe7dd;
+  --theme-surface-raised: #e2ddd1;
+  --theme-surface-variant: #d8d1c4;
+  --theme-surface-bright: #cdc3b4;
+  --theme-border: #d8d1c4;
+  --theme-border-visible: #c7beb0;
+  --theme-outline-variant: #a99f91;
+  --theme-text-display: #111111;
+  --theme-text-primary: #242424;
+  --theme-text-secondary: #6f6a60;
+  --theme-text-disabled: #9a9286;
+  --theme-text-inverse: #f4f1ea;
+  --theme-input-surface: transparent;
+  --theme-hover-surface: rgba(17, 17, 17, 0.06);
+  --theme-danger-hover: #b91c1c;
+  --theme-disabled-surface: rgba(17, 17, 17, 0.12);
+  --theme-selection-bg: #111111;
+  --theme-selection-text: #f4f1ea;
+  --theme-scrollbar-track: #ebe7dd;
+  --theme-scrollbar-thumb: #c7beb0;
+  --theme-scrollbar-thumb-hover: #a99f91;
+}
+
 /* ─── BASE STYLES ────────────────────────────────────── */
 html {
-  background-color: #0a0a0a;
+  background-color: var(--color-background);
   color: var(--color-text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -99,13 +166,13 @@ html {
 
 body {
   min-height: 100vh;
-  background-color: #0a0a0a;
+  background-color: var(--color-background);
 }
 
 /* Selection */
 ::selection {
-  background-color: var(--color-surface-raised);
-  color: var(--color-text-display);
+  background-color: var(--color-selection-bg);
+  color: var(--color-selection-text);
 }
 
 /* ─── CUSTOM SCROLLBAR (Mechanical) ──────────────────── */
@@ -115,16 +182,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: var(--color-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-visible);
+  background: var(--color-scrollbar-thumb);
   border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-outline-variant);
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 /* ─── TYPOGRAPHY UTILITIES ───────────────────────────── */
@@ -197,6 +264,171 @@ body {
   letter-spacing: 0.08em;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+/* ─── SEMANTIC UI UTILITIES ───────────────────────────── */
+.ui-page-kicker {
+  font-family: var(--font-label);
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.ui-page-title {
+  color: var(--color-text-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ui-page-meta {
+  font-family: var(--font-caption);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ui-divider {
+  border-color: var(--color-border-visible);
+}
+
+.ui-panel {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-visible);
+  color: var(--color-text-primary);
+}
+
+.ui-panel-raised {
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-border-visible);
+  color: var(--color-text-primary);
+}
+
+.ui-modal-backdrop {
+  background-color: color-mix(in srgb, var(--color-background) 92%, transparent);
+}
+
+.ui-modal-shell {
+  background-color: var(--color-background);
+  border-color: var(--color-border-visible);
+  color: var(--color-text-primary);
+}
+
+.ui-input,
+.ui-select,
+.ui-textarea {
+  background-color: var(--color-input-surface);
+  border: 1px solid var(--color-border-visible);
+  color: var(--color-text-display);
+  font-family: var(--font-caption);
+  font-size: 12px;
+  transition: border-color var(--duration-fast) var(--ease-mechanical), background-color var(--duration-fast) var(--ease-mechanical);
+}
+
+.ui-input:focus,
+.ui-select:focus,
+.ui-textarea:focus {
+  border-color: var(--color-text-display);
+  outline: none;
+}
+
+.ui-input::placeholder,
+.ui-textarea::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.ui-button-primary {
+  background-color: var(--color-text-display);
+  color: var(--color-text-inverse);
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: opacity var(--duration-fast) var(--ease-mechanical);
+}
+
+.ui-button-primary:hover {
+  opacity: 0.8;
+}
+
+.ui-button-outline,
+.ui-button-ghost {
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-visible);
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color var(--duration-fast) var(--ease-mechanical), border-color var(--duration-fast) var(--ease-mechanical), background-color var(--duration-fast) var(--ease-mechanical);
+}
+
+.ui-button-outline:hover,
+.ui-button-ghost:hover {
+  color: var(--color-text-display);
+  border-color: var(--color-outline-variant);
+  background-color: var(--color-hover-surface);
+}
+
+.ui-button-danger {
+  color: var(--color-accent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background-color var(--duration-fast) var(--ease-mechanical);
+}
+
+.ui-button-danger:hover {
+  background-color: var(--color-accent-subtle);
+}
+
+.ui-table-head {
+  border-bottom: 1px solid var(--color-border-visible);
+  color: var(--color-text-secondary);
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-table-row {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--duration-fast) var(--ease-mechanical);
+}
+
+.ui-table-row:hover {
+  background-color: var(--color-hover-surface);
+}
+
+.ui-table-cell {
+  color: var(--color-text-primary);
+  font-family: var(--font-caption);
+  font-size: 14px;
+}
+
+.ui-table-cell-muted {
+  color: var(--color-text-secondary);
+  font-family: var(--font-caption);
+  font-size: 12px;
+}
+
+.ui-tag-muted {
+  border: 1px solid var(--color-border-visible);
+  color: var(--color-text-secondary);
+  font-family: var(--font-caption);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-bar-track {
+  background-color: var(--color-surface-raised);
+}
+
+.ui-bar-fill {
+  background-color: var(--color-text-display);
 }
 
 /* ─── MATERIAL SYMBOLS CONFIGURATION ─────────────────── */

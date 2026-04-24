@@ -9,12 +9,12 @@ async function main() {
   await prisma.user.deleteMany();
 
   // ─── USERS (6 team members) ─────────────────────────
-  const talent = await prisma.user.create({ data: { name: "Alex Rivera", email: "alex@studio-os.net", role: "Talent" } });
-  const manager = await prisma.user.create({ data: { name: "Jordan Park", email: "jordan@studio-os.net", role: "Manager" } });
-  const cameraman = await prisma.user.create({ data: { name: "Sam Nguyen", email: "sam@studio-os.net", role: "Cameraman" } });
-  const editorShorts = await prisma.user.create({ data: { name: "Dana Kim", email: "dana@studio-os.net", role: "Editor_Shorts" } });
-  const editorFull = await prisma.user.create({ data: { name: "Morgan Chen", email: "morgan@studio-os.net", role: "Editor_FullStack" } });
-  const talent2 = await prisma.user.create({ data: { name: "Riley Brooks", email: "riley@studio-os.net", role: "Talent" } });
+  const talent = await prisma.user.create({ data: { name: "Alex Rivera", email: "alex@projmgmt.local", role: "MEMBER" } });
+  const manager = await prisma.user.create({ data: { name: "Jordan Park", email: "jordan@projmgmt.local", role: "ADMIN" } });
+  const cameraman = await prisma.user.create({ data: { name: "Sam Nguyen", email: "sam@projmgmt.local", role: "MEMBER" } });
+  const editorShorts = await prisma.user.create({ data: { name: "Dana Kim", email: "dana@projmgmt.local", role: "MEMBER" } });
+  const editorFull = await prisma.user.create({ data: { name: "Morgan Chen", email: "morgan@projmgmt.local", role: "MANAGER" } });
+  const talent2 = await prisma.user.create({ data: { name: "Riley Brooks", email: "riley@projmgmt.local", role: "MEMBER" } });
 
   // ─── PROJECTS ───────────────────────────────────────
   // Ideation
@@ -38,7 +38,7 @@ async function main() {
   // Review
   await prisma.project.create({ data: { title: "Product Feature: Audio", contentType: "Product_Seeding", format: "Short_Form", status: "Review", platformsTargeted: '["Meta","TikTok"]', creatorId: manager.id, aRollAssigneeId: talent.id, bRollAssigneeId: cameraman.id, editingAssigneeId: editorShorts.id, aRollComplete: true, bRollComplete: true, reviewLink: "https://nc.studio.local/s/k8jH9fM2xQ", aRollShots: JSON.stringify([{id:"a1",text:"Unboxing talent",isCompleted:true}]), bRollShots: JSON.stringify([{id:"b1",text:"Product detail macro",isCompleted:true}]), columnOrder: 0 } });
 
-  console.log("✓ Seed complete: 6 users, 6 projects");
+  console.log("✓ projmgmt seed complete: 6 users, 6 projects");
 }
 
 main().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());

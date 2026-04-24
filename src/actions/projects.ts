@@ -36,10 +36,10 @@ export async function createProject(formData: {
     return { success: false, error: "Sponsored projects require Briefing Notes." };
   }
 
-  // Auto-resolve creator: use provided ID, or default to first Talent user
+  // Auto-resolve creator: use provided ID, or default to first user
   let creatorId = formData.creatorId;
   if (!creatorId) {
-    const defaultUser = await prisma.user.findFirst({ where: { role: "Talent" } });
+    const defaultUser = await prisma.user.findFirst({ orderBy: { name: "asc" } });
     if (!defaultUser) {
       return { success: false, error: "No default user found." };
     }
@@ -123,21 +123,11 @@ export async function updateProjectStatus(
     }
   }
 
-  // ─── AUTO-ASSIGN EDITOR ─────────────────────────────
-  let editingAssigneeId = project.editingAssigneeId;
-  if (from === "Filming" && to === "Editing" && !editingAssigneeId) {
-    const editorRole =
-      project.format === "Short_Form" ? "Editor_Shorts" : "Editor_FullStack";
-    const editor = await prisma.user.findFirst({ where: { role: editorRole } });
-    if (editor) editingAssigneeId = editor.id;
-  }
-
   try {
     const updated = await prisma.project.update({
       where: { id: projectId },
       data: {
         status: to,
-        ...(editingAssigneeId && { editingAssigneeId }),
         ...(to === "Published" && { publishDate: new Date() }),
         ...(from === "Review" && to === "Editing" && {
           reviewFeedback: feedback?.trim() || null,

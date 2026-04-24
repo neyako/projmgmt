@@ -113,7 +113,7 @@ export default function FilmingSplitCard({
                 {aRollPercent === 100 ? "check_circle" : "radio_button_unchecked"}
               </span>
               <span className="text-style-caption text-text-primary">A-ROLL</span>
-              <span className="text-[10px] font-mono text-gray-600">
+              <span className="text-[10px] font-mono text-text-disabled">
                 {aRollDone}/{aRollShots.length}
               </span>
             </div>
@@ -157,7 +157,7 @@ export default function FilmingSplitCard({
                 {bRollPercent === 100 ? "check_circle" : "radio_button_unchecked"}
               </span>
               <span className="text-style-caption text-text-primary">B-ROLL</span>
-              <span className="text-[10px] font-mono text-gray-600">
+              <span className="text-[10px] font-mono text-text-disabled">
                 {bRollDone}/{bRollShots.length}
               </span>
             </div>

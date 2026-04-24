@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { createUser, updateUser, deleteUser } from "@/actions/team";
 import { useToast } from "@/components/ui/Toast";
 import type { User } from "@prisma/client";
-import { ROLES } from "@/lib/constants";
+import { USER_ROLES } from "@/lib/roles";
 
 interface TeamMemberModalProps {
   user: User | null;
@@ -20,7 +20,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [role, setRole] = useState(user?.role || "Talent");
+  const [role, setRole] = useState(user?.role || "MEMBER");
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -77,14 +77,14 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
   return (
     <div className="fixed inset-0 z-[100]">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
-      <div className="fixed top-0 right-0 h-screen w-full sm:w-[450px] bg-[#0a0a0a] border-l border-white/10 z-[9999] p-6 flex flex-col shadow-2xl">
-        <div className="flex justify-between items-start pb-6 border-b border-white/10 shrink-0">
-          <h2 className="text-xl font-bold text-white uppercase tracking-wider">
+      <div className="fixed top-0 right-0 h-screen w-full sm:w-[450px] ui-modal-shell border-l z-[9999] p-6 flex flex-col ">
+        <div className="flex justify-between items-start pb-6 border-b border-border-visible shrink-0">
+          <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? "EDIT MEMBER" : "NEW MEMBER"}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-white font-mono text-xs transition-colors">
+          <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors">
             [ X ]
           </button>
         </div>
@@ -93,35 +93,37 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
           <form id="team-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Full Name</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Full Name</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors"
+                className="w-full ui-input p-2 w-full"
                 placeholder="e.g. Jane Doe"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Email Address</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors"
+                className="w-full ui-input p-2 w-full"
                 placeholder="e.g. jane@studio.com"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Role</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Role</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors appearance-none"
+                className="w-full ui-input p-2 w-full appearance-none"
               >
-                {ROLES.map(r => (
-                  <option key={r} value={r}>{r.replace("_", " ")}</option>
+                {USER_ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
                 ))}
               </select>
             </div>
@@ -129,19 +131,19 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
           </form>
         </div>
 
-        <div className="flex justify-between p-6 border-t border-white/10 shrink-0">
+        <div className="flex justify-between p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-accent border border-accent/40 hover:bg-accent-subtle transition-colors">
+            <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
               DELETE
             </button>
           ) : (
             <div />
           )}
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-gray-500 border border-white/10 hover:border-gray-600 transition-colors">
+            <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
               CANCEL
             </button>
-            <button type="submit" form="team-form" disabled={isPending} className="px-6 py-2 text-[10px] font-mono uppercase tracking-widest bg-white text-black hover:bg-gray-200 transition-colors disabled:opacity-50">
+            <button type="submit" form="team-form" disabled={isPending} className="ui-button-primary px-6 py-2 disabled:opacity-50">
               {isPending ? "SAVING..." : "SAVE"}
             </button>
           </div>

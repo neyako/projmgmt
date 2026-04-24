@@ -13,7 +13,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="flex items-center gap-2.5 py-1.5 px-2 hover:bg-white/5 transition-colors group"
+      className="flex items-center gap-2.5 py-1.5 px-2 hover:bg-hover-surface transition-colors group"
     >
       <button
         type="button"
@@ -24,7 +24,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
           "w-3.5 h-3.5 flex items-center justify-center border shrink-0 bg-transparent transition-colors",
           shot.isCompleted
             ? "border-success text-success"
-            : "border-gray-600 group-hover:border-gray-400"
+            : "border-border-visible group-hover:border-outline-variant"
         )}
       >
         {shot.isCompleted && (
@@ -42,7 +42,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
       <span
         className={cn(
           "flex-1 text-xs font-mono transition-colors",
-          shot.isCompleted ? "line-through text-gray-600" : "text-gray-300"
+          shot.isCompleted ? "line-through text-text-disabled" : "text-text-primary"
         )}
       >
         {shot.text}
@@ -51,7 +51,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
         <button
           type="button"
           onClick={() => onDelete(shot.id)}
-          className="text-gray-700 hover:text-accent transition-colors opacity-0 group-hover:opacity-100 text-[10px] font-mono shrink-0"
+          className="text-text-disabled hover:text-accent transition-colors opacity-0 group-hover:opacity-100 text-[10px] font-mono shrink-0"
           aria-label="Delete shot"
         >
           ✕

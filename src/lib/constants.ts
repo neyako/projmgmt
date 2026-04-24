@@ -69,6 +69,4 @@ export const NAV_ITEMS = [
   { label: "TEAM", icon: "group", href: "/team" },
 ] as const;
 
-export const NAV_FOOTER_ITEMS = [
-  { label: "SETTINGS", icon: "settings", href: "/settings" },
-] as const;
+export const NAV_FOOTER_ITEMS = [] as const;

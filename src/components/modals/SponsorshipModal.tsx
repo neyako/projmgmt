@@ -92,14 +92,14 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
 
   return (
     <div className="fixed inset-0 z-[100]">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
-      <div className="fixed top-0 right-0 h-screen w-full sm:w-[450px] bg-[#0a0a0a] border-l border-white/10 z-[9999] flex flex-col shadow-2xl">
-        <div className="flex justify-between items-start p-6 border-b border-white/10 shrink-0">
-          <h2 className="text-xl font-bold text-white uppercase tracking-wider">
+      <div className="fixed top-0 right-0 h-screen w-full sm:w-[450px] ui-modal-shell border-l z-[9999] flex flex-col ">
+        <div className="flex justify-between items-start p-6 border-b border-border-visible shrink-0">
+          <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? "EDIT SPONSORSHIP" : "NEW SPONSORSHIP"}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-white font-mono text-xs transition-colors">
+          <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors">
             [ X ]
           </button>
         </div>
@@ -109,20 +109,20 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Brand / Client</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Brand / Client</label>
                 <input
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors"
+                  className="w-full ui-input p-2 w-full"
                   placeholder="e.g. TechCorp"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Contact Email</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Contact Email</label>
                 <input
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors"
+                  className="w-full ui-input p-2 w-full"
                   placeholder="e.g. john@techcorp.com"
                 />
               </div>
@@ -130,21 +130,21 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
 
             <div className="grid grid-cols-3 gap-6">
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Budget ($)</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Budget ($)</label>
                 <input
                   type="number"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors"
+                  className="w-full ui-input p-2 w-full"
                   placeholder="5000"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Status</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors appearance-none"
+                  className="w-full ui-input p-2 w-full appearance-none"
                 >
                   <option value="Active">Active</option>
                   <option value="Pending">Pending</option>
@@ -153,42 +153,42 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Due Date</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Due Date</label>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 text-white font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors"
+                  className="w-full ui-input p-2 w-full"
                   style={{ colorScheme: "dark" }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Notes</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-white/10 text-gray-300 font-mono text-xs p-3 min-h-[100px] resize-y focus:outline-none focus:border-white/50 transition-colors"
+                className="w-full ui-textarea p-3 min-h-[100px] resize-y w-full"
                 placeholder="Deliverables, requirements..."
               />
             </div>
           </form>
         </div>
 
-        <div className="flex justify-between p-6 border-t border-white/10 shrink-0">
+        <div className="flex justify-between p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-accent border border-accent/40 hover:bg-accent-subtle transition-colors">
+            <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
               DELETE
             </button>
           ) : (
             <div />
           )}
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-gray-500 border border-white/10 hover:border-gray-600 transition-colors">
+            <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
               CANCEL
             </button>
-            <button type="submit" form="sponsorship-form" disabled={isPending} className="px-6 py-2 text-[10px] font-mono uppercase tracking-widest bg-white text-black hover:bg-gray-200 transition-colors disabled:opacity-50">
+            <button type="submit" form="sponsorship-form" disabled={isPending} className="ui-button-primary px-6 py-2 disabled:opacity-50">
               {isPending ? "SAVING..." : "SAVE"}
             </button>
           </div>

@@ -77,7 +77,7 @@ export default function ReviewPanel({
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
         placeholder="Add feedback..."
-        className="w-full bg-[#0a0a0a] border-b border-white/10 text-xs font-mono text-white p-2 min-h-[80px] resize-y focus:outline-none focus:border-white/50 transition-colors"
+        className="w-full bg-surface border-b border-border-visible text-xs font-mono text-text-display p-2 min-h-[80px] resize-y focus:outline-none focus:border-text-display transition-colors"
       />
       <div className="flex gap-2">
         <button
@@ -104,7 +104,7 @@ export default function ReviewPanel({
         </button>
       </div>
       {project.reviewFeedback && (
-        <div className="text-[10px] font-mono text-gray-500 italic">
+        <div className="text-[10px] font-mono text-text-secondary italic">
           Prev: {project.reviewFeedback}
         </div>
       )}

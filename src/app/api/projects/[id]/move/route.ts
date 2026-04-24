@@ -70,26 +70,11 @@ export async function PATCH(
     }
   }
 
-  // ─── AUTO-ASSIGN EDITOR ─────────────────────────────
-  let editingAssigneeId = project.editingAssigneeId;
-  if (from === "Filming" && to === "Editing" && !editingAssigneeId) {
-    // Auto-assign based on format
-    const editorRole =
-      project.format === "Short_Form" ? "Editor_Shorts" : "Editor_FullStack";
-    const editor = await prisma.user.findFirst({
-      where: { role: editorRole },
-    });
-    if (editor) {
-      editingAssigneeId = editor.id;
-    }
-  }
-
   // ─── PERSIST MOVE ───────────────────────────────────
   const updated = await prisma.project.update({
     where: { id },
     data: {
       status: to,
-      ...(editingAssigneeId && { editingAssigneeId }),
       ...(to === "Published" && { publishDate: new Date() }),
     },
     include: {

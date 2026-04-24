@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import Providers from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "STUDIO_OS",
-  description: "Studio Management Dashboard — Self-Hosted Pipeline",
+  title: "projmgmt",
+  description: "projmgmt — self-hosted production management",
 };
 
 export default function RootLayout({
@@ -12,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Google Fonts: Doto, Space Grotesk, Space Mono */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,8 +32,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#0a0a0a] text-white min-h-screen w-full antialiased">
-        {children}
+      <body className="bg-background text-text-primary min-h-screen w-full antialiased">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

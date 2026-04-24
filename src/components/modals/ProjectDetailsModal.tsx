@@ -73,7 +73,7 @@ function parseShotItems(json?: string): ShotItem[] {
 function ChevronDown() {
   return (
     <svg
-      className="pointer-events-none absolute right-0 bottom-2 w-3 h-3 text-gray-500"
+      className="pointer-events-none absolute right-0 bottom-2 w-3 h-3 text-text-secondary"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -542,33 +542,33 @@ export default function ProjectDetailsModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={onClose} />
+      <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-5xl bg-[#0f0f0f] border border-white/10 shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-5xl ui-panel flex flex-col max-h-[90vh]">
 
         {/* ─── HEADER ─── */}
-        <div className="flex justify-between items-start p-6 border-b border-white/10 shrink-0">
+        <div className="flex justify-between items-start p-6 border-b border-border-visible shrink-0">
           <div className="flex-1 min-w-0">
             {isEditing && (
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <div className={cn("w-2 h-2 rounded-full", statusColors[project.status] || "bg-gray-500")} />
-                <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+                <div className={cn("w-2 h-2 rounded-full", statusColors[project.status] || "bg-text-disabled")} />
+                <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
                   ID: {project.id.slice(0, 8)}
                 </span>
-                <span className="border border-gray-800 text-gray-500 px-2 py-1 text-[10px] font-mono uppercase">
+                <span className="border border-border-visible text-text-secondary px-2 py-1 text-[10px] font-mono uppercase">
                   {project.status}
                 </span>
-                <span className="border border-gray-800 text-gray-500 px-2 py-1 text-[10px] font-mono uppercase">
+                <span className="border border-border-visible text-text-secondary px-2 py-1 text-[10px] font-mono uppercase">
                   {project.contentType.replace("_", " ")}
                 </span>
-                <span className="border border-gray-800 text-gray-500 px-2 py-1 text-[10px] font-mono uppercase">
+                <span className="border border-border-visible text-text-secondary px-2 py-1 text-[10px] font-mono uppercase">
                   {project.format.replace("_", " ")}
                 </span>
               </div>
             )}
             <input
-              className="text-2xl font-bold text-white bg-transparent outline-none uppercase w-full placeholder:text-gray-700"
+              className="text-2xl font-bold text-text-display bg-transparent outline-none uppercase w-full placeholder:text-text-disabled"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="PROJECT TITLE"
@@ -577,13 +577,13 @@ export default function ProjectDetailsModal({
           </div>
 
           <div className="flex flex-col items-end ml-4 shrink-0">
-            <button onClick={onClose} className="text-gray-500 hover:text-white font-mono text-xs mb-2 transition-colors">
+            <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs mb-2 transition-colors">
               [ X ]
             </button>
             {isEditing && (
               <div className="text-right">
-                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Completion</span>
-                <div className="text-3xl font-mono text-white tracking-widest">{completionPct}%</div>
+                <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block">Completion</span>
+                <div className="text-3xl font-mono text-text-display tracking-widest">{completionPct}%</div>
               </div>
             )}
           </div>
@@ -593,19 +593,19 @@ export default function ProjectDetailsModal({
         <div className="flex flex-1 overflow-hidden">
 
           {/* ═══ LEFT COLUMN — Assets & Tasks ═══ */}
-          <div className="flex-1 overflow-y-auto p-6 border-r border-white/10">
+          <div className="flex-1 overflow-y-auto p-6 border-r border-border-visible">
 
             {/* CREATE MODE — form fields */}
             {!isEditing && (
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 {/* Content Type */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Content Type</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Content Type</label>
                   <div className="flex gap-2 flex-wrap">
                     {CONTENT_TYPES.map((ct) => (
                       <button key={ct} type="button" onClick={() => setContentType(ct)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-                        contentType === ct ? "border border-white text-white bg-transparent" : "border border-gray-800 text-gray-500 bg-transparent hover:border-gray-600"
+                        contentType === ct ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
                       )}>{ct.replace("_", " ")}</button>
                     ))}
                   </div>
@@ -613,12 +613,12 @@ export default function ProjectDetailsModal({
 
                 {/* Format */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Format</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Format</label>
                   <div className="flex gap-2 flex-wrap">
                     {FORMATS.map((f) => (
                       <button key={f} type="button" onClick={() => setFormat(f)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-                        format === f ? "border border-white text-white bg-transparent" : "border border-gray-800 text-gray-500 bg-transparent hover:border-gray-600"
+                        format === f ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
                       )}>{f.replace("_", " ")}</button>
                     ))}
                   </div>
@@ -626,12 +626,12 @@ export default function ProjectDetailsModal({
 
                 {/* Platforms */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Platforms</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Platforms</label>
                   <div className="flex gap-2 flex-wrap">
                     {PLATFORMS.map((p) => (
                       <button key={p} type="button" onClick={() => togglePlatform(p)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-                        platforms.includes(p) ? "border border-white text-white bg-transparent" : "border border-gray-800 text-gray-500 bg-transparent hover:border-gray-600"
+                        platforms.includes(p) ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
                       )}>{p}</button>
                     ))}
                   </div>
@@ -640,25 +640,25 @@ export default function ProjectDetailsModal({
                 {/* Briefing Notes */}
                 {contentType === "Sponsored" && (
                   <div>
-                    <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+                    <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
                       Briefing Notes<span className="text-accent ml-1">*</span>
                     </label>
                     <textarea
                       value={briefingNotes}
                       onChange={(e) => setBriefingNotes(e.target.value)}
                       placeholder="Client requirements, talking points, deliverables..."
-                      className="w-full bg-[#0f0f0f] border border-gray-800 p-3 text-sm text-gray-400 focus:outline-none focus:border-gray-600 min-h-[100px] resize-y"
+                      className="w-full ui-textarea p-3 text-sm min-h-[100px] resize-y"
                     />
                   </div>
                 )}
 
                 {/* Submit */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-800">
-                  <button type="button" onClick={onClose} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-gray-500 border border-gray-800 hover:border-gray-600 transition-colors">
+                <div className="flex justify-end gap-3 pt-4 border-t border-border-visible">
+                  <button type="button" onClick={onClose} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:border-outline-variant transition-colors">
                     CANCEL
                   </button>
                   <button type="submit" disabled={isPending} className={cn(
-                    "px-6 py-1.5 text-[10px] font-mono uppercase tracking-widest bg-white text-black hover:bg-gray-200 transition-colors",
+                    "px-6 py-1.5 text-[10px] font-mono uppercase tracking-widest bg-text-display text-text-inverse hover:opacity-80 transition-colors",
                     isPending && "opacity-50 cursor-wait"
                   )}>
                     {isPending ? "CREATING..." : "CREATE PROJECT"}
@@ -679,16 +679,16 @@ export default function ProjectDetailsModal({
                   const abTitlesList = parseJsonArray(project.abTitles);
                   const thumbnailsList = parseJsonArray(project.thumbnails);
                   return (
-                    <div className="border border-white/10 bg-[#0a0a0a] p-4 flex flex-col gap-4">
+                    <div className="border border-border-visible bg-surface p-4 flex flex-col gap-4">
                       <div className="flex justify-between items-start">
-                        <h3 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                        <h3 className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
                           Export Assets
                         </h3>
                         <div className="text-right">
-                          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">
+                          <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block">
                             Scheduled
                           </span>
-                          <span className="text-sm font-mono text-white tracking-widest">
+                          <span className="text-sm font-mono text-text-display tracking-widest">
                             {formatPublishDate(project.publishedAt ?? project.publishDate)}
                           </span>
                         </div>
@@ -702,7 +702,7 @@ export default function ProjectDetailsModal({
                             copyValue={tiktokCopy || "—"}
                           >
                             {tiktokCopy || (
-                              <span className="text-gray-600 italic">
+                              <span className="text-text-disabled italic">
                                 No caption or hashtags captured.
                               </span>
                             )}
@@ -712,7 +712,7 @@ export default function ProjectDetailsModal({
                             copyValue={caption || "—"}
                           >
                             {caption || (
-                              <span className="text-gray-600 italic">
+                              <span className="text-text-disabled italic">
                                 No caption captured.
                               </span>
                             )}
@@ -723,7 +723,7 @@ export default function ProjectDetailsModal({
                       {/* Long-Form export blocks */}
                       {project.format === "Long_Form" && (
                         <div className="flex flex-col gap-3">
-                          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                          <div className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
                             A/B Titles
                           </div>
                           <div className="flex flex-col gap-2">
@@ -736,29 +736,29 @@ export default function ProjectDetailsModal({
                                 />
                               ))
                             ) : (
-                              <div className="bg-[#0a0a0a] border border-white/10 p-4 text-xs font-mono text-gray-600 italic">
+                              <div className="bg-surface border border-border-visible p-4 text-xs font-mono text-text-disabled italic">
                                 No A/B titles captured.
                               </div>
                             )}
                           </div>
 
-                          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-2">
+                          <div className="text-[10px] font-mono text-text-secondary uppercase tracking-widest mt-2">
                             Thumbnails
                           </div>
                           {thumbnailsList.length > 0 ? (
-                            <ul className="flex flex-col gap-1 bg-[#0a0a0a] border border-white/10 p-4">
+                            <ul className="flex flex-col gap-1 bg-surface border border-border-visible p-4">
                               {thumbnailsList.map((t, i) => (
                                 <li
                                   key={`thumb-${i}`}
-                                  className="text-xs font-mono text-gray-300 break-all"
+                                  className="text-xs font-mono text-text-primary break-all"
                                 >
-                                  <span className="text-gray-600 mr-2">{i + 1}.</span>
+                                  <span className="text-text-disabled mr-2">{i + 1}.</span>
                                   {t}
                                 </li>
                               ))}
                             </ul>
                           ) : (
-                            <div className="bg-[#0a0a0a] border border-white/10 p-4 text-xs font-mono text-gray-600 italic">
+                            <div className="bg-surface border border-border-visible p-4 text-xs font-mono text-text-disabled italic">
                               No thumbnails captured.
                             </div>
                           )}
@@ -766,7 +766,7 @@ export default function ProjectDetailsModal({
                       )}
 
                       {project.format !== "Short_Form" && project.format !== "Long_Form" && (
-                        <div className="text-xs font-mono text-gray-600 italic">
+                        <div className="text-xs font-mono text-text-disabled italic">
                           No export template for format: {project.format.replace("_", " ")}.
                         </div>
                       )}
@@ -778,15 +778,15 @@ export default function ProjectDetailsModal({
                 {project.status === "Published" && (
                   <form
                     onSubmit={savePlatformIds}
-                    className="border border-white/10 bg-[#0a0a0a] p-4 flex flex-col"
+                    className="border border-border-visible bg-surface p-4 flex flex-col"
                   >
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4">
                       Platform API IDs
                     </h3>
 
                     <label
                       htmlFor="platform-youtube"
-                      className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+                      className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
                     >
                       YouTube Video ID
                     </label>
@@ -797,12 +797,12 @@ export default function ProjectDetailsModal({
                       value={youtubeId}
                       onChange={(e) => setYoutubeId(e.target.value)}
                       placeholder="dQw4w9WgXcQ"
-                      className="w-full bg-transparent border-b border-gray-800 pb-2 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors mb-4"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors mb-4"
                     />
 
                     <label
                       htmlFor="platform-meta"
-                      className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+                      className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
                     >
                       Meta Reel ID
                     </label>
@@ -813,12 +813,12 @@ export default function ProjectDetailsModal({
                       value={metaId}
                       onChange={(e) => setMetaId(e.target.value)}
                       placeholder="17841400000000000"
-                      className="w-full bg-transparent border-b border-gray-800 pb-2 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors mb-4"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors mb-4"
                     />
 
                     <label
                       htmlFor="platform-tiktok"
-                      className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+                      className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
                     >
                       TikTok Video ID
                     </label>
@@ -829,7 +829,7 @@ export default function ProjectDetailsModal({
                       value={tiktokId}
                       onChange={(e) => setTiktokId(e.target.value)}
                       placeholder="7234567890123456789"
-                      className="w-full bg-transparent border-b border-gray-800 pb-2 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors mb-4"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors mb-4"
                     />
 
                     <div className="flex justify-end mt-2">
@@ -837,7 +837,7 @@ export default function ProjectDetailsModal({
                         type="submit"
                         disabled={isSavingIds}
                         className={cn(
-                          "px-4 py-2 text-[10px] font-mono uppercase tracking-widest border border-white/10 text-gray-400 hover:text-white hover:border-white transition-colors",
+                          "px-4 py-2 text-[10px] font-mono uppercase tracking-widest border border-border-visible text-text-secondary hover:text-text-display hover:border-text-display transition-colors",
                           isSavingIds && "opacity-50 cursor-wait"
                         )}
                       >
@@ -857,11 +857,11 @@ export default function ProjectDetailsModal({
 
                 {/* ── Asset Management ── */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Asset Management</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Asset Management</label>
 
                   {/* Raw Storage Path */}
-                  <div className="bg-black border border-white/10 flex items-stretch mb-2">
-                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest px-3 shrink-0 border-r border-white/10 py-2.5">
+                  <div className="bg-surface border border-border-visible flex items-stretch mb-2">
+                    <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest px-3 shrink-0 border-r border-border-visible py-2.5">
                       RAW
                     </span>
                     {isEditingRaw ? (
@@ -876,31 +876,31 @@ export default function ProjectDetailsModal({
                           }
                         }}
                         placeholder="Enter NAS folder name and press Enter..."
-                        className="flex-1 min-w-0 bg-transparent text-xs font-mono text-gray-300 px-3 py-2.5 outline-none placeholder:text-gray-700"
+                        className="flex-1 min-w-0 bg-transparent text-xs font-mono text-text-primary px-3 py-2.5 outline-none placeholder:text-text-disabled"
                         autoFocus
                       />
                     ) : (
                       <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2.5 bg-transparent">
-                        <span className="text-[10px] font-mono text-gray-600 shrink-0">
+                        <span className="text-[10px] font-mono text-text-disabled shrink-0">
                           {osBadge}
                         </span>
                         <span className={cn(
                           "text-xs font-mono truncate",
-                          rawPath ? "text-gray-300" : "text-gray-700"
+                          rawPath ? "text-text-primary" : "text-text-disabled"
                         )}>
                           {rawPath || "Set Folder Name to generate path..."}
                         </span>
                       </div>
                     )}
                     {!isEditingRaw && (
-                      <div className="flex shrink-0 border-l border-white/10">
+                      <div className="flex shrink-0 border-l border-border-visible">
                         <button
                           type="button"
                           onClick={() => {
                             setTempFolderName(folderName);
                             setIsEditingRaw(true);
                           }}
-                          className="text-[10px] font-mono text-gray-500 hover:text-white px-3 py-2.5 transition-colors"
+                          className="text-[10px] font-mono text-text-secondary hover:text-text-display px-3 py-2.5 transition-colors"
                         >
                           [ EDIT ]
                         </button>
@@ -908,7 +908,7 @@ export default function ProjectDetailsModal({
                           <button
                             type="button"
                             onClick={() => copyToClipboard(rawPath)}
-                            className="text-[10px] font-mono text-gray-500 hover:text-white px-3 py-2.5 border-l border-white/10 transition-colors"
+                            className="text-[10px] font-mono text-text-secondary hover:text-text-display px-3 py-2.5 border-l border-border-visible transition-colors"
                           >
                             [ COPY ]
                           </button>
@@ -918,8 +918,8 @@ export default function ProjectDetailsModal({
                   </div>
 
                   {/* Nextcloud Link */}
-                  <div className="bg-black border border-white/10 flex items-center">
-                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest px-3 shrink-0 border-r border-white/10 py-2.5">
+                  <div className="bg-surface border border-border-visible flex items-center">
+                    <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest px-3 shrink-0 border-r border-border-visible py-2.5">
                       REVIEW
                     </span>
                     <input
@@ -928,14 +928,14 @@ export default function ProjectDetailsModal({
                       onChange={(e) => setReviewLink(e.target.value)}
                       onBlur={() => saveAssets({ reviewLink })}
                       placeholder="https://nc.studio.local/s/..."
-                      className="flex-1 bg-transparent text-xs font-mono text-gray-300 px-3 py-2.5 outline-none placeholder:text-gray-700"
+                      className="flex-1 bg-transparent text-xs font-mono text-text-primary px-3 py-2.5 outline-none placeholder:text-text-disabled"
                     />
                     {reviewLink && (
                       <a
                         href={reviewLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-500 hover:text-white px-3 py-2.5 border-l border-white/10 transition-colors shrink-0"
+                        className="text-text-secondary hover:text-text-display px-3 py-2.5 border-l border-border-visible transition-colors shrink-0"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -948,10 +948,10 @@ export default function ProjectDetailsModal({
                 {/* ── Briefing Notes (Sponsored) ── */}
                 {project.contentType === "Sponsored" && project.briefingNotes && (
                   <div>
-                    <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+                    <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
                       Briefing Notes
                     </label>
-                    <div className="bg-black border border-white/10 p-3 text-xs font-mono text-gray-400 whitespace-pre-wrap">
+                    <div className="bg-surface border border-border-visible p-3 text-xs font-mono text-text-secondary whitespace-pre-wrap">
                       {project.briefingNotes}
                     </div>
                   </div>
@@ -959,17 +959,17 @@ export default function ProjectDetailsModal({
 
                 {/* ── Task Progress — Shot Lists ── */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">Task Progress</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Task Progress</label>
                   <div className="grid grid-cols-2 gap-6">
 
                     {/* A-ROLL */}
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest flex items-center gap-2">
                           <span className={cn("w-1.5 h-1.5 rounded-full", project.aRollComplete ? "bg-success" : "bg-warning")} />
                           A-ROLL
                         </span>
-                        <span className="text-[10px] font-mono text-gray-600">
+                        <span className="text-[10px] font-mono text-text-disabled">
                           {aRollShots.filter(s => s.isCompleted).length}/{aRollShots.length}
                         </span>
                       </div>
@@ -982,7 +982,7 @@ export default function ProjectDetailsModal({
                             onDelete={(id) => deleteShot("a", id)}
                           />
                         )) : (
-                          <span className="text-[10px] font-mono text-gray-700 italic px-2">No shots defined</span>
+                          <span className="text-[10px] font-mono text-text-disabled italic px-2">No shots defined</span>
                         )}
                       </div>
                       <input
@@ -996,18 +996,18 @@ export default function ProjectDetailsModal({
                             addShot("a");
                           }
                         }}
-                        className="w-full bg-[#0a0a0a] border border-white/10 text-gray-300 font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors mt-2"
+                        className="w-full bg-surface border border-border-visible text-text-primary font-mono text-xs p-2 focus:outline-none focus:border-text-display/50 transition-colors mt-2"
                       />
                     </div>
 
                     {/* B-ROLL */}
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest flex items-center gap-2">
                           <span className={cn("w-1.5 h-1.5 rounded-full", project.bRollComplete ? "bg-success" : "bg-warning")} />
                           B-ROLL
                         </span>
-                        <span className="text-[10px] font-mono text-gray-600">
+                        <span className="text-[10px] font-mono text-text-disabled">
                           {bRollShots.filter(s => s.isCompleted).length}/{bRollShots.length}
                         </span>
                       </div>
@@ -1020,7 +1020,7 @@ export default function ProjectDetailsModal({
                             onDelete={(id) => deleteShot("b", id)}
                           />
                         )) : (
-                          <span className="text-[10px] font-mono text-gray-700 italic px-2">No shots defined</span>
+                          <span className="text-[10px] font-mono text-text-disabled italic px-2">No shots defined</span>
                         )}
                       </div>
                       <input
@@ -1034,7 +1034,7 @@ export default function ProjectDetailsModal({
                             addShot("b");
                           }
                         }}
-                        className="w-full bg-[#0a0a0a] border border-white/10 text-gray-300 font-mono text-xs p-2 focus:outline-none focus:border-white/50 transition-colors mt-2"
+                        className="w-full bg-surface border border-border-visible text-text-primary font-mono text-xs p-2 focus:outline-none focus:border-text-display/50 transition-colors mt-2"
                       />
                     </div>
                   </div>
@@ -1044,16 +1044,16 @@ export default function ProjectDetailsModal({
           </div>
 
           {/* ═══ RIGHT COLUMN — Metadata Sidebar ═══ */}
-          <div className="w-80 shrink-0 overflow-y-auto p-6 bg-[#0a0a0a]">
+          <div className="w-80 shrink-0 overflow-y-auto p-6 bg-surface">
 
             {/* ── Metadata ── */}
             <div className="flex flex-col">
               {/* Created By */}
               <div className="mb-6">
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
                   Created By
                 </label>
-                <span className="text-xs font-bold text-white uppercase tracking-wider block truncate">
+                <span className="text-xs font-bold text-text-display uppercase tracking-wider block truncate">
                   {isEditing && project.creator ? project.creator.name : "—"}
                 </span>
               </div>
@@ -1061,7 +1061,7 @@ export default function ProjectDetailsModal({
               {/* Client / Brand (Sponsored only) */}
               {isEditing && project.contentType === "Sponsored" && (
                 <div className="mb-6">
-                  <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                  <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
                     Client / Brand
                   </label>
                   <input
@@ -1072,14 +1072,14 @@ export default function ProjectDetailsModal({
                       ""
                     }
                     placeholder="—"
-                    className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors whitespace-nowrap overflow-x-auto"
+                    className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors whitespace-nowrap overflow-x-auto"
                   />
                 </div>
               )}
 
               {/* Due Date */}
               <div className="mb-6">
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
                   Due Date
                 </label>
                 {isEditing ? (
@@ -1091,11 +1091,11 @@ export default function ProjectDetailsModal({
                       setDueDate(value);
                       saveMetadata({ dueDate: value || null });
                     }}
-                    className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors color-scheme-dark"
+                    className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
                     style={{ colorScheme: "dark" }}
                   />
                 ) : (
-                  <span className="text-xs font-bold text-white uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-text-display uppercase tracking-wider block">
                     Not set
                   </span>
                 )}
@@ -1103,7 +1103,7 @@ export default function ProjectDetailsModal({
 
               {/* Lead Editor */}
               <div className="mb-6 relative">
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
                   Lead Editor
                 </label>
                 {isEditing ? (
@@ -1115,13 +1115,11 @@ export default function ProjectDetailsModal({
                         setEditorId(value);
                         saveMetadata({ assignedEditorId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors appearance-none cursor-pointer pr-6"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
                     >
-                      <option value="" className="bg-black">Unassigned</option>
-                      {users
-                        .filter((u) => u.role === "Editor_Shorts" || u.role === "Editor_FullStack")
-                        .map((u) => (
-                          <option key={u.id} value={u.id} className="bg-black">
+                      <option value="" className="bg-surface">Unassigned</option>
+                      {users.map((u) => (
+                          <option key={u.id} value={u.id} className="bg-surface">
                             {u.name}
                           </option>
                         ))}
@@ -1129,7 +1127,7 @@ export default function ProjectDetailsModal({
                     <ChevronDown />
                   </>
                 ) : (
-                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-text-disabled uppercase tracking-wider block">
                     Auto-assigned
                   </span>
                 )}
@@ -1137,7 +1135,7 @@ export default function ProjectDetailsModal({
 
               {/* Cameraman */}
               <div className="mb-6 relative">
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
                   Cameraman
                 </label>
                 {isEditing ? (
@@ -1149,13 +1147,11 @@ export default function ProjectDetailsModal({
                         setCameramanId(value);
                         saveMetadata({ assignedCameramanId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors appearance-none cursor-pointer pr-6"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
                     >
-                      <option value="" className="bg-black">Unassigned</option>
-                      {users
-                        .filter((u) => u.role === "Cameraman")
-                        .map((u) => (
-                          <option key={u.id} value={u.id} className="bg-black">
+                      <option value="" className="bg-surface">Unassigned</option>
+                      {users.map((u) => (
+                          <option key={u.id} value={u.id} className="bg-surface">
                             {u.name}
                           </option>
                         ))}
@@ -1163,13 +1159,13 @@ export default function ProjectDetailsModal({
                     <ChevronDown />
                   </>
                 ) : (
-                  <span className="text-xs font-bold text-white uppercase tracking-wider block">—</span>
+                  <span className="text-xs font-bold text-text-display uppercase tracking-wider block">—</span>
                 )}
               </div>
 
               {/* A-Roll Talent */}
               <div className="mb-6 relative">
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
                   A-Roll Talent
                 </label>
                 {isEditing ? (
@@ -1181,13 +1177,11 @@ export default function ProjectDetailsModal({
                         setTalentId(value);
                         saveMetadata({ assignedTalentId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-gray-800 pb-2 pt-1 text-white font-mono text-xs uppercase outline-none focus:border-white transition-colors appearance-none cursor-pointer pr-6"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
                     >
-                      <option value="" className="bg-black">Unassigned</option>
-                      {users
-                        .filter((u) => u.role === "Talent")
-                        .map((u) => (
-                          <option key={u.id} value={u.id} className="bg-black">
+                      <option value="" className="bg-surface">Unassigned</option>
+                      {users.map((u) => (
+                          <option key={u.id} value={u.id} className="bg-surface">
                             {u.name}
                           </option>
                         ))}
@@ -1195,18 +1189,18 @@ export default function ProjectDetailsModal({
                     <ChevronDown />
                   </>
                 ) : (
-                  <span className="text-xs font-bold text-white uppercase tracking-wider block">—</span>
+                  <span className="text-xs font-bold text-text-display uppercase tracking-wider block">—</span>
                 )}
               </div>
             </div>
 
             {/* ── Divider ── */}
-            <div className="border-t border-white/10 my-4" />
+            <div className="border-t border-border-visible my-4" />
 
             {/* ── Product / Affiliate Links (Ideation planning) ── */}
             {isEditing && (
               <div className="mb-6">
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
                   Product / Affiliate Links
                 </label>
                 <textarea
@@ -1218,17 +1212,17 @@ export default function ProjectDetailsModal({
                     saveMetadata({ productLinks: next });
                   }}
                   placeholder={`Keychron K2 — https://...\nElgato Key Light — https://...`}
-                  className="w-full bg-[#0a0a0a] border border-gray-800 p-3 text-xs font-mono text-gray-300 uppercase focus:outline-none focus:border-white transition-colors min-h-[80px] resize-y mt-1"
+                  className="w-full bg-surface border border-border-visible p-3 text-xs font-mono text-text-primary uppercase focus:outline-none focus:border-text-display transition-colors min-h-[80px] resize-y mt-1"
                 />
               </div>
             )}
 
             {/* ── Divider ── */}
-            {isEditing && <div className="border-t border-white/10 my-4" />}
+            {isEditing && <div className="border-t border-border-visible my-4" />}
 
             {/* ── Platforms ── */}
             <div>
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-3">Platforms</label>
+              <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-3">Platforms</label>
               <div className="flex flex-wrap gap-2">
                 {PLATFORMS.map((p) => (
                   <button
@@ -1239,8 +1233,8 @@ export default function ProjectDetailsModal({
                     className={cn(
                       "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors disabled:opacity-50",
                       platforms.includes(p)
-                        ? "border border-white text-white"
-                        : "border border-gray-800 text-gray-600 hover:border-gray-500 hover:text-gray-300"
+                        ? "border border-text-display text-text-display"
+                        : "border border-border-visible text-text-disabled hover:border-outline-variant hover:text-text-primary"
                     )}
                   >
                     {p}
@@ -1250,12 +1244,12 @@ export default function ProjectDetailsModal({
             </div>
 
             {/* ── Divider ── */}
-            <div className="border-t border-white/10 my-4" />
+            <div className="border-t border-border-visible my-4" />
 
             {/* ── Status Timeline ── */}
             {isEditing && (
               <div>
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-3">Pipeline Stage</label>
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-3">Pipeline Stage</label>
                 <div className="flex flex-col gap-1">
                   {["Ideation", "Scripting", "Filming", "Editing", "Review", "Published"].map((stage) => {
                     const stageIndex = ["Ideation", "Scripting", "Filming", "Editing", "Review", "Published"].indexOf(stage);
@@ -1276,16 +1270,16 @@ export default function ProjectDetailsModal({
                       >
                         <div className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0",
-                          isCurrent ? statusColors[stage] || "bg-white" : isPast ? "bg-gray-600" : "bg-gray-800"
+                          isCurrent ? statusColors[stage] || "bg-white" : isPast ? "bg-text-secondary" : "bg-surface-raised"
                         )} />
                         <span className={cn(
                           "text-[10px] font-mono uppercase tracking-widest transition-colors",
-                          isCurrent ? "text-white" : isPast ? "text-gray-500 group-hover:text-white" : "text-gray-700 group-hover:text-white"
+                          isCurrent ? "text-text-display" : isPast ? "text-text-secondary group-hover:text-text-display" : "text-text-disabled group-hover:text-text-display"
                         )}>
                           {stage}
                         </span>
                         {isCurrent && (
-                          <span className="text-[10px] font-mono text-gray-500 ml-auto">←</span>
+                          <span className="text-[10px] font-mono text-text-secondary ml-auto">←</span>
                         )}
                       </button>
                     );

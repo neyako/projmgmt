@@ -21,7 +21,7 @@ function todayInputValue(): string {
 }
 
 const INPUT_CLASS =
-  "w-full bg-transparent border-0 border-b border-gray-800 focus:border-white focus:outline-none font-mono text-sm text-white py-2 px-0 transition-colors placeholder:text-gray-700";
+  "w-full bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none font-mono text-sm text-text-display py-2 px-0 transition-colors placeholder:text-text-disabled";
 
 export default function PublishModal({
   project,
@@ -105,31 +105,31 @@ export default function PublishModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       <div
-        className="absolute inset-0 bg-black/90 backdrop-blur-md"
+        className="absolute inset-0 ui-modal-backdrop"
         onClick={() => !isPending && onClose()}
       />
 
-      <div className="relative w-full max-w-[48rem] bg-[#0a0a0a] border border-white/10 shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-[48rem] ui-panel flex flex-col max-h-[90vh]">
 
         {/* Header */}
-        <div className="flex justify-between items-start p-6 border-b border-white/10 shrink-0">
+        <div className="flex justify-between items-start p-6 border-b border-border-visible shrink-0">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <div className="w-2 h-2 rounded-full bg-success" />
-              <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+              <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
                 ID: {project.id.slice(0, 8)}
               </span>
-              <span className="border border-gray-800 text-gray-500 px-2 py-1 text-[10px] font-mono uppercase">
+              <span className="ui-tag-muted px-2 py-1">
                 {project.status}
               </span>
-              <span className="border border-gray-800 text-gray-500 px-2 py-1 text-[10px] font-mono uppercase">
+              <span className="ui-tag-muted px-2 py-1">
                 {project.format.replace("_", " ")}
               </span>
             </div>
-            <h2 className="text-2xl font-bold text-white uppercase tracking-widest">
+            <h2 className="text-2xl font-bold text-text-display uppercase tracking-widest">
               PUBLISHING CHECKLIST
             </h2>
-            <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-2">
+            <p className="text-[10px] font-mono text-text-secondary uppercase tracking-widest mt-2">
               Finalize metadata before leaving the pipeline.
             </p>
           </div>
@@ -137,7 +137,7 @@ export default function PublishModal({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="text-gray-500 hover:text-white font-mono text-xs transition-colors ml-4 shrink-0"
+            className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors ml-4 shrink-0"
           >
             [ X ]
           </button>
@@ -150,7 +150,7 @@ export default function PublishModal({
           className="flex-1 overflow-y-auto p-6 flex flex-col gap-6"
         >
           <div>
-            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+            <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
               Final Video Title
               <span className="text-accent ml-1">*</span>
             </label>
@@ -168,7 +168,7 @@ export default function PublishModal({
           {isShort && (
             <>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
                   Base Caption
                 </label>
                 <textarea
@@ -183,7 +183,7 @@ export default function PublishModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
                   Hashtags
                 </label>
                 <input
@@ -193,7 +193,7 @@ export default function PublishModal({
                   placeholder="tech review setup"
                   className={INPUT_CLASS}
                 />
-                <p className="text-[10px] font-mono text-gray-600 mt-2">
+                <p className="text-[10px] font-mono text-text-disabled mt-2">
                   Space separated. `#` prepended automatically on copy.
                 </p>
               </div>
@@ -204,7 +204,7 @@ export default function PublishModal({
           {isLong && (
             <>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
                   A/B Titles
                 </label>
                 <div className="flex flex-col gap-3">
@@ -222,7 +222,7 @@ export default function PublishModal({
               </div>
 
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
                   Thumbnails
                 </label>
                 <div className="flex flex-col gap-3">
@@ -243,7 +243,7 @@ export default function PublishModal({
 
           {/* ─── Platform IDs (for API sync) ─── */}
           <div>
-            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+            <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
               YouTube Video ID
             </label>
             <input
@@ -254,13 +254,13 @@ export default function PublishModal({
               autoComplete="off"
               className={INPUT_CLASS}
             />
-            <p className="text-[10px] font-mono text-gray-600 mt-2">
+            <p className="text-[10px] font-mono text-text-disabled mt-2">
               11-char ID from the YouTube URL. Enables YT Data API v3 sync.
             </p>
           </div>
 
           <div>
-            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+            <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
               Meta Reel ID
             </label>
             <input
@@ -271,13 +271,13 @@ export default function PublishModal({
               autoComplete="off"
               className={INPUT_CLASS}
             />
-            <p className="text-[10px] font-mono text-gray-600 mt-2">
+            <p className="text-[10px] font-mono text-text-disabled mt-2">
               Media/Reel ID from the Meta Graph API (IG / FB).
             </p>
           </div>
 
           <div>
-            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+            <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
               TikTok Video ID
             </label>
             <input
@@ -288,14 +288,14 @@ export default function PublishModal({
               autoComplete="off"
               className={INPUT_CLASS}
             />
-            <p className="text-[10px] font-mono text-gray-600 mt-2">
+            <p className="text-[10px] font-mono text-text-disabled mt-2">
               Video ID from the TikTok Display API.
             </p>
           </div>
 
           {/* ─── Always ─── */}
           <div>
-            <label className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3 block">
+            <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
               Publish Date
             </label>
             <input
@@ -309,12 +309,12 @@ export default function PublishModal({
         </form>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-white/10 shrink-0">
+        <div className="flex justify-end gap-3 p-6 border-t border-border-visible shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-gray-500 border border-white/10 hover:border-gray-600 transition-colors disabled:opacity-50"
+            className="ui-button-outline px-4 py-2 disabled:opacity-50"
           >
             [ CANCEL ]
           </button>
@@ -323,7 +323,7 @@ export default function PublishModal({
             form="publish-form"
             disabled={isPending}
             className={cn(
-              "px-6 py-2 text-[10px] font-mono uppercase tracking-widest bg-white text-black hover:bg-gray-200 transition-colors flex items-center gap-2",
+              "ui-button-primary px-6 py-2 flex items-center gap-2",
               isPending && "opacity-50 cursor-wait"
             )}
           >

@@ -9,22 +9,28 @@ generator client {
 
 // ─── USERS ──────────────────────────────────────────────
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  avatarUrl String?
-  role      String   // Talent | Manager | Cameraman | Editor_Shorts | Editor_FullStack
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  username     String?  @unique
+  passwordHash String?
+  avatarUrl    String?
+  role             String   @default("MEMBER") // ADMIN | MANAGER | MEMBER
+  twoFactorEnabled Boolean  @default(false)
+  twoFactorSecret  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Relations
-  projectsCreated     Project[]      @relation("ProjectCreator")
-  assignedARoll       Project[]      @relation("ARollAssignee")
-  assignedBRoll       Project[]      @relation("BRollAssignee")
-  assignedEditing     Project[]      @relation("EditingAssignee")
-  assignedCameraman   Project[]      @relation("CameramanAssignee")
-  assignedEditor      Project[]      @relation("EditorAssignee")
-  assignedTalent      Project[]      @relation("TalentAssignee")
+  accounts           Account[]
+  sessions           Session[]
+  projectsCreated    Project[] @relation("ProjectCreator")
+  assignedARoll      Project[] @relation("ARollAssignee")
+  assignedBRoll      Project[] @relation("BRollAssignee")
+  assignedEditing    Project[] @relation("EditingAssignee")
+  assignedCameraman  Project[] @relation("CameramanAssignee")
+  assignedEditor     Project[] @relation("EditorAssignee")
+  assignedTalent     Project[] @relation("TalentAssignee")
 }
 
 // ─── PROJECTS (Kanban Cards) ────────────────────────────
@@ -167,4 +173,40 @@ model Analytics {
 
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

@@ -80,11 +80,9 @@ export default async function AnalyticsPage() {
 
           {/* ─── HEADER ──────────────────────────────────── */}
           <div className="mb-12">
-            <h1 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">
-              Performance
-            </h1>
+            <h1 className="ui-page-kicker mb-1">Performance</h1>
             <div className="flex items-center gap-4 w-full flex-wrap">
-              <div className="text-2xl font-bold text-white uppercase tracking-widest">
+              <div className="ui-page-title text-2xl">
                 Performance Analytics
               </div>
               <div className="flex items-center gap-2 ml-auto">
@@ -93,7 +91,7 @@ export default async function AnalyticsPage() {
                 <SyncButton platform="tiktok" />
               </div>
             </div>
-            <div className="text-xs font-mono text-gray-500 mt-1">
+            <div className="ui-page-meta mt-1">
               {published.length} {published.length === 1 ? "video" : "videos"} published
             </div>
           </div>
@@ -103,12 +101,12 @@ export default async function AnalyticsPage() {
             {metrics.map((m) => (
               <div
                 key={m.label}
-                className="bg-[#0a0a0a] border border-white/10 p-6 flex flex-col"
+                className="ui-panel p-6 flex flex-col"
               >
-                <span className="text-[10px] text-gray-500 uppercase tracking-widest">
+                <span className="ui-page-kicker">
                   {m.label}
                 </span>
-                <span className="text-4xl font-mono text-white tracking-widest mt-2">
+                <span className="text-4xl font-mono text-text-display tracking-widest mt-2">
                   {formatNumber(m.value)}
                 </span>
               </div>
@@ -117,13 +115,13 @@ export default async function AnalyticsPage() {
 
           {/* ─── Top Performers (Bar-Chart Leaderboard) ── */}
           <div>
-            <h2 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-6">
+            <h2 className="ui-page-kicker mb-6">
               Top Performers
             </h2>
 
             {published.length === 0 ? (
-              <div className="border border-white/10 p-12 text-center">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+              <div className="ui-panel p-12 text-center">
+                <div className="ui-page-kicker">
                   No Published Videos Yet
                 </div>
               </div>
@@ -161,49 +159,49 @@ export default async function AnalyticsPage() {
                                 {tags.map((t) => (
                                   <span
                                     key={t}
-                                    className="text-[9px] font-mono text-gray-500 border border-gray-800 px-1.5 py-0.5 uppercase tracking-widest"
+                                    className="ui-tag-muted px-1.5 py-0.5"
                                   >
                                     {t}
                                   </span>
                                 ))}
                               </span>
                             )}
-                            <span className="text-sm font-mono text-white tracking-wider truncate">
+                            <span className="text-sm font-mono text-text-display tracking-wider truncate">
                               {p.finalTitle ?? p.title}
                             </span>
                             {isShortForm && (
-                              <span className="ml-3 px-1.5 py-0.5 border border-gray-700 text-gray-400 text-[9px] uppercase rounded shrink-0">
+                              <span className="ml-3 px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
                                 Short Form
                               </span>
                             )}
                             {isLongForm && (
-                              <span className="ml-2 px-1.5 py-0.5 border border-gray-700 text-gray-400 text-[9px] uppercase rounded shrink-0">
+                              <span className="ml-2 px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
                                 Long Form
                               </span>
                             )}
                           </div>
                           {/* Per-platform breakdown */}
-                          <span className="text-[9px] font-mono text-gray-500 mt-1 uppercase tracking-widest">
+                          <span className="text-[9px] font-mono text-text-secondary mt-1 uppercase tracking-widest">
                             {metricString}
                           </span>
                           {/* Publish date + likes/comments roll-up */}
-                          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">
+                          <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest mt-1">
                             {formatDate(p.publishedAt ?? p.publishDate)}
-                            <span className="mx-2 text-gray-700">|</span>
+                            <span className="mx-2 text-text-disabled">|</span>
                             {formatNumber(p.totalLikes)} LIKES
-                            <span className="mx-2 text-gray-700">|</span>
+                            <span className="mx-2 text-text-disabled">|</span>
                             {formatNumber(p.totalComments)} COMMENTS
                           </span>
                         </div>
-                        <span className="text-sm font-mono text-white tracking-widest shrink-0">
+                        <span className="text-sm font-mono text-text-display tracking-widest shrink-0">
                           {formatNumber(p.totalViews)}
                         </span>
                       </div>
 
                       {/* Bar-chart hack: flat track + filled bar */}
-                      <div className="w-full h-2 bg-gray-900 mt-2">
+                      <div className="w-full h-2 ui-bar-track mt-2">
                         <div
-                          className="h-full bg-white transition-all duration-1000"
+                          className="h-full ui-bar-fill transition-all duration-1000"
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>

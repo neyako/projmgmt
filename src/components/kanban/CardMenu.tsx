@@ -73,16 +73,16 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
       </span>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-32 bg-[#0a0a0a] border border-white/10 shadow-2xl z-50 flex flex-col">
+        <div className="absolute right-0 top-full mt-1 w-32 ui-panel z-50 flex flex-col">
           <button
             onClick={handleArchive}
-            className="text-left px-3 py-2 text-[10px] font-mono text-gray-400 uppercase tracking-widest hover:bg-white/5 hover:text-white transition-colors"
+            className="text-left px-3 py-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest hover:bg-hover-surface hover:text-text-display transition-colors"
           >
             Scrap
           </button>
           <button
             onClick={handleDelete}
-            className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent-subtle hover:text-accent transition-colors border-t border-white/5"
+            className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent-subtle hover:text-accent transition-colors border-t border-border"
           >
             Delete
           </button>

@@ -86,10 +86,10 @@ export default function SponsorshipsClient({
     <>
       <div className="h-full w-full overflow-auto p-lg">
         <div className="mb-6">
-          <h1 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">
+          <h1 className="ui-page-kicker mb-1">
             Pipeline
           </h1>
-          <div className="flex justify-between items-end border-b border-white/10 pb-2">
+          <div className="flex justify-between items-end border-b border-border-visible pb-2">
             <div className="flex gap-6">
               {TABS.map((tab) => (
                 <button
@@ -97,8 +97,8 @@ export default function SponsorshipsClient({
                   onClick={() => setActiveTab(tab)}
                   className={`text-2xl font-bold uppercase tracking-wider transition-colors ${
                     activeTab === tab
-                      ? "text-white"
-                      : "text-gray-600 hover:text-gray-400"
+                      ? "text-text-display"
+                      : "text-text-disabled hover:text-text-secondary"
                   }`}
                 >
                   [ {tab.toUpperCase()} ]
@@ -107,20 +107,20 @@ export default function SponsorshipsClient({
             </div>
             <button
               onClick={handleOpenNew}
-              className="bg-transparent border border-white/10 text-white text-[10px] font-mono px-6 py-2 uppercase hover:bg-white/5 transition-colors tracking-widest flex items-center shrink-0"
+              className="ui-button-outline px-6 py-2 flex items-center shrink-0"
             >
               <span className="material-symbols-outlined text-[14px] mr-2">add</span>
               NEW SPONSORSHIP
             </button>
           </div>
-          <div className="text-xs font-mono text-gray-500 mt-2">
+          <div className="ui-page-meta mt-2">
             {filtered.length} {filtered.length === 1 ? "deal" : "deals"}
           </div>
         </div>
 
         {filtered.length === 0 ? (
-          <div className="border border-white/10 p-12 text-center">
-            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+          <div className="ui-panel p-12 text-center">
+            <div className="ui-page-kicker">
               No {activeTab} Sponsorships Found
             </div>
           </div>
@@ -128,19 +128,19 @@ export default function SponsorshipsClient({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                <th className="ui-table-head p-4">
                   Brand
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                <th className="ui-table-head p-4">
                   Status
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                <th className="ui-table-head p-4">
                   Contact
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">
+                <th className="ui-table-head p-4">
                   Due Date
                 </th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4 text-right">
+                <th className="ui-table-head p-4 text-right">
                   Value
                 </th>
               </tr>
@@ -150,12 +150,12 @@ export default function SponsorshipsClient({
                 <tr
                   key={s.id}
                   onClick={() => handleOpenEdit(s.id)}
-                  className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                  className="ui-table-row cursor-pointer"
                 >
-                  <td className="p-4 text-sm font-mono text-gray-300 font-bold">
+                  <td className="p-4 ui-table-cell font-bold">
                     {s.brandName}
                   </td>
-                  <td className="p-4 text-sm font-mono text-gray-300">
+                  <td className="p-4 ui-table-cell">
                     <span className="inline-flex items-center gap-2">
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${statusDotColor(s.status)}`}
@@ -165,10 +165,10 @@ export default function SponsorshipsClient({
                       </span>
                     </span>
                   </td>
-                  <td className="p-4 text-xs font-mono text-gray-500">
+                  <td className="p-4 ui-table-cell-muted">
                     {s.contactEmail || "—"}
                   </td>
-                  <td className="p-4 text-xs font-mono text-gray-400">
+                  <td className="p-4 ui-table-cell-muted">
                     {formatDate(s.dueDate)}
                   </td>
                   <td className="p-4 text-sm font-mono text-success text-right">

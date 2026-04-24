@@ -51,11 +51,11 @@ export default function CopyBlock({
   return (
     <div
       className={cn(
-        "bg-[#0a0a0a] border border-white/10 p-4 font-mono text-sm text-gray-300 relative",
+        "ui-panel p-4 font-mono text-sm text-text-primary relative",
         className
       )}
     >
-      <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-3">
+      <div className="ui-page-kicker mb-3">
         {label}
       </div>
       <button
@@ -63,7 +63,7 @@ export default function CopyBlock({
         onClick={handleCopy}
         className={cn(
           "absolute top-2 right-2 text-[10px] font-mono uppercase tracking-widest transition-colors",
-          copied ? "text-success" : "text-gray-500 hover:text-white"
+          copied ? "text-success" : "text-text-secondary hover:text-text-display"
         )}
       >
         {copied ? "[ COPIED! ]" : "[ COPY ]"}

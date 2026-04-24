@@ -19,7 +19,7 @@ interface UpdateStatsModalProps {
 }
 
 const INPUT_CLASS =
-  "w-full bg-transparent border-b border-gray-800 pb-2 text-white font-mono text-sm focus:outline-none focus:border-white transition-colors";
+  "w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors";
 
 // Empty string when 0 so the field opens blank; otherwise show existing count.
 function initialStatString(n: number | null | undefined): string {
@@ -83,21 +83,21 @@ export default function UpdateStatsModal({
   return (
     // Background Overlay
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 ui-modal-backdrop"
       onClick={() => !isPending && onClose()}
     >
       {/* The Actual Modal Box - FORCED WIDTH */}
       <div
-        className="relative w-full max-w-[28rem] bg-[#0a0a0a] border border-white/10 shadow-2xl p-6 flex flex-col min-w-0"
+        className="relative w-full max-w-[28rem] ui-panel p-6 flex flex-col min-w-0"
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-start mb-6 w-full gap-4">
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-white uppercase tracking-widest">
+            <h2 className="text-lg font-bold text-text-display uppercase tracking-widest">
               Manual Analytics Entry
             </h2>
-            <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1 truncate">
+            <p className="text-[10px] font-mono text-text-secondary uppercase tracking-widest mt-1 truncate">
               {project.finalTitle ?? project.title}
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function UpdateStatsModal({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="text-gray-500 hover:text-white font-mono text-xs transition-colors shrink-0"
+            className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors shrink-0"
           >
             [ X ]
           </button>
@@ -119,7 +119,7 @@ export default function UpdateStatsModal({
           <div className="w-full">
             <label
               htmlFor="stats-views"
-              className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+              className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
             >
               Views
             </label>
@@ -140,7 +140,7 @@ export default function UpdateStatsModal({
           <div className="w-full">
             <label
               htmlFor="stats-likes"
-              className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+              className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
             >
               Likes
             </label>
@@ -160,7 +160,7 @@ export default function UpdateStatsModal({
           <div className="w-full">
             <label
               htmlFor="stats-comments"
-              className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2 block"
+              className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
             >
               Comments
             </label>
@@ -183,7 +183,7 @@ export default function UpdateStatsModal({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-gray-500 border border-white/10 hover:border-gray-600 transition-colors disabled:opacity-50"
+            className="ui-button-outline px-4 py-2 disabled:opacity-50"
           >
             [ CANCEL ]
           </button>
@@ -192,7 +192,7 @@ export default function UpdateStatsModal({
             form="stats-form"
             disabled={isPending}
             className={cn(
-              "px-6 py-2 text-[10px] font-mono uppercase tracking-widest bg-white text-black hover:bg-gray-200 transition-colors flex items-center gap-2",
+              "ui-button-primary px-6 py-2 flex items-center gap-2",
               isPending && "opacity-50 cursor-wait"
             )}
           >

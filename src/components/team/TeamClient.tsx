@@ -37,15 +37,15 @@ export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
       <div className="h-full w-full overflow-auto p-lg">
         <div className="mb-6 flex justify-between items-end">
           <div>
-            <h1 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1">Roster</h1>
-            <div className="text-2xl font-bold text-white uppercase tracking-wider">Team Members</div>
-            <div className="text-xs font-mono text-gray-500 mt-1">
+            <h1 className="ui-page-kicker mb-1">Roster</h1>
+            <div className="ui-page-title text-2xl">Team Members</div>
+            <div className="ui-page-meta mt-1">
               {users.length} {users.length === 1 ? "member" : "members"} active
             </div>
           </div>
           <button
             onClick={handleOpenNew}
-            className="bg-transparent border border-white/10 text-white text-[10px] font-mono px-6 py-2 uppercase hover:bg-white/5 transition-colors tracking-widest flex items-center"
+            className="ui-button-outline px-6 py-2 flex items-center"
           >
             <span className="material-symbols-outlined text-[14px] mr-2">add</span>
             NEW MEMBER
@@ -53,16 +53,16 @@ export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
         </div>
 
         {users.length === 0 ? (
-          <div className="border border-white/10 p-12 text-center">
-            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">No Team Members Found</div>
+          <div className="ui-panel p-12 text-center">
+            <div className="ui-page-kicker">No Team Members Found</div>
           </div>
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">Name</th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">Role</th>
-                <th className="border-b border-white/10 text-[10px] font-mono text-gray-500 uppercase tracking-widest p-4">Email</th>
+                <th className="ui-table-head p-4">Name</th>
+                <th className="ui-table-head p-4">Role</th>
+                <th className="ui-table-head p-4">Email</th>
               </tr>
             </thead>
             <tbody>
@@ -70,11 +70,11 @@ export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
                 <tr
                   key={u.id}
                   onClick={() => handleOpenEdit(u.id)}
-                  className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                  className="ui-table-row cursor-pointer"
                 >
-                  <td className="p-4 text-sm font-mono text-gray-300 font-bold">{u.name}</td>
-                  <td className="p-4 text-sm font-mono text-gray-400">{u.role.replace("_", " ")}</td>
-                  <td className="p-4 text-xs font-mono text-gray-500">{u.email}</td>
+                  <td className="p-4 ui-table-cell font-bold">{u.name}</td>
+                  <td className="p-4 ui-table-cell">{u.role.replace("_", " ")}</td>
+                  <td className="p-4 ui-table-cell-muted">{u.email}</td>
                 </tr>
               ))}
             </tbody>

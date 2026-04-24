@@ -66,7 +66,7 @@ export default function ShotlistChecklist({
                 "w-3 h-3 flex items-center justify-center border bg-transparent rounded-none shrink-0 transition-colors mt-[3px]",
                 item.completed
                   ? "bg-white border-white"
-                  : "border-gray-600 group-hover:border-gray-400"
+                  : "border-border-visible group-hover:border-outline-variant"
               )}
             >
               {item.completed && (
@@ -84,7 +84,7 @@ export default function ShotlistChecklist({
             <span
               className={cn(
                 "text-xs font-mono transition-colors",
-                item.completed ? "line-through text-gray-600" : "text-gray-400"
+                item.completed ? "line-through text-text-disabled" : "text-text-secondary"
               )}
             >
               {item.label}
