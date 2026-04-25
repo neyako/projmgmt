@@ -76,10 +76,10 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
   }
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
-      <div className="fixed top-0 right-0 h-screen w-full sm:w-[450px] ui-modal-shell border-l z-[9999] p-6 flex flex-col ">
+      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-modal-shell p-4 md:p-6 flex flex-col md:max-h-[90vh]">
         <div className="flex justify-between items-start pb-6 border-b border-border-visible shrink-0">
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? "EDIT MEMBER" : "NEW MEMBER"}
@@ -89,7 +89,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto py-6 md:p-6">
           <form id="team-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
 
             <div>
@@ -131,7 +131,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
           </form>
         </div>
 
-        <div className="flex justify-between p-6 border-t border-border-visible shrink-0">
+        <div className="flex flex-col md:flex-row md:justify-between gap-3 pt-4 md:p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
             <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
               DELETE
@@ -139,7 +139,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
           ) : (
             <div />
           )}
-          <div className="flex gap-3">
+          <div className="flex flex-col md:flex-row gap-3 md:ml-auto">
             <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
               CANCEL
             </button>

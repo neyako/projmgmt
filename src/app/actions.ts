@@ -11,6 +11,10 @@ type UploadAvatarResult =
   | { success: true }
   | { success: false; error: string };
 
+type ProjectScriptResult =
+  | { success: true }
+  | { success: false; error: string };
+
 export async function uploadAvatar(formData: FormData): Promise<UploadAvatarResult> {
   try {
     const session = await getServerSession(authOptions);
@@ -51,5 +55,34 @@ export async function uploadAvatar(formData: FormData): Promise<UploadAvatarResu
   } catch (err) {
     console.error("[uploadAvatar]", err);
     return { success: false, error: "Failed to upload avatar." };
+  }
+}
+
+export async function updateProjectScript(
+  projectId: string,
+  content: string
+): Promise<ProjectScriptResult> {
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true },
+    });
+
+    if (!project) {
+      return { success: false, error: "Project not found." };
+    }
+
+    await prisma.project.update({
+      where: { id: project.id },
+      data: { script: content },
+    });
+
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
+
+    return { success: true };
+  } catch (err) {
+    console.error("[updateProjectScript]", err);
+    return { success: false, error: "Failed to save script." };
   }
 }

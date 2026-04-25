@@ -16,10 +16,10 @@ export default async function SettingsPage() {
 
   return (
     <Shell>
-      <div className="flex-1 w-full h-full overflow-y-auto p-8">
+      <div className="flex-1 w-full h-full overflow-y-auto p-lg">
         <div className="w-full max-w-[48rem] mx-auto flex flex-col gap-12">
           <header>
-            <h1 className="text-3xl font-bold text-text-display uppercase tracking-widest mb-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-text-display uppercase tracking-widest mb-4">
               System Settings
             </h1>
             <p className="text-sm font-mono text-text-secondary max-w-[28rem]">

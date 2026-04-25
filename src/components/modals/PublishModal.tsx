@@ -103,16 +103,16 @@ export default function PublishModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       <div
         className="absolute inset-0 ui-modal-backdrop"
         onClick={() => !isPending && onClose()}
       />
 
-      <div className="relative w-full max-w-[48rem] ui-panel flex flex-col max-h-[90vh]">
+      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[48rem] ui-panel flex flex-col md:max-h-[90vh]">
 
         {/* Header */}
-        <div className="flex justify-between items-start p-6 border-b border-border-visible shrink-0">
+        <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <div className="w-2 h-2 rounded-full bg-success" />
@@ -147,7 +147,7 @@ export default function PublishModal({
         <form
           id="publish-form"
           onSubmit={handleConfirm}
-          className="flex-1 overflow-y-auto p-6 flex flex-col gap-6"
+          className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-6"
         >
           <div>
             <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
@@ -309,7 +309,7 @@ export default function PublishModal({
         </form>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-border-visible shrink-0">
+        <div className="flex flex-col md:flex-row md:justify-end gap-3 p-4 md:p-6 border-t border-border-visible shrink-0">
           <button
             type="button"
             onClick={onClose}
@@ -323,7 +323,7 @@ export default function PublishModal({
             form="publish-form"
             disabled={isPending}
             className={cn(
-              "ui-button-primary px-6 py-2 flex items-center gap-2",
+              "ui-button-primary px-6 py-2 flex items-center justify-center gap-2",
               isPending && "opacity-50 cursor-wait"
             )}
           >

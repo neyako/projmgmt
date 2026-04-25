@@ -81,14 +81,15 @@ export default function UpdateStatsModal({
   }
 
   return (
-    // Background Overlay
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 ui-modal-backdrop"
-      onClick={() => !isPending && onClose()}
-    >
+    <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
+      <div
+        className="absolute inset-0 ui-modal-backdrop"
+        onClick={() => !isPending && onClose()}
+      />
+
       {/* The Actual Modal Box - FORCED WIDTH */}
       <div
-        className="relative w-full max-w-[28rem] ui-panel p-6 flex flex-col min-w-0"
+        className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-panel p-4 md:p-6 flex flex-col min-w-0 overflow-y-auto md:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
@@ -178,7 +179,7 @@ export default function UpdateStatsModal({
           </div>
         </form>
 
-        <div className="flex justify-end gap-4 mt-8 w-full">
+        <div className="flex flex-col md:flex-row md:justify-end gap-3 md:gap-4 mt-8 w-full">
           <button
             type="button"
             onClick={onClose}
@@ -192,7 +193,7 @@ export default function UpdateStatsModal({
             form="stats-form"
             disabled={isPending}
             className={cn(
-              "ui-button-primary px-6 py-2 flex items-center gap-2",
+              "ui-button-primary px-6 py-2 flex items-center justify-center gap-2",
               isPending && "opacity-50 cursor-wait"
             )}
           >

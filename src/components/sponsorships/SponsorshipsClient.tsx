@@ -89,13 +89,13 @@ export default function SponsorshipsClient({
           <h1 className="ui-page-kicker mb-1">
             Pipeline
           </h1>
-          <div className="flex justify-between items-end border-b border-border-visible pb-2">
-            <div className="flex gap-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-border-visible pb-2">
+            <div className="flex gap-3 md:gap-6 overflow-x-auto pb-1 md:pb-0">
               {TABS.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`text-2xl font-bold uppercase tracking-wider transition-colors ${
+                  className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
                     activeTab === tab
                       ? "text-text-display"
                       : "text-text-disabled hover:text-text-secondary"
@@ -107,7 +107,7 @@ export default function SponsorshipsClient({
             </div>
             <button
               onClick={handleOpenNew}
-              className="ui-button-outline px-6 py-2 flex items-center shrink-0"
+              className="ui-button-outline px-6 py-2 flex items-center justify-center shrink-0"
             >
               <span className="material-symbols-outlined text-[14px] mr-2">add</span>
               NEW SPONSORSHIP
@@ -125,59 +125,106 @@ export default function SponsorshipsClient({
             </div>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr>
-                <th className="ui-table-head p-4">
-                  Brand
-                </th>
-                <th className="ui-table-head p-4">
-                  Status
-                </th>
-                <th className="ui-table-head p-4">
-                  Contact
-                </th>
-                <th className="ui-table-head p-4">
-                  Due Date
-                </th>
-                <th className="ui-table-head p-4 text-right">
-                  Value
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="md:hidden flex flex-col gap-3">
               {filtered.map((s) => (
-                <tr
+                <button
                   key={s.id}
+                  type="button"
                   onClick={() => handleOpenEdit(s.id)}
-                  className="ui-table-row cursor-pointer"
+                  className="ui-panel p-4 text-left flex flex-col gap-4"
                 >
-                  <td className="p-4 ui-table-cell font-bold">
-                    {s.brandName}
-                  </td>
-                  <td className="p-4 ui-table-cell">
-                    <span className="inline-flex items-center gap-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold font-mono text-text-display uppercase tracking-wider break-words">
+                        {s.brandName}
+                      </div>
+                      <div className="ui-page-meta mt-2 break-all">
+                        {s.contactEmail || "—"}
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-2 shrink-0">
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${statusDotColor(s.status)}`}
                       />
-                      <span className="uppercase tracking-widest text-[10px]">
+                      <span className="uppercase tracking-widest text-[10px] text-text-secondary">
                         {s.status}
                       </span>
                     </span>
-                  </td>
-                  <td className="p-4 ui-table-cell-muted">
-                    {s.contactEmail || "—"}
-                  </td>
-                  <td className="p-4 ui-table-cell-muted">
-                    {formatDate(s.dueDate)}
-                  </td>
-                  <td className="p-4 text-sm font-mono text-success text-right">
-                    ${s.budget.toLocaleString()}
-                  </td>
-                </tr>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 border-t border-border-visible pt-3">
+                    <div>
+                      <div className="ui-page-kicker">Due</div>
+                      <div className="text-xs font-mono text-text-display">
+                        {formatDate(s.dueDate)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="ui-page-kicker">Value</div>
+                      <div className="text-xs font-mono text-success">
+                        ${s.budget.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </button>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            <table className="hidden md:table w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  <th className="ui-table-head p-4">
+                    Brand
+                  </th>
+                  <th className="ui-table-head p-4">
+                    Status
+                  </th>
+                  <th className="ui-table-head p-4">
+                    Contact
+                  </th>
+                  <th className="ui-table-head p-4">
+                    Due Date
+                  </th>
+                  <th className="ui-table-head p-4 text-right">
+                    Value
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((s) => (
+                  <tr
+                    key={s.id}
+                    onClick={() => handleOpenEdit(s.id)}
+                    className="ui-table-row cursor-pointer"
+                  >
+                    <td className="p-4 ui-table-cell font-bold">
+                      {s.brandName}
+                    </td>
+                    <td className="p-4 ui-table-cell">
+                      <span className="inline-flex items-center gap-2">
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${statusDotColor(s.status)}`}
+                        />
+                        <span className="uppercase tracking-widest text-[10px]">
+                          {s.status}
+                        </span>
+                      </span>
+                    </td>
+                    <td className="p-4 ui-table-cell-muted">
+                      {s.contactEmail || "—"}
+                    </td>
+                    <td className="p-4 ui-table-cell-muted">
+                      {formatDate(s.dueDate)}
+                    </td>
+                    <td className="p-4 text-sm font-mono text-success text-right">
+                      ${s.budget.toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
 

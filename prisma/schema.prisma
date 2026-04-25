@@ -79,6 +79,7 @@ model Project {
   tiktokComments    Int      @default(0)
 
   briefingNotes     String?  // Required when contentType == "Sponsored"
+  script            String?  @default("")
   platformsTargeted String   @default("[]") // JSON array as string: ["TikTok","YT_Shorts"]
 
   // Kanban ordering

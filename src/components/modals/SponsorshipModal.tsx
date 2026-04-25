@@ -91,11 +91,11 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
   }
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
-      <div className="fixed top-0 right-0 h-screen w-full sm:w-[450px] ui-modal-shell border-l z-[9999] flex flex-col ">
-        <div className="flex justify-between items-start p-6 border-b border-border-visible shrink-0">
+      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[45rem] ui-modal-shell flex flex-col md:max-h-[90vh]">
+        <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? "EDIT SPONSORSHIP" : "NEW SPONSORSHIP"}
           </h2>
@@ -104,10 +104,10 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
           <form id="sponsorship-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Brand / Client</label>
                 <input
@@ -128,7 +128,7 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Budget ($)</label>
                 <input
@@ -176,7 +176,7 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
           </form>
         </div>
 
-        <div className="flex justify-between p-6 border-t border-border-visible shrink-0">
+        <div className="flex flex-col md:flex-row md:justify-between gap-3 p-4 md:p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
             <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
               DELETE
@@ -184,7 +184,7 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
           ) : (
             <div />
           )}
-          <div className="flex gap-3">
+          <div className="flex flex-col md:flex-row gap-3 md:ml-auto">
             <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
               CANCEL
             </button>

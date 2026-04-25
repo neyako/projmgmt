@@ -65,7 +65,7 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="shrink-0 flex items-center justify-between px-6 h-16 w-full border-b border-border bg-background z-40">
+      <header className="hidden md:flex shrink-0 items-center justify-between px-6 h-16 w-full border-b border-border bg-background z-40">
         <div className="flex items-center gap-md">
           <div className="hidden lg:flex items-center border-b border-border-visible px-2 py-1 gap-2">
             <span className="material-symbols-outlined text-[16px] text-text-secondary">

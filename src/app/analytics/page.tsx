@@ -75,17 +75,17 @@ export default async function AnalyticsPage() {
 
   return (
     <Shell>
-      <div className="w-full h-full p-8 overflow-y-auto">
+      <div className="w-full h-full p-lg overflow-y-auto">
         <div className="max-w-6xl mx-auto">
 
           {/* ─── HEADER ──────────────────────────────────── */}
           <div className="mb-12">
             <h1 className="ui-page-kicker mb-1">Performance</h1>
-            <div className="flex items-center gap-4 w-full flex-wrap">
-              <div className="ui-page-title text-2xl">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
+              <div className="ui-page-title text-xl md:text-2xl">
                 Performance Analytics
               </div>
-              <div className="flex items-center gap-2 ml-auto">
+              <div className="flex items-center gap-2 flex-wrap md:ml-auto">
                 <SyncButton platform="youtube" />
                 <SyncButton platform="meta" />
                 <SyncButton platform="tiktok" />
@@ -106,7 +106,7 @@ export default async function AnalyticsPage() {
                 <span className="ui-page-kicker">
                   {m.label}
                 </span>
-                <span className="text-4xl font-mono text-text-display tracking-widest mt-2">
+                <span className="text-3xl md:text-4xl font-mono text-text-display tracking-widest mt-2">
                   {formatNumber(m.value)}
                 </span>
               </div>
@@ -151,9 +151,9 @@ export default async function AnalyticsPage() {
                   return (
                     <div key={p.id} className="mb-6 w-full">
                       {/* Row header: title + views */}
-                      <div className="flex justify-between items-baseline gap-4">
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-2 md:gap-4">
                         <div className="flex flex-col min-w-0 flex-1">
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
                             {tags.length > 0 && (
                               <span className="flex gap-1 shrink-0">
                                 {tags.map((t) => (
@@ -166,16 +166,16 @@ export default async function AnalyticsPage() {
                                 ))}
                               </span>
                             )}
-                            <span className="text-sm font-mono text-text-display tracking-wider truncate">
+                            <span className="text-sm font-mono text-text-display tracking-wider break-words min-w-0">
                               {p.finalTitle ?? p.title}
                             </span>
                             {isShortForm && (
-                              <span className="ml-3 px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
+                              <span className="md:ml-3 px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
                                 Short Form
                               </span>
                             )}
                             {isLongForm && (
-                              <span className="ml-2 px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
+                              <span className="md:ml-2 px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
                                 Long Form
                               </span>
                             )}
@@ -193,7 +193,7 @@ export default async function AnalyticsPage() {
                             {formatNumber(p.totalComments)} COMMENTS
                           </span>
                         </div>
-                        <span className="text-sm font-mono text-text-display tracking-widest shrink-0">
+                        <span className="text-sm font-mono text-text-display tracking-widest shrink-0 md:text-right">
                           {formatNumber(p.totalViews)}
                         </span>
                       </div>

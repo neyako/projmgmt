@@ -102,10 +102,10 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
           <h1 className="ui-page-kicker mb-1">
             Archive
           </h1>
-          <div className="flex gap-6 border-b border-border-visible pb-2">
+          <div className="flex gap-3 md:gap-6 border-b border-border-visible pb-2 overflow-x-auto">
             <button
               onClick={() => setActiveTab("Published")}
-              className={`text-2xl font-bold uppercase tracking-wider transition-colors ${
+              className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
                 activeTab === "Published" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
               }`}
             >
@@ -113,7 +113,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
             </button>
             <button
               onClick={() => setActiveTab("Scrapped")}
-              className={`text-2xl font-bold uppercase tracking-wider transition-colors ${
+              className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
                 activeTab === "Scrapped" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
               }`}
             >
@@ -132,33 +132,8 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
             </div>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr>
-                <th className="ui-table-head p-4">
-                  Video Title
-                </th>
-                <th className="ui-table-head p-4">
-                  Status
-                </th>
-                <th className="ui-table-head p-4">
-                  {activeTab === "Published" ? "Publish Date" : "Last Updated"}
-                </th>
-                <th className="ui-table-head p-4 text-right">
-                  Views
-                </th>
-                <th className="ui-table-head p-4 text-right">
-                  Likes
-                </th>
-                <th className="ui-table-head p-4 text-right">
-                  Comments
-                </th>
-                <th className="ui-table-head p-4 text-right">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="md:hidden flex flex-col gap-3">
               {activeData.map((project) => {
                 const totalViews =
                   (project.youtubeViews || 0) +
@@ -174,63 +149,178 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                   (project.tiktokComments || 0);
 
                 return (
-                  <tr
+                  <div
                     key={project.id}
                     onClick={() => setSelectedId(project.id)}
-                    className="ui-table-row cursor-pointer"
+                    className="ui-panel p-4 flex flex-col gap-4 cursor-pointer"
                   >
-                    <td className="p-4 ui-table-cell">{project.title}</td>
-                    <td className="p-4 ui-table-cell">
-                      <span className="inline-flex items-center gap-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold font-mono text-text-display uppercase tracking-wider break-words">
+                          {project.title}
+                        </div>
+                        <div className="ui-page-meta mt-2">
+                          {formatDate(activeTab === "Published" ? project.publishDate : project.updatedAt)}
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-2 shrink-0">
                         <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
-                        <span className="uppercase tracking-widest text-[10px]">
+                        <span className="uppercase tracking-widest text-[10px] text-text-secondary">
                           {project.status}
                         </span>
                       </span>
-                    </td>
-                    <td className="p-4 ui-table-cell">
-                      {formatDate(activeTab === "Published" ? project.publishDate : project.updatedAt)}
-                    </td>
-                    <td className="p-4 ui-table-cell text-right">
-                      {totalViews.toLocaleString()}
-                    </td>
-                    <td className="p-4 ui-table-cell text-right">
-                      {totalLikes.toLocaleString()}
-                    </td>
-                    <td className="p-4 ui-table-cell text-right">
-                      {totalComments.toLocaleString()}
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex gap-2 justify-end">
-                        {activeTab === "Published" && (
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 border-t border-border-visible pt-3">
+                      <div>
+                        <div className="ui-page-kicker">Views</div>
+                        <div className="text-sm font-mono text-text-display">
+                          {totalViews.toLocaleString()}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="ui-page-kicker">Likes</div>
+                        <div className="text-sm font-mono text-text-display">
+                          {totalLikes.toLocaleString()}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="ui-page-kicker">Comments</div>
+                        <div className="text-sm font-mono text-text-display">
+                          {totalComments.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      {activeTab === "Published" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setStatsTargetId(project.id);
+                          }}
+                          disabled={isPending}
+                          className="ui-button-outline px-3 py-2 disabled:opacity-50"
+                        >
+                          [ UPDATE STATS ]
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRestore(project.id);
+                        }}
+                        disabled={isPending}
+                        className="ui-button-outline px-3 py-2 disabled:opacity-50"
+                      >
+                        RESTORE TO PIPELINE
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <table className="hidden md:table w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  <th className="ui-table-head p-4">
+                    Video Title
+                  </th>
+                  <th className="ui-table-head p-4">
+                    Status
+                  </th>
+                  <th className="ui-table-head p-4">
+                    {activeTab === "Published" ? "Publish Date" : "Last Updated"}
+                  </th>
+                  <th className="ui-table-head p-4 text-right">
+                    Views
+                  </th>
+                  <th className="ui-table-head p-4 text-right">
+                    Likes
+                  </th>
+                  <th className="ui-table-head p-4 text-right">
+                    Comments
+                  </th>
+                  <th className="ui-table-head p-4 text-right">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeData.map((project) => {
+                  const totalViews =
+                    (project.youtubeViews || 0) +
+                    (project.metaViews || 0) +
+                    (project.tiktokViews || 0);
+                  const totalLikes =
+                    (project.youtubeLikes || 0) +
+                    (project.metaLikes || 0) +
+                    (project.tiktokLikes || 0);
+                  const totalComments =
+                    (project.youtubeComments || 0) +
+                    (project.metaComments || 0) +
+                    (project.tiktokComments || 0);
+
+                  return (
+                    <tr
+                      key={project.id}
+                      onClick={() => setSelectedId(project.id)}
+                      className="ui-table-row cursor-pointer"
+                    >
+                      <td className="p-4 ui-table-cell">{project.title}</td>
+                      <td className="p-4 ui-table-cell">
+                        <span className="inline-flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
+                          <span className="uppercase tracking-widest text-[10px]">
+                            {project.status}
+                          </span>
+                        </span>
+                      </td>
+                      <td className="p-4 ui-table-cell">
+                        {formatDate(activeTab === "Published" ? project.publishDate : project.updatedAt)}
+                      </td>
+                      <td className="p-4 ui-table-cell text-right">
+                        {totalViews.toLocaleString()}
+                      </td>
+                      <td className="p-4 ui-table-cell text-right">
+                        {totalLikes.toLocaleString()}
+                      </td>
+                      <td className="p-4 ui-table-cell text-right">
+                        {totalComments.toLocaleString()}
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex gap-2 justify-end">
+                          {activeTab === "Published" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStatsTargetId(project.id);
+                              }}
+                              disabled={isPending}
+                              className="ui-button-outline px-3 py-1 disabled:opacity-50"
+                            >
+                              [ UPDATE STATS ]
+                            </button>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setStatsTargetId(project.id);
+                              handleRestore(project.id);
                             }}
                             disabled={isPending}
                             className="ui-button-outline px-3 py-1 disabled:opacity-50"
                           >
-                            [ UPDATE STATS ]
+                            Restore to Pipeline
                           </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRestore(project.id);
-                          }}
-                          disabled={isPending}
-                          className="ui-button-outline px-3 py-1 disabled:opacity-50"
-                        >
-                          Restore to Pipeline
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
 

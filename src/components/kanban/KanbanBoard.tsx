@@ -245,7 +245,7 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-lg h-full min-w-max pb-lg">
+      <div className="flex gap-md md:gap-lg h-full md:min-w-max pb-lg snap-x snap-mandatory md:snap-none">
         {KANBAN_STAGES.filter((s) => s !== "Published").map((stage) => (
           <KanbanColumn
             key={stage}
@@ -283,4 +283,3 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
     </DndContext>
   );
 }
-

@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import {
+  type ChangeEvent,
+  type UIEvent,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import {
   createProject,
   getUsers,
@@ -11,6 +18,7 @@ import {
   updateProjectStatusDirect,
   toggleProjectPlatform,
 } from "@/actions/projects";
+import { updateProjectScript } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
 import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -39,6 +47,155 @@ function normalizeHashtags(raw?: string | null): string {
     .filter(Boolean)
     .map((t) => `#${t}`)
     .join(" ");
+}
+
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function renderInlineMarkdownHtml(text: string) {
+  const tokens: string[] = [];
+  const pattern = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|\*[^*]+\*)/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > cursor) {
+      tokens.push(escapeHtml(text.slice(cursor, match.index)));
+    }
+
+    const token = match[0];
+
+    if (token.startsWith("**")) {
+      tokens.push(
+        `<span><span class="text-text-disabled">**</span><strong class="text-text-display font-bold">${escapeHtml(token.slice(2, -2))}</strong><span class="text-text-disabled">**</span></span>`
+      );
+    } else if (token.startsWith("`")) {
+      tokens.push(
+        `<span><span class="text-text-disabled">\`</span><code class="border border-border-visible bg-surface px-1 text-text-display">${escapeHtml(token.slice(1, -1))}</code><span class="text-text-disabled">\`</span></span>`
+      );
+    } else if (token.startsWith("[")) {
+      const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      const href = link?.[2] ?? "";
+      tokens.push(
+        `<span><span class="text-text-disabled">[</span><span class="text-text-display underline decoration-border-visible underline-offset-4">${escapeHtml(link?.[1] ?? "")}</span><span class="text-text-disabled">](${escapeHtml(href)})</span></span>`
+      );
+    } else {
+      tokens.push(
+        `<span><span class="text-text-disabled">*</span><em class="text-text-primary italic">${escapeHtml(token.slice(1, -1))}</em><span class="text-text-disabled">*</span></span>`
+      );
+    }
+
+    cursor = pattern.lastIndex;
+  }
+
+  if (cursor < text.length) {
+    tokens.push(escapeHtml(text.slice(cursor)));
+  }
+
+  return tokens.join("");
+}
+
+function renderMarkdownInputLineHtml(line: string, index: number) {
+  const trimmed = line.trim();
+
+  if (!line) {
+    return `<div data-line="${index}" class="min-h-[1.625rem]"><br></div>`;
+  }
+
+  if (/^#{1,3}\s+/.test(trimmed)) {
+    const marker = trimmed.match(/^#{1,3}/)?.[0] ?? "#";
+    const body = trimmed.replace(/^#{1,3}\s+/, "");
+    const className =
+      marker.length === 1
+        ? "text-lg text-text-display"
+        : marker.length === 2
+          ? "text-base text-text-display"
+          : "text-sm text-text-primary";
+
+    return `<div data-line="${index}" class="min-h-[1.625rem] font-bold uppercase tracking-widest ${className}"><span class="text-text-disabled">${escapeHtml(marker)} </span>${renderInlineMarkdownHtml(body)}</div>`;
+  }
+
+  if (/^[-*]\s+/.test(trimmed)) {
+    const marker = trimmed.slice(0, 1);
+    const body = trimmed.replace(/^[-*]\s+/, "");
+    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-primary"><span class="text-text-secondary">${escapeHtml(marker)} </span>${renderInlineMarkdownHtml(body)}</div>`;
+  }
+
+  if (/^\d+\.\s+/.test(trimmed)) {
+    const marker = trimmed.match(/^\d+\./)?.[0] ?? "1.";
+    const body = trimmed.replace(/^\d+\.\s+/, "");
+    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-primary"><span class="text-text-secondary">${escapeHtml(marker)} </span>${renderInlineMarkdownHtml(body)}</div>`;
+  }
+
+  if (/^>\s?/.test(trimmed)) {
+    return `<div data-line="${index}" class="min-h-[1.625rem] border-l border-border-visible pl-3 text-text-secondary"><span>&gt; </span>${renderInlineMarkdownHtml(trimmed.replace(/^>\s?/, ""))}</div>`;
+  }
+
+  if (/^-{3,}$/.test(trimmed)) {
+    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-disabled">${escapeHtml(line)}<div class="border-t border-border-visible"></div></div>`;
+  }
+
+  if (/^```/.test(trimmed)) {
+    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-disabled">${escapeHtml(line)}</div>`;
+  }
+
+  return `<div data-line="${index}" class="min-h-[1.625rem] text-text-primary">${renderInlineMarkdownHtml(line)}</div>`;
+}
+
+function renderMarkdownInputHtml(value: string) {
+  const lines = value ? value.split("\n") : [""];
+  return lines.map((line, index) => renderMarkdownInputLineHtml(line, index)).join("");
+}
+
+function MarkdownLiveEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  function handleChange(event: ChangeEvent<HTMLTextAreaElement>) {
+    onChange(event.target.value);
+  }
+
+  function handleScroll(event: UIEvent<HTMLTextAreaElement>) {
+    if (!previewRef.current) return;
+    previewRef.current.scrollTop = event.currentTarget.scrollTop;
+    previewRef.current.scrollLeft = event.currentTarget.scrollLeft;
+  }
+
+  return (
+    <div className="relative min-h-[360px] md:min-h-[520px]">
+      {!value && (
+        <div className="pointer-events-none absolute left-4 top-4 z-10 font-mono text-sm text-text-disabled">
+          // Initialize script sequence...
+        </div>
+      )}
+      <div
+        ref={previewRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-auto p-4 font-mono text-sm leading-relaxed text-text-primary [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        dangerouslySetInnerHTML={{ __html: renderMarkdownInputHtml(value) }}
+      />
+      <textarea
+        id="project-script"
+        aria-label="Script & Notes Markdown editor"
+        value={value}
+        onChange={handleChange}
+        onScroll={handleScroll}
+        spellCheck={false}
+        className="relative z-10 min-h-[360px] md:min-h-[520px] w-full resize-none overflow-auto bg-transparent p-4 font-mono text-sm leading-relaxed text-transparent caret-text-display outline-none selection:bg-accent-subtle selection:text-text-display focus:bg-surface/20 color-scheme-dark"
+        style={{ colorScheme: "dark" }}
+      />
+    </div>
+  );
 }
 
 function formatPublishDate(d?: Date | string | null): string {
@@ -125,6 +282,8 @@ export default function ProjectDetailsModal({
   // Shot input drafts
   const [aRollDraft, setARollDraft] = useState("");
   const [bRollDraft, setBRollDraft] = useState("");
+  const [localScript, setLocalScript] = useState("");
+  const [isSavingScript, setIsSavingScript] = useState(false);
 
   // Interactive metadata state
   const [dueDate, setDueDate] = useState("");
@@ -180,6 +339,7 @@ export default function ProjectDetailsModal({
       setFormat(project.format);
       setPlatforms(parsePlatforms(project.platformsTargeted));
       setBriefingNotes(project.briefingNotes || "");
+      setLocalScript(project.script || "");
       setARollShots(parseShotItems(project.aRollShots));
       setBRollShots(parseShotItems(project.bRollShots));
       setDueDate(toDateInputValue(project.dueDate));
@@ -200,6 +360,7 @@ export default function ProjectDetailsModal({
       setFormat("Short_Form");
       setPlatforms([]);
       setBriefingNotes("");
+      setLocalScript("");
       setARollShots([]);
       setBRollShots([]);
       setDueDate("");
@@ -320,6 +481,23 @@ export default function ProjectDetailsModal({
       }
       onProjectUpdate?.({ id: project.id, ...normalized });
     });
+  }
+
+  async function saveScript() {
+    if (!project || isSavingScript) return;
+
+    setIsSavingScript(true);
+    try {
+      const result = await updateProjectScript(project.id, localScript);
+      if (!result.success) {
+        showToast(result.error, "error");
+        return;
+      }
+      onProjectUpdate?.({ id: project.id, script: localScript });
+      showToast("Script saved.", "success");
+    } finally {
+      setIsSavingScript(false);
+    }
   }
 
   function saveRawFolderName() {
@@ -540,15 +718,15 @@ export default function ProjectDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       {/* Backdrop */}
       <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-5xl ui-panel flex flex-col max-h-[90vh]">
+      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-5xl ui-panel flex flex-col md:max-h-[90vh]">
 
         {/* ─── HEADER ─── */}
-        <div className="flex justify-between items-start p-6 border-b border-border-visible shrink-0">
+        <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
           <div className="flex-1 min-w-0">
             {isEditing && (
               <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -568,7 +746,7 @@ export default function ProjectDetailsModal({
               </div>
             )}
             <input
-              className="text-2xl font-bold text-text-display bg-transparent outline-none uppercase w-full placeholder:text-text-disabled"
+              className="text-xl md:text-2xl font-bold text-text-display bg-transparent outline-none uppercase w-full placeholder:text-text-disabled"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="PROJECT TITLE"
@@ -590,10 +768,10 @@ export default function ProjectDetailsModal({
         </div>
 
         {/* ─── TWO-COLUMN BODY ─── */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
 
           {/* ═══ LEFT COLUMN — Assets & Tasks ═══ */}
-          <div className="flex-1 overflow-y-auto p-6 border-r border-border-visible">
+          <div className="flex-none md:flex-1 overflow-visible md:overflow-y-auto p-4 md:p-6 md:border-r border-border-visible">
 
             {/* CREATE MODE — form fields */}
             {!isEditing && (
@@ -1039,12 +1217,44 @@ export default function ProjectDetailsModal({
                     </div>
                   </div>
                 </div>
+
+                {/* ── Script Editor ── */}
+                <div>
+                  <label
+                    htmlFor="project-script"
+                    className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block"
+                  >
+                    Script & Notes
+                  </label>
+                  <div className="border border-border-visible bg-background">
+                    <div className="text-[10px] font-mono tracking-widest text-text-secondary uppercase border-b border-border-visible px-3 py-2">
+                      [ LIVE MARKDOWN INPUT ]
+                    </div>
+                    <MarkdownLiveEditor
+                      value={localScript}
+                      onChange={setLocalScript}
+                    />
+                  </div>
+                  <div className="flex justify-end mt-3">
+                    <button
+                      type="button"
+                      onClick={saveScript}
+                      disabled={isSavingScript}
+                      className={cn(
+                        "ui-button-outline px-4 py-2 disabled:opacity-50 disabled:cursor-wait",
+                        isSavingScript && "cursor-wait"
+                      )}
+                    >
+                      {isSavingScript ? "[ SAVING... ]" : "[ SAVE SCRIPT ]"}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
           {/* ═══ RIGHT COLUMN — Metadata Sidebar ═══ */}
-          <div className="w-80 shrink-0 overflow-y-auto p-6 bg-surface">
+          <div className="w-full md:w-80 shrink-0 overflow-visible md:overflow-y-auto p-4 md:p-6 bg-surface border-t md:border-t-0 border-border-visible">
 
             {/* ── Metadata ── */}
             <div className="flex flex-col">

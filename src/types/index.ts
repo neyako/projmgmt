@@ -25,6 +25,7 @@ export type ProjectCardData = Pick<
   | "folderName"
   | "reviewLink"
   | "briefingNotes"
+  | "script"
   | "reviewFeedback"
   | "creator"
   | "aRollAssignee"

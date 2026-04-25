@@ -169,6 +169,14 @@ body {
   background-color: var(--color-background);
 }
 
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 /* Selection */
 ::selection {
   background-color: var(--color-selection-bg);

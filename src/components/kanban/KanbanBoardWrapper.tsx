@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import KanbanBoard from "./KanbanBoard";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
 import PublishModal from "@/components/modals/PublishModal";
@@ -15,6 +15,7 @@ export default function KanbanBoardWrapper({
   initialProjects,
 }: KanbanBoardWrapperProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -35,12 +36,28 @@ export default function KanbanBoardWrapper({
     setProjects(initialProjects);
   }, [initialProjects]);
 
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setSelectedProjectId(null);
+      setIsModalOpen(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("new");
+      window.history.replaceState(
+        null,
+        "",
+        params.toString()
+          ? `${window.location.pathname}?${params.toString()}`
+          : window.location.pathname
+      );
+    }
+  }, [searchParams]);
+
   if (!isMounted) {
     return (
-      <div className="h-full w-max min-w-full p-lg">
-        <div className="flex gap-lg h-full min-w-max pb-lg">
+      <div className="h-full md:w-max md:min-w-full p-md md:p-lg overflow-x-auto md:overflow-visible">
+        <div className="flex gap-md md:gap-lg h-full md:min-w-max pb-lg snap-x snap-mandatory md:snap-none">
           {["IDEATION", "SCRIPTING", "FILMING", "EDITING", "REVIEW"].map((stage) => (
-            <div key={stage} className="w-[320px] flex flex-col flex-shrink-0 h-full">
+            <div key={stage} className="w-[85vw] md:w-[320px] flex flex-col flex-shrink-0 h-full snap-center">
               <div className="flex items-center gap-2 mb-md border-b border-border-visible pb-2">
                 <span className="text-style-label text-text-primary">{stage}</span>
                 <span className="text-style-label text-text-secondary">[ — ]</span>
@@ -108,7 +125,7 @@ export default function KanbanBoardWrapper({
   return (
     <>
       {/* Scrollable board area */}
-      <div className="h-full w-max min-w-full p-lg">
+      <div className="h-full md:w-max md:min-w-full p-md md:p-lg overflow-x-auto md:overflow-visible">
         <KanbanBoard
           projects={projects}
           setProjects={setProjects}
