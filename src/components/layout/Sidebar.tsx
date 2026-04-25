@@ -57,9 +57,9 @@ export default function Sidebar() {
 
   return (
     <>
-      <nav className="hidden md:flex flex-col gap-2 p-4 h-full fixed left-0 top-0 w-64 border-r border-border bg-background z-50">
-        <div className="mb-xl px-3">
-          <h1 className="font-[family-name:var(--font-label)] text-[44px] font-black text-text-display tracking-tight">
+      <nav className="hidden md:flex flex-col gap-2 p-3 lg:p-4 h-full fixed left-0 top-0 w-56 lg:w-64 border-r border-border bg-background z-50">
+        <div className="mb-lg lg:mb-xl px-2 lg:px-3">
+          <h1 className="font-[family-name:var(--font-label)] text-[32px] lg:text-[44px] font-black text-text-display tracking-tight leading-none">
             projmgmt
           </h1>
         </div>
@@ -72,7 +72,7 @@ export default function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "px-3 py-2 flex items-center gap-4 text-style-label tracking-widest transition-all duration-150 active:scale-95",
+                  "px-2 lg:px-3 py-2 flex items-center gap-3 lg:gap-4 text-style-label tracking-widest transition-all duration-150 active:scale-95",
                   isActive
                     ? "text-text-display border border-border-visible bg-surface-raised"
                     : "text-text-disabled hover:text-text-display hover:bg-surface-raised border border-transparent"

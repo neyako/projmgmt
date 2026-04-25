@@ -1,9 +1,15 @@
 "use client";
 
 import {
-  type ChangeEvent,
-  type UIEvent,
+  type ClipboardEvent,
+  type FocusEvent,
+  type FormEvent as ReactFormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  useCallback,
   useEffect,
+  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
@@ -57,99 +63,528 @@ function escapeHtml(text: string) {
     .replace(/"/g, "&quot;");
 }
 
-function renderInlineMarkdownHtml(text: string) {
-  const tokens: string[] = [];
-  const pattern = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|\*[^*]+\*)/g;
+// ─── WYSIWYG Markdown Editor (Notion/Obsidian-style) ────────
+// Per-line contenteditable. Lines render formatted while raw markdown stays in state.
+
+function renderInlineFormatted(text: string): string {
+  if (!text) return "";
+  const pattern = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\n]+\)|\*[^*\n]+\*)/g;
+  let out = "";
+  let cursor = 0;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(text)) !== null) {
+    if (m.index > cursor) out += escapeHtml(text.slice(cursor, m.index));
+    const tok = m[0];
+    if (tok.startsWith("**")) {
+      out += `<strong class="font-bold text-text-display">${escapeHtml(tok.slice(2, -2))}</strong>`;
+    } else if (tok.startsWith("`")) {
+      out += `<code class="border border-border-visible bg-surface px-1.5 py-0.5 text-text-display rounded-sm">${escapeHtml(tok.slice(1, -1))}</code>`;
+    } else if (tok.startsWith("[")) {
+      const link = tok.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      out += `<span class="text-text-display underline decoration-border-visible underline-offset-4">${escapeHtml(link?.[1] ?? "")}</span>`;
+    } else {
+      out += `<em class="italic text-text-primary">${escapeHtml(tok.slice(1, -1))}</em>`;
+    }
+    cursor = pattern.lastIndex;
+  }
+  if (cursor < text.length) out += escapeHtml(text.slice(cursor));
+  return out;
+}
+
+type LineKind = "heading" | "bullet" | "numbered" | "quote" | "hr" | "code" | "para";
+
+function getLineMeta(text: string): {
+  kind: LineKind;
+  level: number;
+  marker: string;
+  body: string;
+} {
+  if (!text.trim()) {
+    return { kind: "para", level: 0, marker: "", body: "" };
+  }
+  const trimmed = text.trim();
+  const hMatch = trimmed.match(/^(#{1,3})\s+(.*)$/);
+  if (hMatch) {
+    return { kind: "heading", level: hMatch[1].length, marker: hMatch[1] + " ", body: hMatch[2] };
+  }
+  if (/^[-*]\s+/.test(trimmed)) {
+    return { kind: "bullet", level: 0, marker: trimmed.slice(0, 2), body: trimmed.replace(/^[-*]\s+/, "") };
+  }
+  const nMatch = trimmed.match(/^(\d+\.)\s+(.*)$/);
+  if (nMatch) {
+    return { kind: "numbered", level: 0, marker: nMatch[1] + " ", body: nMatch[2] };
+  }
+  if (/^>\s?/.test(trimmed)) {
+    const marker = trimmed.match(/^>\s?/)?.[0] ?? "> ";
+    return { kind: "quote", level: 0, marker, body: trimmed.replace(/^>\s?/, "") };
+  }
+  if (/^-{3,}$/.test(trimmed)) {
+    return { kind: "hr", level: 0, marker: "", body: "" };
+  }
+  if (/^```/.test(trimmed)) {
+    return { kind: "code", level: 0, marker: "", body: text };
+  }
+  return { kind: "para", level: 0, marker: "", body: text };
+}
+
+function lineWrapperClassName(kind: LineKind, level: number): string {
+  const base =
+    "outline-none focus:outline-none px-3 py-1 min-h-[1.75rem] whitespace-pre-wrap break-words leading-relaxed";
+
+  if (kind === "heading") {
+    if (level === 1) return `${base} text-2xl md:text-3xl font-bold text-text-display tracking-tight mt-2`;
+    if (level === 2) return `${base} text-xl md:text-2xl font-bold text-text-display tracking-tight mt-2`;
+    return `${base} text-lg font-bold text-text-display tracking-tight`;
+  }
+  if (kind === "bullet" || kind === "numbered") {
+    if (kind === "bullet") {
+      return `${base} relative text-text-primary pl-7 before:absolute before:left-2 before:text-text-secondary before:content-['•']`;
+    }
+    return `${base} text-text-primary pl-7`;
+  }
+  if (kind === "quote") {
+    return `${base} text-text-secondary italic border-l-2 border-border-visible ml-1`;
+  }
+  if (kind === "hr") {
+    return `${base} text-text-disabled flex items-center`;
+  }
+  if (kind === "code") {
+    return `${base} text-text-secondary font-mono text-xs`;
+  }
+  return `${base} text-text-primary`;
+}
+
+function renderInactiveInner(text: string): string {
+  const meta = getLineMeta(text);
+  const empty = "<br>";
+  if (meta.kind === "heading") {
+    return renderInlineFormatted(meta.body) || empty;
+  }
+  if (meta.kind === "bullet") {
+    return renderInlineFormatted(meta.body) || empty;
+  }
+  if (meta.kind === "numbered") {
+    const trimmed = text.trim();
+    const m = trimmed.match(/^(\d+\.)\s/);
+    const marker = m?.[1] ?? "1.";
+    return `<span class="absolute left-1 select-none text-text-secondary" contenteditable="false">${escapeHtml(marker)}</span>${renderInlineFormatted(meta.body) || empty}`;
+  }
+  if (meta.kind === "quote") {
+    return `<span class="block pl-3">${renderInlineFormatted(meta.body) || empty}</span>`;
+  }
+  if (meta.kind === "hr") {
+    return `<span class="block w-full border-t border-border-visible h-0"></span>`;
+  }
+  if (meta.kind === "code") {
+    return escapeHtml(text);
+  }
+  if (!text) return empty;
+  return renderInlineFormatted(text) || empty;
+}
+
+function renderActiveInner(text: string): string {
+  return renderInactiveInner(text);
+}
+
+function getCaretOffsetWithin(el: HTMLElement): number {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return 0;
+  const range = sel.getRangeAt(0);
+  if (!el.contains(range.endContainer)) return 0;
+  const pre = range.cloneRange();
+  pre.selectNodeContents(el);
+  pre.setEnd(range.endContainer, range.endOffset);
+  return pre.toString().length;
+}
+
+function getCaretOffsetFromPoint(el: HTMLElement, x: number, y: number): number {
+  const doc = el.ownerDocument as Document & {
+    caretRangeFromPoint?: (x: number, y: number) => Range | null;
+    caretPositionFromPoint?: (
+      x: number,
+      y: number
+    ) => { offsetNode: Node; offset: number } | null;
+  };
+  let range: Range | null = null;
+
+  if (doc.caretRangeFromPoint) {
+    range = doc.caretRangeFromPoint(x, y);
+  } else if (doc.caretPositionFromPoint) {
+    const position = doc.caretPositionFromPoint(x, y);
+    if (position) {
+      range = doc.createRange();
+      range.setStart(position.offsetNode, position.offset);
+    }
+  }
+
+  if (!range || !el.contains(range.startContainer)) {
+    return rawOffsetToVisibleOffset(el.textContent ?? "", (el.textContent ?? "").length);
+  }
+
+  const preRange = range.cloneRange();
+  preRange.selectNodeContents(el);
+  preRange.setEnd(range.startContainer, range.startOffset);
+  return preRange.toString().length;
+}
+
+function setCaretOffsetWithin(el: HTMLElement, offset: number) {
+  const sel = window.getSelection();
+  if (!sel) return;
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+  let remaining = offset;
+  let target: Text | null = null;
+  let targetOffset = 0;
+  while (walker.nextNode()) {
+    const n = walker.currentNode as Text;
+    const len = n.textContent?.length ?? 0;
+    if (remaining <= len) {
+      target = n;
+      targetOffset = remaining;
+      break;
+    }
+    remaining -= len;
+  }
+  const range = document.createRange();
+  if (target) {
+    range.setStart(target, targetOffset);
+  } else {
+    range.selectNodeContents(el);
+    range.collapse(false);
+  }
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function getSelectionOffsetsWithin(el: HTMLElement): { start: number; end: number } {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return { start: 0, end: 0 };
+
+  const range = sel.getRangeAt(0);
+  if (!el.contains(range.commonAncestorContainer)) return { start: 0, end: 0 };
+
+  const startRange = range.cloneRange();
+  startRange.selectNodeContents(el);
+  startRange.setEnd(range.startContainer, range.startOffset);
+
+  const endRange = range.cloneRange();
+  endRange.selectNodeContents(el);
+  endRange.setEnd(range.endContainer, range.endOffset);
+
+  return {
+    start: startRange.toString().length,
+    end: endRange.toString().length,
+  };
+}
+
+function getLineBodyStart(text: string): number {
+  const heading = text.match(/^(#{1,3}\s+)/);
+  if (heading) return heading[1].length;
+  const bullet = text.match(/^[-*]\s+/);
+  if (bullet) return bullet[0].length;
+  const numbered = text.match(/^\d+\.\s+/);
+  if (numbered) return numbered[0].length;
+  const quote = text.match(/^>\s?/);
+  if (quote) return quote[0].length;
+  if (/^-{3,}$/.test(text.trim())) return text.length;
+  return 0;
+}
+
+function buildInlineVisibleMap(text: string): number[] {
+  const map: number[] = [0];
+  const pattern = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\n]+\)|\*[^*\n]+\*)/g;
+  let visibleLength = 0;
   let cursor = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > cursor) {
-      tokens.push(escapeHtml(text.slice(cursor, match.index)));
+  function appendPlain(start: number, end: number) {
+    for (let raw = start; raw < end; raw += 1) {
+      map[visibleLength] = raw;
+      visibleLength += 1;
+      map[visibleLength] = raw + 1;
     }
+  }
+
+  function appendToken(rawStart: number, bodyStart: number, body: string, rawEnd: number) {
+    map[visibleLength] = bodyStart;
+    for (let i = 0; i < body.length; i += 1) {
+      visibleLength += 1;
+      map[visibleLength] = bodyStart + i + 1;
+    }
+    map[visibleLength] = rawEnd;
+  }
+
+  while ((match = pattern.exec(text)) !== null) {
+    appendPlain(cursor, match.index);
 
     const token = match[0];
-
+    const rawStart = match.index;
+    const rawEnd = pattern.lastIndex;
     if (token.startsWith("**")) {
-      tokens.push(
-        `<span><span class="text-text-disabled">**</span><strong class="text-text-display font-bold">${escapeHtml(token.slice(2, -2))}</strong><span class="text-text-disabled">**</span></span>`
-      );
+      appendToken(rawStart, rawStart + 2, token.slice(2, -2), rawEnd);
     } else if (token.startsWith("`")) {
-      tokens.push(
-        `<span><span class="text-text-disabled">\`</span><code class="border border-border-visible bg-surface px-1 text-text-display">${escapeHtml(token.slice(1, -1))}</code><span class="text-text-disabled">\`</span></span>`
-      );
+      appendToken(rawStart, rawStart + 1, token.slice(1, -1), rawEnd);
     } else if (token.startsWith("[")) {
       const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-      const href = link?.[2] ?? "";
-      tokens.push(
-        `<span><span class="text-text-disabled">[</span><span class="text-text-display underline decoration-border-visible underline-offset-4">${escapeHtml(link?.[1] ?? "")}</span><span class="text-text-disabled">](${escapeHtml(href)})</span></span>`
-      );
+      appendToken(rawStart, rawStart + 1, link?.[1] ?? "", rawEnd);
     } else {
-      tokens.push(
-        `<span><span class="text-text-disabled">*</span><em class="text-text-primary italic">${escapeHtml(token.slice(1, -1))}</em><span class="text-text-disabled">*</span></span>`
-      );
+      appendToken(rawStart, rawStart + 1, token.slice(1, -1), rawEnd);
     }
 
-    cursor = pattern.lastIndex;
+    cursor = rawEnd;
   }
 
-  if (cursor < text.length) {
-    tokens.push(escapeHtml(text.slice(cursor)));
-  }
-
-  return tokens.join("");
+  appendPlain(cursor, text.length);
+  map[visibleLength] = text.length;
+  return map;
 }
 
-function renderMarkdownInputLineHtml(line: string, index: number) {
-  const trimmed = line.trim();
-
-  if (!line) {
-    return `<div data-line="${index}" class="min-h-[1.625rem]"><br></div>`;
-  }
-
-  if (/^#{1,3}\s+/.test(trimmed)) {
-    const marker = trimmed.match(/^#{1,3}/)?.[0] ?? "#";
-    const body = trimmed.replace(/^#{1,3}\s+/, "");
-    const className =
-      marker.length === 1
-        ? "text-lg text-text-display"
-        : marker.length === 2
-          ? "text-base text-text-display"
-          : "text-sm text-text-primary";
-
-    return `<div data-line="${index}" class="min-h-[1.625rem] font-bold uppercase tracking-widest ${className}"><span class="text-text-disabled">${escapeHtml(marker)} </span>${renderInlineMarkdownHtml(body)}</div>`;
-  }
-
-  if (/^[-*]\s+/.test(trimmed)) {
-    const marker = trimmed.slice(0, 1);
-    const body = trimmed.replace(/^[-*]\s+/, "");
-    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-primary"><span class="text-text-secondary">${escapeHtml(marker)} </span>${renderInlineMarkdownHtml(body)}</div>`;
-  }
-
-  if (/^\d+\.\s+/.test(trimmed)) {
-    const marker = trimmed.match(/^\d+\./)?.[0] ?? "1.";
-    const body = trimmed.replace(/^\d+\.\s+/, "");
-    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-primary"><span class="text-text-secondary">${escapeHtml(marker)} </span>${renderInlineMarkdownHtml(body)}</div>`;
-  }
-
-  if (/^>\s?/.test(trimmed)) {
-    return `<div data-line="${index}" class="min-h-[1.625rem] border-l border-border-visible pl-3 text-text-secondary"><span>&gt; </span>${renderInlineMarkdownHtml(trimmed.replace(/^>\s?/, ""))}</div>`;
-  }
-
-  if (/^-{3,}$/.test(trimmed)) {
-    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-disabled">${escapeHtml(line)}<div class="border-t border-border-visible"></div></div>`;
-  }
-
-  if (/^```/.test(trimmed)) {
-    return `<div data-line="${index}" class="min-h-[1.625rem] text-text-disabled">${escapeHtml(line)}</div>`;
-  }
-
-  return `<div data-line="${index}" class="min-h-[1.625rem] text-text-primary">${renderInlineMarkdownHtml(line)}</div>`;
+function buildLineVisibleMap(text: string): number[] {
+  if (/^-{3,}$/.test(text.trim())) return [text.length];
+  const bodyStart = getLineBodyStart(text);
+  const bodyMap = buildInlineVisibleMap(text.slice(bodyStart));
+  return bodyMap.map((offset) => offset + bodyStart);
 }
 
-function renderMarkdownInputHtml(value: string) {
-  const lines = value ? value.split("\n") : [""];
-  return lines.map((line, index) => renderMarkdownInputLineHtml(line, index)).join("");
+function visibleOffsetToRawOffset(text: string, visibleOffset: number): number {
+  const map = buildLineVisibleMap(text);
+  const clamped = Math.max(0, Math.min(visibleOffset, map.length - 1));
+  return map[clamped] ?? text.length;
+}
+
+function rawOffsetToVisibleOffset(text: string, rawOffset: number): number {
+  const map = buildLineVisibleMap(text);
+  let visible = 0;
+  for (let i = 0; i < map.length; i += 1) {
+    if (map[i] <= rawOffset) visible = i;
+    else break;
+  }
+  return visible;
+}
+
+function replaceRawRange(text: string, start: number, end: number, insert: string) {
+  return `${text.slice(0, start)}${insert}${text.slice(end)}`;
+}
+
+type FocusHint = { idx: number; pos: "start" | "end" | number } | null;
+
+function MarkdownLine({
+  idx,
+  text,
+  active,
+  focusHint,
+  onActivate,
+  onChange,
+  onSplit,
+  onMerge,
+  onArrowUp,
+  onArrowDown,
+  onPasteMultiline,
+  onConsumeFocusHint,
+}: {
+  idx: number;
+  text: string;
+  active: boolean;
+  focusHint: FocusHint;
+  onActivate: (idx: number, pos: "start" | "end" | number | null) => void;
+  onChange: (idx: number, text: string, visibleCaret: number) => void;
+  onSplit: (idx: number, before: string, after: string) => void;
+  onMerge: (idx: number) => void;
+  onArrowUp: (idx: number) => void;
+  onArrowDown: (idx: number) => void;
+  onPasteMultiline: (idx: number, segments: string[]) => void;
+  onConsumeFocusHint: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const wasActiveRef = useRef(false);
+  const meta = getLineMeta(text);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const justActivated = active && !wasActiveRef.current;
+    const nextHtml = renderActiveInner(text);
+    if (el.innerHTML !== nextHtml) {
+      el.innerHTML = nextHtml;
+    }
+
+    if (active) {
+      if (document.activeElement !== el) {
+        el.focus({ preventScroll: false });
+      }
+      if (focusHint && focusHint.idx === idx) {
+        if (focusHint.pos === "start") setCaretOffsetWithin(el, 0);
+        else if (focusHint.pos === "end") {
+          setCaretOffsetWithin(el, rawOffsetToVisibleOffset(text, text.length));
+        } else if (typeof focusHint.pos === "number") setCaretOffsetWithin(el, focusHint.pos);
+        onConsumeFocusHint();
+      } else if (justActivated) {
+        setCaretOffsetWithin(el, rawOffsetToVisibleOffset(text, text.length));
+      }
+    }
+
+    wasActiveRef.current = active;
+  }, [active, text, focusHint, idx, onConsumeFocusHint]);
+
+  function handleBeforeInput(e: ReactFormEvent<HTMLDivElement>) {
+    const inputEvent = e.nativeEvent as InputEvent;
+    if (inputEvent.isComposing) return;
+
+    const selection = getSelectionOffsetsWithin(e.currentTarget);
+    const visibleStart = Math.min(selection.start, selection.end);
+    const visibleEnd = Math.max(selection.start, selection.end);
+    const rawStart = visibleOffsetToRawOffset(text, visibleStart);
+    const rawEnd = visibleOffsetToRawOffset(text, visibleEnd);
+
+    function commit(nextText: string, rawCaret: number) {
+      onChange(idx, nextText, rawOffsetToVisibleOffset(nextText, rawCaret));
+    }
+
+    if (inputEvent.inputType === "insertText") {
+      e.preventDefault();
+      const insert = inputEvent.data ?? "";
+      commit(replaceRawRange(text, rawStart, rawEnd, insert), rawStart + insert.length);
+      return;
+    }
+
+    if (
+      inputEvent.inputType === "insertParagraph" ||
+      inputEvent.inputType === "insertLineBreak"
+    ) {
+      e.preventDefault();
+      onSplit(idx, text.slice(0, rawStart), text.slice(rawEnd));
+      return;
+    }
+
+    if (inputEvent.inputType === "deleteContentBackward") {
+      e.preventDefault();
+      if (visibleStart !== visibleEnd) {
+        commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart);
+        return;
+      }
+      if (visibleStart === 0) {
+        if (idx > 0) onMerge(idx);
+        return;
+      }
+      const prevRaw = visibleOffsetToRawOffset(text, visibleStart - 1);
+      commit(replaceRawRange(text, prevRaw, rawStart, ""), prevRaw);
+      return;
+    }
+
+    if (inputEvent.inputType === "deleteContentForward") {
+      e.preventDefault();
+      if (visibleStart !== visibleEnd) {
+        commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart);
+        return;
+      }
+      const lineEnd = rawOffsetToVisibleOffset(text, text.length);
+      if (visibleStart >= lineEnd) return;
+      const nextRaw = visibleOffsetToRawOffset(text, visibleStart + 1);
+      commit(replaceRawRange(text, rawStart, nextRaw, ""), rawStart);
+    }
+  }
+
+  function handleInput(e: ReactFormEvent<HTMLDivElement>) {
+    // Fallback for browser paths that do not emit beforeinput.
+    const raw = e.currentTarget.innerText.replace(/\n/g, "");
+    onChange(idx, raw, rawOffsetToVisibleOffset(raw, raw.length));
+  }
+
+  function handleKeyDown(e: ReactKeyboardEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    const visibleOffset = getCaretOffsetWithin(el);
+    const rawOffset = visibleOffsetToRawOffset(text, visibleOffset);
+
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      onSplit(idx, text.slice(0, rawOffset), text.slice(rawOffset));
+      return;
+    }
+
+    if (e.key === "Backspace") {
+      const sel = window.getSelection();
+      if (visibleOffset === 0 && (!sel || sel.toString() === "") && idx > 0) {
+        e.preventDefault();
+        onMerge(idx);
+      }
+      return;
+    }
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const nextText = replaceRawRange(text, rawOffset, rawOffset, "  ");
+      onChange(idx, nextText, rawOffsetToVisibleOffset(nextText, rawOffset + 2));
+      return;
+    }
+
+    if (e.key === "ArrowUp" && !e.shiftKey) {
+      e.preventDefault();
+      onArrowUp(idx);
+      return;
+    }
+    if (e.key === "ArrowDown" && !e.shiftKey) {
+      e.preventDefault();
+      onArrowDown(idx);
+      return;
+    }
+  }
+
+  function handlePaste(e: ClipboardEvent<HTMLDivElement>) {
+    const data = e.clipboardData.getData("text/plain");
+    if (!data) return;
+    e.preventDefault();
+
+    const normalized = data.replace(/\r\n?/g, "\n");
+    const segments = normalized.split("\n");
+    const selection = getSelectionOffsetsWithin(e.currentTarget);
+    const visibleStart = Math.min(selection.start, selection.end);
+    const visibleEnd = Math.max(selection.start, selection.end);
+    const rawStart = visibleOffsetToRawOffset(text, visibleStart);
+    const rawEnd = visibleOffsetToRawOffset(text, visibleEnd);
+
+    if (segments.length === 1) {
+      const nextText = replaceRawRange(text, rawStart, rawEnd, segments[0]);
+      onChange(
+        idx,
+        nextText,
+        rawOffsetToVisibleOffset(nextText, rawStart + segments[0].length)
+      );
+      return;
+    }
+
+    const first = text.slice(0, rawStart) + segments[0];
+    const last = segments[segments.length - 1] + text.slice(rawEnd);
+    const middle = segments.slice(1, -1);
+    onPasteMultiline(idx, [first, ...middle, last]);
+  }
+
+  function handleMouseDown(e: ReactMouseEvent<HTMLDivElement>) {
+    if (active) return;
+    const offset = getCaretOffsetFromPoint(e.currentTarget, e.clientX, e.clientY);
+    e.preventDefault();
+    onActivate(idx, offset);
+  }
+
+  return (
+    <div
+      ref={ref}
+      role="textbox"
+      id={idx === 0 ? "project-script" : undefined}
+      aria-label={idx === 0 ? "Script & Notes Markdown editor" : undefined}
+      data-line-idx={idx}
+      contentEditable={active}
+      suppressContentEditableWarning
+      spellCheck={false}
+      onMouseDown={handleMouseDown}
+      onFocus={() => onActivate(idx, null)}
+      onBeforeInput={handleBeforeInput}
+      onInput={handleInput}
+      onKeyDown={handleKeyDown}
+      onPaste={handlePaste}
+      className={`${lineWrapperClassName(meta.kind, meta.level)} relative caret-text-display`}
+    />
+  );
 }
 
 function MarkdownLiveEditor({
@@ -159,41 +594,187 @@ function MarkdownLiveEditor({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const previewRef = useRef<HTMLDivElement>(null);
+  const lines = useMemo(() => (value === "" ? [""] : value.split("\n")), [value]);
+  const [activeIdx, setActiveIdx] = useState<number>(-1);
+  const [focusHint, setFocusHint] = useState<FocusHint>(null);
+  const [guideMenu, setGuideMenu] = useState<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  function handleChange(event: ChangeEvent<HTMLTextAreaElement>) {
-    onChange(event.target.value);
+  const consumeFocusHint = useCallback(() => {
+    setFocusHint(null);
+  }, []);
+
+  const handleActivate = useCallback(
+    (idx: number, pos: "start" | "end" | number | null) => {
+      setActiveIdx((prev) => (prev === idx ? prev : idx));
+      if (pos !== null) setFocusHint({ idx, pos });
+    },
+    []
+  );
+
+  const updateLine = useCallback(
+    (idx: number, text: string, visibleCaret: number) => {
+      const next = lines.slice();
+      next[idx] = text;
+      onChange(next.join("\n"));
+      setActiveIdx(idx);
+      setFocusHint({ idx, pos: visibleCaret });
+    },
+    [lines, onChange]
+  );
+
+  const splitLine = useCallback(
+    (idx: number, before: string, after: string) => {
+      const next = lines.slice();
+      next[idx] = before;
+      next.splice(idx + 1, 0, after);
+      onChange(next.join("\n"));
+      setActiveIdx(idx + 1);
+      setFocusHint({ idx: idx + 1, pos: "start" });
+    },
+    [lines, onChange]
+  );
+
+  const mergeLine = useCallback(
+    (idx: number) => {
+      if (idx === 0) return;
+      const next = lines.slice();
+      const prevRawLength = next[idx - 1].length;
+      next[idx - 1] = next[idx - 1] + next[idx];
+      next.splice(idx, 1);
+      onChange(next.join("\n"));
+      setActiveIdx(idx - 1);
+      setFocusHint({
+        idx: idx - 1,
+        pos: rawOffsetToVisibleOffset(next[idx - 1], prevRawLength),
+      });
+    },
+    [lines, onChange]
+  );
+
+  const arrowUp = useCallback(
+    (idx: number) => {
+      if (idx === 0) return;
+      const prevIdx = idx - 1;
+      setActiveIdx(prevIdx);
+      setFocusHint({
+        idx: prevIdx,
+        pos: rawOffsetToVisibleOffset(lines[prevIdx] ?? "", lines[prevIdx]?.length ?? 0),
+      });
+    },
+    [lines]
+  );
+
+  const arrowDown = useCallback(
+    (idx: number) => {
+      const nextIdx = idx + 1;
+      if (nextIdx >= lines.length) return;
+      setActiveIdx(nextIdx);
+      setFocusHint({
+        idx: nextIdx,
+        pos: rawOffsetToVisibleOffset(lines[nextIdx] ?? "", lines[nextIdx]?.length ?? 0),
+      });
+    },
+    [lines]
+  );
+
+  const pasteMultiline = useCallback(
+    (idx: number, segments: string[]) => {
+      if (segments.length === 0) return;
+      const next = lines.slice();
+      next.splice(idx, 1, ...segments);
+      onChange(next.join("\n"));
+      const last = idx + segments.length - 1;
+      setActiveIdx(last);
+      setFocusHint({
+        idx: last,
+        pos: rawOffsetToVisibleOffset(segments[segments.length - 1], segments[segments.length - 1].length),
+      });
+    },
+    [lines, onChange]
+  );
+
+  function handleContainerBlur(e: FocusEvent<HTMLDivElement>) {
+    const next = e.relatedTarget as Node | null;
+    if (!next || !containerRef.current?.contains(next)) {
+      setActiveIdx(-1);
+    }
   }
 
-  function handleScroll(event: UIEvent<HTMLTextAreaElement>) {
-    if (!previewRef.current) return;
-    previewRef.current.scrollTop = event.currentTarget.scrollTop;
-    previewRef.current.scrollLeft = event.currentTarget.scrollLeft;
+  function handleContainerClick(e: ReactMouseEvent<HTMLDivElement>) {
+    if (e.target === e.currentTarget) {
+      const lastIdx = lines.length - 1;
+      handleActivate(lastIdx, "end");
+    }
   }
+
+  function handleContextMenu(e: ReactMouseEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setGuideMenu({ x: e.clientX, y: e.clientY });
+  }
+
+  useEffect(() => {
+    if (!guideMenu) return;
+    function closeGuide() {
+      setGuideMenu(null);
+    }
+    window.addEventListener("click", closeGuide);
+    window.addEventListener("keydown", closeGuide);
+    return () => {
+      window.removeEventListener("click", closeGuide);
+      window.removeEventListener("keydown", closeGuide);
+    };
+  }, [guideMenu]);
+
+  const isEmpty = lines.length === 1 && lines[0] === "";
 
   return (
-    <div className="relative min-h-[360px] md:min-h-[520px]">
-      {!value && (
-        <div className="pointer-events-none absolute left-4 top-4 z-10 font-mono text-sm text-text-disabled">
+    <div
+      ref={containerRef}
+      className="relative min-h-[420px] cursor-text py-1 font-mono text-sm leading-relaxed"
+      onBlur={handleContainerBlur}
+      onClick={handleContainerClick}
+      onContextMenu={handleContextMenu}
+    >
+      {isEmpty && activeIdx === -1 && (
+        <div className="pointer-events-none absolute left-3 top-2 z-10 text-text-disabled">
           // Initialize script sequence...
         </div>
       )}
-      <div
-        ref={previewRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-auto p-4 font-mono text-sm leading-relaxed text-text-primary [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        dangerouslySetInnerHTML={{ __html: renderMarkdownInputHtml(value) }}
-      />
-      <textarea
-        id="project-script"
-        aria-label="Script & Notes Markdown editor"
-        value={value}
-        onChange={handleChange}
-        onScroll={handleScroll}
-        spellCheck={false}
-        className="relative z-10 min-h-[360px] md:min-h-[520px] w-full resize-none overflow-auto bg-transparent p-4 font-mono text-sm leading-relaxed text-transparent caret-text-display outline-none selection:bg-accent-subtle selection:text-text-display focus:bg-surface/20 color-scheme-dark"
-        style={{ colorScheme: "dark" }}
-      />
+      {lines.map((line, idx) => (
+        <MarkdownLine
+          key={idx}
+          idx={idx}
+          text={line}
+          active={idx === activeIdx}
+          focusHint={focusHint}
+          onActivate={handleActivate}
+          onChange={updateLine}
+          onSplit={splitLine}
+          onMerge={mergeLine}
+          onArrowUp={arrowUp}
+          onArrowDown={arrowDown}
+          onPasteMultiline={pasteMultiline}
+          onConsumeFocusHint={consumeFocusHint}
+        />
+      ))}
+      {guideMenu && (
+        <div
+          className="fixed z-[150] w-64 border border-border-visible bg-background p-3 font-mono text-[11px] leading-relaxed text-text-secondary"
+          style={{ left: guideMenu.x, top: guideMenu.y }}
+          role="menu"
+        >
+          <div className="mb-2 text-text-display tracking-widest uppercase">
+            [ Markdown Menu ]
+          </div>
+          <div># Heading</div>
+          <div>## Subheading</div>
+          <div>**bold** / *italic*</div>
+          <div>`inline code`</div>
+          <div>- bullet</div>
+          <div>&gt; quote</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -283,7 +864,12 @@ export default function ProjectDetailsModal({
   const [aRollDraft, setARollDraft] = useState("");
   const [bRollDraft, setBRollDraft] = useState("");
   const [localScript, setLocalScript] = useState("");
-  const [isSavingScript, setIsSavingScript] = useState(false);
+  const [scriptSaveStatus, setScriptSaveStatus] = useState<
+    "idle" | "dirty" | "saving" | "saved" | "error"
+  >("idle");
+  const lastSavedScriptRef = useRef("");
+  const scriptSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scriptSaveSeqRef = useRef(0);
 
   // Interactive metadata state
   const [dueDate, setDueDate] = useState("");
@@ -333,13 +919,22 @@ export default function ProjectDetailsModal({
   }, []);
 
   useEffect(() => {
+    if (scriptSaveTimerRef.current) {
+      clearTimeout(scriptSaveTimerRef.current);
+      scriptSaveTimerRef.current = null;
+    }
+    scriptSaveSeqRef.current += 1;
+
     if (project) {
+      const script = project.script || "";
       setTitle(project.title);
       setContentType(project.contentType);
       setFormat(project.format);
       setPlatforms(parsePlatforms(project.platformsTargeted));
       setBriefingNotes(project.briefingNotes || "");
-      setLocalScript(project.script || "");
+      setLocalScript(script);
+      lastSavedScriptRef.current = script;
+      setScriptSaveStatus("saved");
       setARollShots(parseShotItems(project.aRollShots));
       setBRollShots(parseShotItems(project.bRollShots));
       setDueDate(toDateInputValue(project.dueDate));
@@ -361,6 +956,8 @@ export default function ProjectDetailsModal({
       setPlatforms([]);
       setBriefingNotes("");
       setLocalScript("");
+      lastSavedScriptRef.current = "";
+      setScriptSaveStatus("idle");
       setARollShots([]);
       setBRollShots([]);
       setDueDate("");
@@ -379,6 +976,48 @@ export default function ProjectDetailsModal({
     setARollDraft("");
     setBRollDraft("");
   }, [project]);
+
+  useEffect(() => {
+    if (!project) return;
+
+    if (scriptSaveTimerRef.current) {
+      clearTimeout(scriptSaveTimerRef.current);
+      scriptSaveTimerRef.current = null;
+    }
+
+    if (localScript === lastSavedScriptRef.current) {
+      setScriptSaveStatus((prev) => (prev === "saving" ? prev : "saved"));
+      return;
+    }
+
+    setScriptSaveStatus("dirty");
+    const saveSeq = ++scriptSaveSeqRef.current;
+    const projectId = project.id;
+    const content = localScript;
+
+    scriptSaveTimerRef.current = setTimeout(async () => {
+      setScriptSaveStatus("saving");
+      const result = await updateProjectScript(projectId, content);
+      if (saveSeq !== scriptSaveSeqRef.current) return;
+
+      if (!result.success) {
+        setScriptSaveStatus("error");
+        showToast(result.error, "error");
+        return;
+      }
+
+      lastSavedScriptRef.current = content;
+      setScriptSaveStatus("saved");
+      onProjectUpdate?.({ id: projectId, script: content });
+    }, 900);
+
+    return () => {
+      if (scriptSaveTimerRef.current) {
+        clearTimeout(scriptSaveTimerRef.current);
+        scriptSaveTimerRef.current = null;
+      }
+    };
+  }, [localScript, project?.id]);
 
   function togglePlatform(p: string) {
     setPlatforms((prev) =>
@@ -481,23 +1120,6 @@ export default function ProjectDetailsModal({
       }
       onProjectUpdate?.({ id: project.id, ...normalized });
     });
-  }
-
-  async function saveScript() {
-    if (!project || isSavingScript) return;
-
-    setIsSavingScript(true);
-    try {
-      const result = await updateProjectScript(project.id, localScript);
-      if (!result.success) {
-        showToast(result.error, "error");
-        return;
-      }
-      onProjectUpdate?.({ id: project.id, script: localScript });
-      showToast("Script saved.", "success");
-    } finally {
-      setIsSavingScript(false);
-    }
   }
 
   function saveRawFolderName() {
@@ -706,6 +1328,16 @@ export default function ProjectDetailsModal({
     : null;
   const rawPath = detectedOS === "mac" ? nasPaths?.macPath : detectedOS === "win" ? nasPaths?.winPath : "";
   const osBadge = detectedOS === "mac" ? "[  ]" : detectedOS === "win" ? "[ ⊞ ]" : "[ ? ]";
+  const scriptStatusLabel =
+    scriptSaveStatus === "dirty"
+      ? "[ AUTOSAVE QUEUED ]"
+      : scriptSaveStatus === "saving"
+        ? "[ AUTOSAVING... ]"
+        : scriptSaveStatus === "error"
+          ? "[ AUTOSAVE FAILED ]"
+          : scriptSaveStatus === "saved"
+            ? "[ SAVED ]"
+            : "[ AUTOSAVE ]";
 
   // Determine status color
   const statusColors: Record<string, string> = {
@@ -1034,12 +1666,12 @@ export default function ProjectDetailsModal({
                 )}
 
                 {/* ── Asset Management ── */}
-                <div>
+                <div className="hidden md:block">
                   <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Asset Management</label>
 
                   {/* Raw Storage Path */}
-                  <div className="bg-surface border border-border-visible flex items-stretch mb-2">
-                    <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest px-3 shrink-0 border-r border-border-visible py-2.5">
+                  <div className="bg-surface border border-border-visible flex min-h-10 items-stretch mb-2">
+                    <span className="w-20 flex items-center text-[10px] font-mono text-text-secondary uppercase tracking-widest px-3 shrink-0 border-r border-border-visible">
                       RAW
                     </span>
                     {isEditingRaw ? (
@@ -1096,9 +1728,9 @@ export default function ProjectDetailsModal({
                   </div>
 
                   {/* Nextcloud Link */}
-                  <div className="bg-surface border border-border-visible flex items-center">
-                    <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest px-3 shrink-0 border-r border-border-visible py-2.5">
-                      REVIEW
+                  <div className="bg-surface border border-border-visible flex min-h-10 items-stretch">
+                    <span className="w-20 flex items-center text-[10px] font-mono text-text-secondary uppercase tracking-widest px-3 shrink-0 border-r border-border-visible">
+                      PREVIEW
                     </span>
                     <input
                       type="text"
@@ -1106,7 +1738,7 @@ export default function ProjectDetailsModal({
                       onChange={(e) => setReviewLink(e.target.value)}
                       onBlur={() => saveAssets({ reviewLink })}
                       placeholder="https://nc.studio.local/s/..."
-                      className="flex-1 bg-transparent text-xs font-mono text-text-primary px-3 py-2.5 outline-none placeholder:text-text-disabled"
+                      className="flex-1 min-w-0 bg-transparent text-xs font-mono text-text-primary px-3 py-2.5 outline-none placeholder:text-text-disabled"
                     />
                     {reviewLink && (
                       <a
@@ -1219,42 +1851,35 @@ export default function ProjectDetailsModal({
                 </div>
 
                 {/* ── Script Editor ── */}
-                <div>
-                  <label
-                    htmlFor="project-script"
-                    className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block"
-                  >
-                    Script & Notes
-                  </label>
-                  <div className="border border-border-visible bg-background">
-                    <div className="text-[10px] font-mono tracking-widest text-text-secondary uppercase border-b border-border-visible px-3 py-2">
-                      [ LIVE MARKDOWN INPUT ]
-                    </div>
-                    <MarkdownLiveEditor
-                      value={localScript}
-                      onChange={setLocalScript}
-                    />
-                  </div>
-                  <div className="flex justify-end mt-3">
-                    <button
-                      type="button"
-                      onClick={saveScript}
-                      disabled={isSavingScript}
+                <div className="pt-1">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-mono tracking-widest text-text-secondary uppercase">
+                      Script & Notes
+                    </span>
+                    <span
                       className={cn(
-                        "ui-button-outline px-4 py-2 disabled:opacity-50 disabled:cursor-wait",
-                        isSavingScript && "cursor-wait"
+                        "text-[10px] font-mono tracking-widest uppercase",
+                        scriptSaveStatus === "error"
+                          ? "text-error"
+                          : scriptSaveStatus === "saving" || scriptSaveStatus === "dirty"
+                            ? "text-warning"
+                            : "text-text-disabled"
                       )}
                     >
-                      {isSavingScript ? "[ SAVING... ]" : "[ SAVE SCRIPT ]"}
-                    </button>
+                      {scriptStatusLabel}
+                    </span>
                   </div>
+                  <MarkdownLiveEditor
+                    value={localScript}
+                    onChange={setLocalScript}
+                  />
                 </div>
               </div>
             )}
           </div>
 
           {/* ═══ RIGHT COLUMN — Metadata Sidebar ═══ */}
-          <div className="w-full md:w-80 shrink-0 overflow-visible md:overflow-y-auto p-4 md:p-6 bg-surface border-t md:border-t-0 border-border-visible">
+          <div className="w-full md:w-72 lg:w-80 shrink-0 overflow-visible md:overflow-y-auto p-4 md:p-5 lg:p-6 bg-surface border-t md:border-t-0 border-border-visible">
 
             {/* ── Metadata ── */}
             <div className="flex flex-col">
