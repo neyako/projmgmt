@@ -35,8 +35,3 @@ yarn-error.log*
 # sqlite database (DO NOT COMMIT THE DB)
 *.db
 *.db-journal
-
-# local avatar uploads
-/public/avatars/*
-!/public/avatars/.gitkeep
-

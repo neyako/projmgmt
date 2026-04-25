@@ -5,90 +5,213 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)
 
-A lightweight, highly customized, self-hosted production management dashboard built for a small content team. Features a strict terminal aesthetic built on the Nothing design philosophy.
+Self-hosted production management for a small video team: pipeline tracking, filming shotlists, review loops, sponsorships, archive, analytics, and NAS-aware asset paths in a strict terminal-inspired UI.
 
-## The Problem It Solves
-Off-the-shelf project management tools (like Notion or Trello) are either too generic, too rigid, or too slow for high-bandwidth video teams. projmgmt replaces bloated SaaS trackers with a hyper-focused, local-first solution tailored to the realities of multi-terabyte SMB network paths, Nextcloud review loops, and parallel filming schedules.
+## Setup First
 
-## Deep-Dive Features
+This app is designed for a local or self-hosted environment with SQLite and optional access to NAS, Nextcloud, and platform analytics APIs.
 
-* **Split-State Kanban:** The pipeline features advanced column transition logic. The `Filming` stage enforces parallel A-Roll and B-Roll tracking. A project cannot progress to `Editing` until 100% of the JSON-driven shotlist items are marked complete.
-* **Hybrid Asset Tracking:** Bridges local infrastructure and external delivery. Editors set a project `folderName` once in the RAW asset row; projmgmt generates OS-aware NAS paths for SMB (`smb://...` on macOS, `\\server\share\...` on Windows) from `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR`. Nextcloud review links remain beside the RAW path.
-* **Review Pipeline:** Built-in feedback loops. When a manager rejects a cut, the project automatically returns to `Editing`, visually flagging the card with revision notes directly in the workflow. Feedback is automatically cleared upon resubmission.
-* **Archive & Analytics:** Published projects automatically move off the board and into a tabular Archive view. Scrapped projects are retained. Views, Likes, and Comments are displayed as platform grand totals by summing YouTube, Meta, and TikTok metrics (`youtube* + meta* + tiktok*`) with locale-formatted numbers. Analytics performer rows only render platform chips and per-platform metrics for platforms actually targeted or synced, and they classify each video as Short Form / Long Form from `platformsTargeted`.
-* **Sponsorship CRM:** Integrated tracking pipeline for brand deals tied to the main production schedule.
-* **Team Roster & RBAC:** Supports `ADMIN`, `MANAGER`, and `MEMBER` access tiers for auth and route protection.
+### 1. Prerequisites
 
-## Access Roles
-The app currently uses a 3-tier RBAC model:
-* **ADMIN:** Full access.
-* **MANAGER:** Full operational access.
-* **MEMBER:** Limited access for editors/crew; restricted from protected management pages.
+- Node.js 20 or newer is recommended.
+- npm, included with Node.js.
+- A local `.env` file.
 
-## Tech Stack
-* **Framework:** Next.js 15 (App Router, Server Actions)
-* **Database:** Prisma ORM with SQLite (local file database)
-* **Styling:** Tailwind CSS v4 with semantic theme tokens for dark/light Nothing-inspired UI
-* **Auth:** NextAuth.js v4 with Credentials provider + Prisma adapter
-* **Drag-and-Drop:** `@dnd-kit/core` with custom pointer sensors and transition gating.
+### 2. Install
 
-## Quickstart Tutorial (Local Setup)
+```bash
+git clone https://github.com/neyako/projmgmt.git
+cd projmgmt
+npm install
+```
 
-This application is designed to run bare-metal or inside a self-hosted container environment with direct access to local network storage.
+`npm install` also runs `prisma generate` through the `postinstall` script.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/neyako/projmgmt.git
-   cd projmgmt
-   ```
+### 3. Configure `.env`
 
-2. **Install Dependencies:**
-   ```bash
-   npm install
-   ```
+Create `.env` in the project root:
 
-3. **Configure NAS Environment Variables (.env):**
-   ```bash
-   NEXT_PUBLIC_NAS_IP=192.168.1.10
-   NEXT_PUBLIC_NAS_SHARE=projects
-   NEXT_PUBLIC_NAS_ROOT_DIR=Studio
-   ```
+```bash
+DATABASE_URL="file:./dev.db"
 
-4. **Initialize Database:**
-   This pushes Prisma schema to local SQLite (`prisma/dev.db`) and seeds sample users/projects.
-   ```bash
-   npm run db:push
-   npm run db:seed
-   ```
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="replace-with-a-generated-secret"
 
-5. **Start Development Server:**
-   ```bash
-   npm run dev
-   ```
+NEXT_PUBLIC_NAS_IP="192.168.1.10"
+NEXT_PUBLIC_NAS_SHARE="projects"
+NEXT_PUBLIC_NAS_ROOT_DIR="Studio"
+```
 
-6. **Access projmgmt:**
-   Open `http://localhost:3000` in your browser. You will be redirected to the `/pipeline` board.
+Generate a local auth secret with:
+
+```bash
+openssl rand -base64 32
+```
+
+Optional integration variables:
+
+```bash
+YOUTUBE_API_KEY=""
+META_ACCESS_TOKEN=""
+TIKTOK_RAPIDAPI_HOST=""
+TIKTOK_RAPIDAPI_KEY=""
+
+NEXTCLOUD_URL=""
+NEXTCLOUD_USER=""
+NEXTCLOUD_PASSWORD=""
+```
+
+### 4. Initialize SQLite
+
+```bash
+npm run db:push
+```
+
+To load sample production data:
+
+```bash
+npm run db:seed
+```
+
+`npm run db:seed` is destructive. It clears existing users, projects, shotlist items, and analytics before inserting demo data.
+
+### 5. Create A Local Admin Login
+
+The seed script creates demo people and projects, but it does not create username/password credentials. Run this after `db:push` or after `db:seed`:
+
+```bash
+npx tsx -e '
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const passwordHash = await bcrypt.hash("change-me-now", 12);
+
+  await prisma.user.upsert({
+    where: { email: "admin@projmgmt.local" },
+    update: { username: "admin", passwordHash, role: "ADMIN" },
+    create: {
+      name: "Local Admin",
+      email: "admin@projmgmt.local",
+      username: "admin",
+      passwordHash,
+      role: "ADMIN",
+    },
+  });
+
+  console.log("Login: admin / change-me-now");
+}
+
+main()
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
+'
+```
+
+Sign in with `admin` / `change-me-now`, then change the password from `/settings`.
+
+### 6. Run The App
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000`. Authenticated users land on `/pipeline`.
+
+### 7. Verify A Local Build
+
+```bash
+npm run build
+```
+
+There are currently no configured `lint` or `test` scripts.
+
+## Daily Development
+
+Useful commands:
+
+```bash
+npm run dev       # Next.js dev server with Turbopack
+npm run build     # production build verification
+npm run start     # run the built app
+npm run db:push   # push Prisma schema to SQLite
+npm run db:seed   # destructive sample data reset
+npm run db:studio # inspect/edit SQLite data
+```
+
+Main local paths:
+
+- `src/app/` - App Router pages, layouts, API routes, global CSS, and app-level actions.
+- `src/actions/` - Primary Server Actions for database mutations.
+- `src/components/` - Layout, Kanban, modal, table, analytics, sponsorship, team, and UI components.
+- `src/lib/` - Auth, roles, Prisma client, constants, and helpers.
+- `src/services/` - Cron and external analytics service helpers.
+- `src/types/` - Shared types layered on Prisma models.
+- `src/utils/nasPaths.ts` - OS-aware SMB path generation.
+- `prisma/schema.prisma` - SQLite schema.
+- `prisma/seed.ts` - Destructive demo data seed.
+- `DESIGN.md` - Visual source of truth.
+- `AGENTS.md` - AI assistant and contributor guardrails.
+
+## Product Overview
+
+projmgmt replaces generic project management tools with a focused workflow for high-bandwidth content teams. It is built around local storage paths, Nextcloud review links, split A-Roll/B-Roll filming checklists, and platform-specific performance tracking.
+
+Core areas:
+
+- **Pipeline:** A drag-and-drop Kanban board for `Ideation`, `Scripting`, `Filming`, `Editing`, and `Review`.
+- **Publishing checklist:** Moving to `Published` opens a final metadata modal before the card leaves the board.
+- **Archive:** Published and scrapped projects live outside the active pipeline.
+- **Analytics:** YouTube, Meta, and TikTok metrics are synced and displayed as per-platform totals.
+- **Sponsorships:** Brand deal CRM tied to the production workflow.
+- **Team:** User roster and role management.
+- **Settings:** Current user avatar upload and password change.
+
+## Workflow Rules
+
+- `Filming -> Editing` requires all parsed `aRollShots` and `bRollShots` to be complete.
+- `Editing -> Review` requires a Nextcloud review link.
+- Review rejection returns the project to `Editing` and stores feedback on the card.
+- Published projects move out of `/pipeline` and into `/archive`.
+- Archive and Analytics totals must be computed from platform-specific columns:
+  - `youtubeViews`, `metaViews`, `tiktokViews`
+  - `youtubeLikes`, `metaLikes`, `tiktokLikes`
+  - `youtubeComments`, `metaComments`, `tiktokComments`
+
+## Roles
+
+- `ADMIN` - Full access.
+- `MANAGER` - Full operational access.
+- `MEMBER` - Limited access. Members are blocked from `/analytics`, `/sponsorships`, and `/team`.
+
+## Design Contract
+
+The UI is intentionally terminal-inspired and high contrast. Preserve it.
+
+- Use semantic Tailwind theme tokens from `src/app/globals.css`.
+- Follow `DESIGN.md`.
+- Do not introduce generic rounded corporate UI.
+- Do not add raw Tailwind palette colors such as `red-500`, `green-400`, or `emerald-500`.
+- Standard list/table pages should use `h-full w-full overflow-auto p-lg`.
+- Keep visible controls sharp, uppercase, compact, and mono-heavy.
+
+## Data Notes
+
+Several fields are JSON strings in SQLite and must be parsed/stringified by the UI and Server Actions:
+
+- `platformsTargeted`
+- `aRollShots`
+- `bRollShots`
+- `abTitles`
+- `thumbnails`
+
+`folderName` is the source of truth for local media location. RAW paths are generated from `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR`; do not hardcode SMB roots in components.
 
 ## License
 
-MIT License
-
-Copyright (c) 2026 Neyako Pham
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT. See [LICENSE](LICENSE).

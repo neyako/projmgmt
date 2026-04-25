@@ -1,129 +1,314 @@
-# Nothing Design System - Source of Truth
+# Nothing Design System — Source of Truth
 
-This document serves as the absolute source of truth for the project's UI, based on the Nothing Design philosophy (Swiss typography, industrial design, and monochromatic emphasis). Every component, color, and spacing choice must adhere strictly to these guidelines.
+This document is the absolute source of truth for the project's UI. The system is rooted in the Nothing Design philosophy: Swiss typography, industrial restraint, monochromatic emphasis, mechanical motion. The dark theme reads as an instrument panel in a dark room; the light theme reads as warm printed paper. Every component, token, and spacing decision must adhere strictly to these guidelines.
+
+AI assistants must reach for the existing primitives in `src/components/ui/*` and the semantic `.ui-*` utilities in `src/app/globals.css` before writing new class chains. Tokens are defined once and consumed everywhere — never hard-code colors.
 
 ---
 
 ## 1. Color Palette
 
-The interface operates primarily in a dark mode context, resembling an instrument panel in a dark room. Color is reserved for data status, events, and highlights—not for decoration.
+### Token Indirection
+Two layers feed Tailwind v4 (`@theme`):
 
-### Backgrounds & Surfaces
-- **Black (OLED)**: `#000000` (Main app background, sidebars)
-- **Background**: `#141313` (Main canvas behind cards)
-- **Surface**: `#111111` (Default cards and modals)
-- **Surface Raised**: `#1A1A1A` (Elevated components, headers, active states)
-- **Surface Variant**: `#353434`
-- **Surface Bright**: `#3a3939`
+1. `--theme-*` per-mode variables, swapped by toggling `.dark` / `.light` on `<html>` ([globals.css:104-156](src/app/globals.css:104)).
+2. `--color-*` indirection that maps the active theme into Tailwind utilities ([globals.css:4-43](src/app/globals.css:4)).
 
-### Borders
-- **Border**: `#222222` (Subtle dividers, decorative/structural)
-- **Border Visible**: `#333333` (Intentional outlines, component borders)
-- **Outline Variant**: `#444748`
+Authoring rule: reference Tailwind classes that resolve to `--color-*` (e.g. `bg-surface`, `text-text-display`, `border-border-visible`). Never inline raw hex or use palette-coded utilities like `bg-zinc-*` / `text-white` — those break light-mode parity.
 
-### Text
-- **Text Display**: `#FFFFFF` (Headlines, hero metrics)
-- **Text Primary**: `#E8E8E8` (Main body text, primary values)
-- **Text Secondary**: `#999999` (Labels, captions, metadata)
-- **Text Disabled**: `#666666` (Inactive elements, empty states)
+### Dark Mode Palette (`:root, .dark`)
+Color is reserved for data status, events, and highlights — never for decoration.
 
-### Accents & Data Status
-*Status colors are applied to the value, not the background or label.*
-- **Accent**: `#D71921` (Signal light, active states, urgent moments, destructive actions)
-- **Accent Subtle**: `rgba(215, 25, 33, 0.15)` (Glows, alert backgrounds)
-- **Interactive**: `#5B9BF6` (Links, selected elements, hover states, "Ideation" pipeline stage)
-- **Success**: `#4A9E5C` (Confirmed, completed, connected, "Published" status)
-- **Warning**: `#D4A843` (Caution, pending, degraded, "Filming/Editing" active status)
-- **Error**: `#ffb4ab` (Critical failures)
+**Backgrounds & Surfaces**
+- **Black (OLED)**: `#000000` — `bg-root`, raised side rails (rare).
+- **Background**: `#0a0a0a` — main app canvas (`bg-background`).
+- **Surface**: `#111111` — default cards and modals (`bg-surface`).
+- **Surface Raised**: `#1A1A1A` — elevated components, headers, active states (`bg-surface-raised`).
+- **Surface Variant**: `#353434`.
+- **Surface Bright**: `#3A3939`.
+
+**Borders**
+- **Border**: `#222222` — subtle dividers, structural.
+- **Border Visible**: `#333333` — intentional outlines, component borders.
+- **Outline Variant**: `#444748` — focus / hover edges.
+
+**Text**
+- **Text Display**: `#FFFFFF` — headlines, hero metrics.
+- **Text Primary**: `#E8E8E8` — body, primary values.
+- **Text Secondary**: `#999999` — labels, captions, metadata.
+- **Text Disabled**: `#666666` — inactive, empty states.
+
+### Light Mode Palette (`.light`)
+A warm, beige paper system. Same semantic slots, lower contrast, no pure white.
+
+**Backgrounds & Surfaces**
+- **Bg Root / Background**: `#F4F1EA`.
+- **Surface**: `#EBE7DD` — default cards.
+- **Surface Raised**: `#E2DDD1` — elevated components, header rails, active nav.
+- **Surface Variant**: `#D8D1C4`.
+- **Surface Bright**: `#CDC3B4`.
+
+**Borders**
+- **Border**: `#D8D1C4`.
+- **Border Visible**: `#C7BEB0`.
+- **Outline Variant**: `#A99F91`.
+
+**Text**
+- **Text Display**: `#111111`.
+- **Text Primary**: `#242424`.
+- **Text Secondary**: `#6F6A60`.
+- **Text Disabled**: `#9A9286`.
+
+### Cross-Mode Accents & Status
+Status colors are applied to the value, not the background or label.
+- **Accent**: `#D71921` — signal light, active states, urgent moments, destructive actions.
+- **Accent Subtle**: `rgba(215, 25, 33, 0.15)` — alert glows, rejection note backgrounds.
+- **Interactive**: `#5B9BF6` — links, selected elements, hover highlights, "Ideation" pipeline stage.
+- **Success**: `#4A9E5C` — confirmed, completed, "Published".
+- **Warning**: `#D4A843` — caution, pending, degraded, "Filming/Editing" active.
+- **Error**: `#FFB4AB` — critical failures (preserved across modes for legibility).
+
+### Shared Semantic Tokens
+Mode-aware vars used by interactive surfaces and chrome:
+- `text-inverse` — foreground over a `text-display` fill (used by primary buttons and inverted badges).
+- `input-surface` — input fill (transparent in both modes by default).
+- `hover-surface` — translucent overlay for row/menu hover (`rgba(255,255,255,0.05)` dark / `rgba(17,17,17,0.06)` light).
+- `danger-hover` — destructive hover stroke (`#F87171` dark / `#B91C1C` light).
+- `disabled-surface` — disabled overlay.
+- `selection-bg` / `selection-text` — text selection.
+- `scrollbar-track` / `scrollbar-thumb` / `scrollbar-thumb-hover` — mechanical 6px scrollbar.
 
 ---
 
-## 2. Typography Scale & Fonts
+## 2. Typography
 
-The system uses maximum 3 font families per screen, balancing precision and utility.
+Maximum 3 font families per screen. Precision over personality.
 
-**Families:**
-- **Display**: `Doto` (Dot-matrix variable font for hero metrics and major numbers)
-- **Heading / Body**: `Space Grotesk` (Light 300, Regular 400, Medium 500, Bold 700)
-- **Labels / Data**: `Space Mono` (Regular 400, Bold 700)
+**Families**
+- **Display**: `Doto` (dot-matrix variable font for hero metrics and major numbers).
+- **Heading / Body**: `Space Grotesk` (Light 300, Regular 400, Medium 500, Bold 700).
+- **Labels / Data**: `Space Mono` (Regular 400, Bold 700).
 
-**Type Scale:**
+**Type Scale**
+
 | Role | Size | Line Height | Tracking | Font & Weight |
 | --- | --- | --- | --- | --- |
 | **Display XL** | 72px | 1.0 | -0.03em | Doto |
 | **Display LG** | 48px | 1.05 | -0.02em | Doto |
 | **Display MD** | 36px | 1.1 | -0.02em | Space Grotesk 500 |
 | **Heading** | 24px | 1.2 | -0.01em | Space Grotesk 500 |
-| **Subheading**| 18px | 1.3 | 0 | Space Grotesk 400 |
+| **Subheading** | 18px | 1.3 | 0 | Space Grotesk 400 |
 | **Body** | 16px | 1.5 | 0 | Space Grotesk 400 |
 | **Body SM** | 14px | 1.5 | +0.01em | Space Grotesk 400 |
 | **Caption** | 12px | 1.4 | +0.04em | Space Mono 400 |
 | **Label** | 11px | 1.2 | +0.08em | Space Mono 700 (ALL CAPS) |
 
+**Helper Classes** ([globals.css:198-267](src/app/globals.css:198))
+
+These are the canonical way to apply the scale. Prefer them over re-deriving raw `font-*` chains:
+
+`.text-style-display-xl`, `.text-style-display-lg`, `.text-style-display-md`, `.text-style-heading`, `.text-style-subheading`, `.text-style-body`, `.text-style-body-sm`, `.text-style-caption`, `.text-style-label`.
+
 ---
 
-## 3. Spacing & Padding Rules
+## 3. Spacing, Shape & Containers
 
-Spacing conveys relationship and hierarchy. We rely heavily on exact rhythm over borders.
+### Spacing Scale (8px base) — [globals.css:46-54](src/app/globals.css:46)
+- **2xs** (2px) — optical adjustments, tight segmented gaps.
+- **xs** (4px) — icon-to-label gaps, tightest padding.
+- **sm** (8px) — component internal spacing.
+- **md** (16px) — standard padding, gaps between form items.
+- **lg** (24px) — group separation, kanban column gaps, primary page margins (`p-lg`).
+- **xl** (32px) — section margins, modal padding.
+- **2xl** (48px) — major section breaks.
+- **3xl** (64px) — page-level vertical rhythm.
+- **4xl** (96px) — hero breathing room.
 
-**Scale (8px Base):**
-- **2xs** (2px): Optical adjustments and tight segmented gaps.
-- **xs** (4px): Icon-to-label gaps, tightest padding.
-- **sm** (8px): Component internal spacing (e.g., inside cards).
-- **md** (16px): Standard padding, gaps between form items.
-- **lg** (24px): Group separation, kanban column gaps, primary page margins (`p-lg`).
-- **xl** (32px): Section margins, modal padding.
-- **2xl** (48px): Major section breaks.
-- **3xl** (64px): Page-level vertical rhythm.
-- **4xl** (96px): Hero breathing room.
+### Border Radius — [globals.css:73-77](src/app/globals.css:73)
+Sharp edge is the default for everything sitting on the canvas. Components opt into radius only for specific control affordances.
+- **Default** (4px) — internal UI controls (rare).
+- **lg** (8px) — interior chips and small controls (rare).
+- **xl** (12px) — soft callouts (rarely used).
+- **Full** (9999px) — avatars, indicator dots, pill-shaped login button.
 
-**Corner Shapes:**
-- **Sharp Edge (0px)**: The default for cards, boards, and modals.
-- **Radius DEFAULT (4px)** / **lg (8px)**: Only for specific internal UI controls (rarely used).
-- **Pill (9999px)**: Avatars, indicator dots, and primary global action buttons (e.g., "New Project").
+Cards, kanban columns, modals, top bar, sidebar, tables: stay at **0px**.
+
+### Container Widths — [globals.css:56-71](src/app/globals.css:56)
+Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves to rem widths (e.g. `max-w-3xl = 48rem`) and is not shadowed by the `--spacing-*` scale. Use the standard Tailwind classes — they map to the correct widths.
 
 ---
 
 ## 4. Component Structures
 
 ### A. Kanban Pipeline
-- **Side Navbar**: Fixed 256px wide (`w-64`), `bg-black`, `border-r` (`border-white/10`). Contains heavy `Space Mono` typography (`text-xl` `font-black`) for the logo, followed by version metadata. Navigation items use `Space Mono` (`text-[11px]`) with `px-3 py-2` padding and a 16px gap to their leading monoline icons. Active items use `bg-zinc-900` with `border border-zinc-700`.
-- **Top Bar**: 64px tall (`h-16`), `bg-black`, `border-b` (`border-white/10`). Left side features an underlined global search input (`Space Mono`). Right side houses a pill-shaped primary action button (`bg-white` with `text-black` font) and avatar routing to `/settings`.
-- **Pipeline Columns**: `w-[320px]`. Header is bottom-bordered (`border-b border-border-visible`), featuring the column name (`uppercase text-text-primary`) and item count in brackets (e.g., `[ 2 ]` in `text-text-secondary`). Custom 6px mechanical scrollbar.
-- **Pipeline Cards**: Sharp corners (`border border-border`), background `surface` with `16px` padding (`p-md`). In light mode, standard cards and Filming split cards must use the same `surface` token so columns read as uniform paper; reserve `surface-raised` for true elevation, not status/state styling. Tags are `text-[9px] uppercase border border-border-visible`. Progress bars use flex containers with `h-[2px]` and `2px` gaps. Nested checklists feature custom square checkboxes (`w-3.5 h-3.5 border-border-visible`). Rejection feedback forces an `accent/30` border glow and injects an `accent-subtle` note block.
-- **User Dropdown Menu**: Use semantic theme tokens only. Base menu text in light mode must render at `text-primary`, not `text-secondary`, so icon rows remain legible at rest. Hover states should use `hover-surface` plus `text-display`, with dark mode still driven by same tokens.
 
-### B. Modals (Project Details, Publish, Sponsorship, Team)
-- **Overlay & Window**: `fixed inset-0`, `bg-black/90` with `backdrop-blur-md`. Modal Container is `max-w-5xl` (or smaller variant), `bg-[#0f0f0f]`, surrounded by `border-white/10` acting as a rigid layer without drop shadows.
-- **Header Structure**: `p-6 border-b border-white/10` background. Active status dot matches pipeline semantic colors, Mono ID, and uppercase title. Right side has a Doto percentage metric or standard "X" close.
-- **Workspace**: Inputs built from structural elements (`bg-black border border-white/10` or transparent border-bottom). Buttons use bracket notation `[ APPROVE ]` or sharp high-contrast fills (`bg-white text-black`).
-- **Asset Management RAW Row**: Single attached control strip (`bg-black border border-white/10`) with left `RAW` label cell, center editable/view state, and right utility actions. View state shows OS badge (`[  ]` / `[ ⊞ ]`) and generated NAS path. Edit state is inline text input with Enter-to-save behavior.
-- **Interactive Metadata Sidebar**: Platform chips and Pipeline Stage list support click-to-update with hover color transitions and disabled pending states, while preserving terminal typography.
-- **Destructive Actions**: ALWAYS map to `text-accent border-accent/40 hover:bg-accent-subtle`. No raw `red-500` palette colors.
+**Sidebar** — [Sidebar.tsx](src/components/layout/Sidebar.tsx)
+- Fixed `w-64` (256px), `bg-background border-r border-border`, `z-50`.
+- Logo: `font-[family-name:var(--font-label)] text-[44px] font-black text-text-display tracking-tight`, renders `projmgmt`. Sits inside `mb-xl px-3` block.
+- Nav items: `text-style-label tracking-widest`, 18px Material Symbol leading icon (`icon-fill` when active), `px-3 py-2`, `gap-4` icon-to-label.
+- Active state: `text-text-display border border-border-visible bg-surface-raised`. Inactive: `text-text-disabled hover:text-text-display hover:bg-surface-raised`, `border border-transparent`.
+- Role-based filtering: members see a reduced nav (see §8).
+
+**Top Bar** — [TopBar.tsx](src/components/layout/TopBar.tsx)
+- `h-16 px-6 flex items-center justify-between`, `bg-background border-b border-border`, `z-40`.
+- Search: underlined `border-b border-border-visible px-2 py-1`, leading 16px `search` Material Symbol, `font-mono text-xs` input. Updates `?q=` via router.
+- Primary action **NEW PROJECT**: sharp (`bg-text-display text-text-inverse text-[10px] font-mono tracking-widest uppercase px-6 py-2 hover:opacity-80`). The pill shape from earlier specs is reserved for the auth login button — TopBar is sharp.
+- Avatar button: `w-8 h-8 bg-surface border border-border` (sharp). Renders `session.user.avatarUrl` via `next/image` `unoptimized`, falls back to `person` Material Symbol.
+
+**User Dropdown** — [TopBar.tsx:115-159](src/components/layout/TopBar.tsx:115)
+- Wrapper: `.ui-user-dropdown` + `border border-border-visible w-56 text-xs font-mono`.
+- Heading row: `.ui-user-dropdown-heading` with `font-bold tracking-widest`.
+- Action rows use `.ui-user-dropdown-row` (hover → `text-text-display` + `hover-surface`):
+  - `Settings` (lucide) + `SETTINGS` linking to `/settings`.
+  - Theme toggle: `Sun` (light active) / `Moon` (dark active) lucide icon + bracket toggle on the right showing the **target** mode (`[LIGHT]` while in dark, `[DARK]` while in light).
+  - `LogOut` + `LOG OUT` calling `signOut({ callbackUrl: "/login" })`.
+- Closes on outside click via mousedown listener.
+
+**Pipeline Columns** — [KanbanColumn.tsx](src/components/kanban/KanbanColumn.tsx)
+- `w-[320px]`. Header `border-b border-border-visible`. Title in `uppercase text-text-primary`, item count in brackets (e.g. `[ 2 ]`) in `text-text-secondary`.
+- 6px mechanical scrollbar inherits from `globals.css` (no per-column override).
+
+**Pipeline Cards** — [KanbanCard.tsx](src/components/kanban/KanbanCard.tsx)
+- Sharp `bg-surface border border-border p-md flex flex-col gap-sm`. Hover lifts to `border-border-visible`. `cursor-pointer` (whole card). Drag-and-drop via `@dnd-kit/sortable`; while dragging, opacity drops to 30%.
+- Light-mode rule: standard cards and Filming split cards must read on the same surface token; reserve `surface-raised` for true elevation, not status styling. The `.ui-filming-card-surface` helper handles the inversion automatically (raised in dark, flat in light).
+- Title: `text-style-subheading text-text-primary font-[family-name:var(--font-heading)]`. Card menu (`CardMenu`) sits to the right.
+- Tags: `Tag` component (`text-[9px] uppercase border border-border-visible px-2 py-[2px]`).
+- Rejection feedback (Editing + `reviewFeedback`): card border becomes `border-accent/30`; injects `mt-3 p-2 bg-accent-subtle border-l-2 border-accent` block with `REVISION NOTES` label and `line-clamp-3` body.
+- Footer: `mt-sm pt-sm border-t border-border` divider with 6-char project ID `#XXXXXX` in `text-style-caption text-text-secondary`, plus the assignee stack on the right.
+
+**Assignee Stack** — [KanbanCard.tsx:46-205](src/components/kanban/KanbanCard.tsx:46)
+- Merges six role fields into a deduped list (skipping `UNASSIGNED`): `assignedEditor`, `assignedCameraman`, `assignedTalent`, `aRollAssignee`, `bRollAssignee`, `editingAssignee`.
+- Each chip: `w-7 h-7 border border-border-visible bg-surface-raised text-text-primary text-xs font-mono flex items-center justify-center overflow-hidden`. Sharp corners.
+- Stacking: chips after the first use `-ml-2` for overlap; `z-index` decreases left → right (first chip on top).
+- Renders `next/image` avatar (`w-7 h-7 object-cover`, `unoptimized`) when `avatarUrl` present, otherwise 2-letter `getInitials()` text.
+- `title={assignee.name}` for hover identification.
+
+**Filming Split Cards** — [FilmingSplitCard.tsx](src/components/kanban/FilmingSplitCard.tsx)
+- Reuses `.ui-filming-card-surface` and the same assignee-stack pattern.
+
+### B. Modals
+
+**Overlay & Shell**
+- Backdrop: `.ui-modal-backdrop` (`color-mix(in srgb, var(--color-background) 92%, transparent)`) wrapped in `fixed inset-0 z-[100]`. Dark mode reads as `bg-black/90 backdrop-blur-md`-equivalent; light mode keeps the warm beige.
+- Centered shell: `relative w-full max-w-5xl ui-panel flex flex-col` (or smaller variants `max-w-2xl` etc.). Sharp corners, no drop shadow.
+- Side sheet variant ([TeamMemberModal.tsx:79-82](src/components/modals/TeamMemberModal.tsx:79)): `right-0 h-screen w-full sm:w-[450px] ui-modal-shell border-l`, slides in from the right.
+
+**Header**
+- `flex justify-between items-start p-6 border-b border-border-visible shrink-0`.
+- Status dot (semantic color), Mono ID, uppercase title on the left. Right side: Doto percentage metric or close `X`.
+
+**Workspace**
+- Inputs use the underlined `Input` component or `.ui-input` / `.ui-select` / `.ui-textarea` for bordered controls.
+- Buttons use bracket notation for outline actions (`[ APPROVE ]`, `[ UPLOAD AVATAR ]`) or `Button` with `variant="primary"` / `.ui-button-primary` for high-contrast fills.
+- Asset Management RAW row: single attached strip (`bg-input-surface border border-border-visible`) with left RAW label, center editable/view state, right utility actions. View state shows OS badge (`[  ]` / `[ ⊞ ]`) and generated NAS path. Edit state is inline text with Enter-to-save.
+- Interactive metadata sidebar: platform chips and pipeline-stage list support click-to-update with hover transitions and disabled pending states. Terminal typography preserved.
+
+**Destructive Actions**
+- Always map to `.ui-button-danger` (`text-accent border-accent/40 hover:bg-accent-subtle`). Never raw `red-500` palette colors.
 
 ### C. Authentication (Login)
-- **Container**: `max-w-[24rem] px-lg` centered in the viewport.
-- **Hero/Branding**: `text-style-display-xl` with `mix-blend-difference` to blend into backgrounds, accompanied by a structured separator (lines + `SYS_AUTH` text).
-- **Form Inputs**: Minimalist. No bounding boxes. `border-b border-border-visible bg-transparent`. Text is `text-display` in `font-caption`. Label sits above, shifting to `text-text-display` on focus.
-- **Buttons**: Pill-shaped (`rounded-full`), `min-w-[160px]`, `bg-text-display text-black`.
+- **Container**: `max-w-[24rem] px-lg` centered in viewport.
+- **Hero**: `text-style-display-xl` with `mix-blend-difference`. Structured separator: hairlines + `SYS_AUTH` label in `.text-style-label`.
+- **Form Inputs**: minimalist. No bounding boxes. `border-b border-border-visible bg-transparent`. Text `text-text-display` in `text-style-caption`. Label sits above and shifts to `text-text-display` on focus via `group-focus-within`.
+- **Buttons**: pill (`rounded-full`), `min-w-[160px]`, `bg-text-display text-text-inverse`. The login screen is the **only** place pill primary buttons are used.
 
-### D. Dashboards, Tables & List Pages (Archive, Sponsorships, Analytics, Team)
-- **Page Container Layout**: Unified to `<div className="h-full w-full overflow-auto p-lg">` with a `mb-6` header wrapper block across all tabular data screens to ensure width parity.
-- **Data Tables**: `w-full border-collapse`. Header row with `p-4` and `font-label uppercase tracking-widest text-gray-500 text-[10px]`.
-- **Rows**: `border-b border-white/5 hover:bg-white/5`. Data is structured with hierarchy (e.g. Subheading for title, Caption for details).
-- **Archive Metric Cells**: Views/Likes/Comments in Archive tables must render grand totals from platform columns (`youtube* + meta* + tiktok*`) and display with locale separators (e.g. `toLocaleString()`).
-- **Analytics Performer Rows**: Platform chips (`YT`, `IG`, `TT`) and per-platform metric strings render only for selected/synced platforms. Format badges (`Short Form`, `Long Form`) sit inline with the title using tiny bordered uppercase tokens.
-- **Status Cells**: Inline text links `font-label text-text-secondary`, featuring a `w-1.5 h-1.5 rounded-full` token-colored dot.
-- **Tab Filters**: Huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive tabs use `text-gray-600`, active uses `text-white` bracketed `[ ACTIVE ]`. Header actions (like `NEW SPONSORSHIP`) align to the right side of the bottom-bordered tab row.
+### D. Dashboards, Tables & List Pages
+
+**Page Container**
+- Unified to `<div className="h-full w-full overflow-auto p-lg">` with a `mb-6` header wrapper across all tabular screens.
+
+**Data Tables**
+Prefer the semantic class set ([globals.css:426-454](src/app/globals.css:426)) over re-deriving Tailwind chains:
+- `.ui-table-head` — header row (10px Mono uppercase, `border-b border-border-visible`).
+- `.ui-table-row` — body rows (`border-b border-border`, hover → `hover-surface`).
+- `.ui-table-cell` — primary cell (`text-text-primary`, 14px Caption font).
+- `.ui-table-cell-muted` — secondary cell (`text-text-secondary`, 12px).
+
+**Status Cells**: inline link `font-label text-text-secondary` with leading `w-1.5 h-1.5 rounded-full` token-colored dot (`StatusDot`).
+
+**Tab Filters**: huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive `text-gray-600` (consider migrating to `text-text-disabled`); active `text-text-display` wrapped `[ ACTIVE ]`. Header actions (e.g. `NEW SPONSORSHIP`) align right in the bottom-bordered tab row.
+
+**Archive Metric Cells**: Views/Likes/Comments render grand totals from platform columns (`youtube* + meta* + tiktok*`) and display with locale separators (`toLocaleString()`).
+
+**Analytics Performer Rows**: platform chips (`YT`, `IG`, `TT`) and per-platform metric strings render only for selected/synced platforms. Format badges (`Short Form`, `Long Form`) sit inline with the title using tiny bordered uppercase tokens.
 
 ### E. Settings
-- **Layout Architecture**: Max width 48rem. Categories separated by top borders `border-t border-white/10 pt-8`.
-- **Inputs**: Transparent under-bordered inputs `border-b border-white/10`.
-- **Save Action Area**: Bottom-anchored right-aligned sharp button `bg-white text-black`.
+- **Layout**: `max-w-[48rem]` centered. Categories separated by `border-t border-border-visible pt-8`.
+- **Inputs**: transparent under-bordered `border-0 border-b border-border-visible`.
+- **Avatar Upload Form** ([AvatarUploadForm.tsx](src/app/settings/AvatarUploadForm.tsx)): preview chip is `w-20 h-20 border border-border-visible bg-surface` (sharp). Action button uses bracket notation `[ UPLOAD AVATAR ]`. Files land in `/public/uploads/avatars/*`; the directory is git-tracked via `.gitkeep` and uploads are gitignored.
+- **Save Action**: bottom-anchored, right-aligned, sharp `bg-text-display text-text-inverse` (or `Button variant="primary"`).
 
 ---
 
 ## 5. Animation & Motion
-- **Durations**: 150-250ms for micro-interactions, 300ms for transitions.
-- **Easing**: `cubic-bezier(0.25, 0.1, 0.25, 1)` (Subtle ease-out, no bounce).
-- **Styles**: Mechanical and precise. Hover states change brightness and border color, never scale, and never drop shadows. Transparency and opacity are preferred over sliding movement.
+
+- **Durations**: 150ms micro-interactions, 200ms standard transitions, 300ms section transitions.
+- **Easing**: `cubic-bezier(0.25, 0.1, 0.25, 1)` (subtle ease-out, no bounce). Exposed as `--ease-mechanical`.
+- **Toast slide-in**: `slideIn 200ms ease-out` keyframe ([globals.css:483-492](src/app/globals.css:483)) — 16px translate-X, opacity 0 → 1.
+- **Style**: mechanical and precise. Hover changes brightness and border color; never scale, never drop shadow. Transparency and opacity are preferred over sliding movement.
+
+---
+
+## 6. Semantic UI Utilities
+
+Reference for `.ui-*` classes ([globals.css:269-471](src/app/globals.css:269)). Reach for these before writing new chains.
+
+| Class | Purpose |
+| --- | --- |
+| `.ui-panel` / `.ui-panel-raised` | Card / elevated card shell (surface + visible border) |
+| `.ui-modal-backdrop` | Mode-aware overlay fill |
+| `.ui-modal-shell` | Side-sheet / panel modal container |
+| `.ui-button-primary` | High-contrast fill button (text-display fill) |
+| `.ui-button-outline` | Bordered outline button |
+| `.ui-button-ghost` | Unbordered text-only button |
+| `.ui-button-danger` | Destructive action (accent text, accent/45 border, accent-subtle hover) |
+| `.ui-input` / `.ui-select` / `.ui-textarea` | Bordered form controls (alternative to `Input`'s underline style) |
+| `.ui-table-head` | Table header row |
+| `.ui-table-row` | Table body row with hover-surface |
+| `.ui-table-cell` / `.ui-table-cell-muted` | Cell hierarchy |
+| `.ui-tag-muted` | Inline 9px uppercase tag |
+| `.ui-bar-track` / `.ui-bar-fill` | Progress segments |
+| `.ui-user-dropdown` | Header user-menu wrapper |
+| `.ui-user-dropdown-heading` | Username heading row |
+| `.ui-user-dropdown-row` | Action row (hover swaps to text-display + hover-surface) |
+| `.ui-user-dropdown-toggle` | Right-side bracket label inside a row |
+| `.ui-page-kicker` | 10px Mono uppercase pre-title kicker |
+| `.ui-page-title` | Page H1 (uppercase, tracked) |
+| `.ui-page-meta` | Caption-sized metadata |
+| `.ui-divider` | `border-color: var(--color-border-visible)` helper |
+| `.ui-filming-card-surface` | Mode-aware filming card background (raised dark, flat light) |
+
+---
+
+## 7. Theme System
+
+- **Provider**: `next-themes` `ThemeProvider` in [providers.tsx](src/app/providers.tsx) with `attribute="class"`, `defaultTheme="system"`, `enableSystem`, `disableTransitionOnChange`.
+- **Mechanism**: toggling sets `<html>` to `.dark` or `.light`. The CSS-variable indirection swaps the entire palette without rerendering React state.
+- **UX Toggle**: in the header user dropdown (see §4.A). Row uses `Sun` / `Moon` icons; the right-hand bracket label shows the **target** mode (`[LIGHT]` while currently dark, `[DARK]` while currently light).
+- **Authoring Rule**: never hard-code colors. Always use semantic tokens (`bg-surface`, `text-text-display`, `border-border-visible`, etc.) so components track mode automatically. Flag any class chain that breaks light-mode parity (e.g. raw `bg-zinc-*`, `text-white`, `border-white/N`) as a bug.
+
+---
+
+## 8. Role-Based Access (RBAC)
+
+- **Roles**: `USER_ROLES = ["ADMIN", "MANAGER", "MEMBER"]` ([roles.ts](src/lib/roles.ts)).
+- **Middleware** ([middleware.ts](src/middleware.ts)): blocks `MEMBER` from `/analytics`, `/sponsorships`, `/team`.
+- **Sidebar Gating** ([Sidebar.tsx:9-17](src/components/layout/Sidebar.tsx:9)): `getVisibleNavItems()` filters those routes for `MEMBER` so the side nav matches what middleware allows.
+- **Session**: JWT carries `role` from `normalizeRole()` ([auth.ts](src/lib/auth.ts)). Read via `useSession().data?.user?.role` or server-side `getServerSession`.
+- **Admin-Only UI**: `TeamMemberModal` exposes a role selector backed by `USER_ROLES` for ADMINs to assign roles during create/edit.
+- **Authoring Rule**: gate UI on `session?.user?.role`, not feature flags. New protected pages must be added to **both** `memberHiddenRoutes` and the middleware matcher together; missing one creates a leak.
+
+---
+
+## 9. Component Library Reference
+
+Single-line summaries for `src/components/ui/*`. Reach for these before rebuilding.
+
+- **Button** — variants `primary | secondary | ghost | danger`, sizes `sm | md | lg`, `pill` flag. Uses `text-style-label` and theme tokens. ([Button.tsx](src/components/ui/Button.tsx))
+- **Input** — label above with `group-focus-within:text-text-display`; underline-only `border-b border-border-visible`, `bg-transparent`, `text-style-caption`. ([Input.tsx](src/components/ui/Input.tsx))
+- **Checkbox** — sharp `w-3.5 h-3.5` square, `border-border-visible`. ([Checkbox.tsx](src/components/ui/Checkbox.tsx))
+- **ProgressBar** — flex segments with `gap-[2px]`, default `h-[4px]`. Uses `.ui-bar-track` / `.ui-bar-fill`. ([ProgressBar.tsx](src/components/ui/ProgressBar.tsx))
+- **StatusDot** — `w-1.5 h-1.5 rounded-full`, status-color token. ([StatusDot.tsx](src/components/ui/StatusDot.tsx))
+- **Tag** — `text-[9px] uppercase`, bordered, optional `color` / `borderColor` / `bgColor` props. Disabled state = strike-through + 40% opacity. ([Tag.tsx](src/components/ui/Tag.tsx))
+- **Toast** — bottom-right `fixed bottom-xl right-xl z-[9999]`, types `error | success | warning` → `SYS_ERROR | SYS_OK | SYS_WARN` labels with matching accent border, leading Material Symbol, 4-second auto-dismiss, `slideIn 200ms ease-out` entry. Use via `useToast().showToast(message, type)`. ([Toast.tsx](src/components/ui/Toast.tsx))
+- **CopyBlock** — copy-to-clipboard wrapper. ([CopyBlock.tsx](src/components/ui/CopyBlock.tsx))
