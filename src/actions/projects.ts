@@ -574,16 +574,28 @@ export async function syncYouTubeStats(): Promise<
 
   const writes = projects
     .filter((p) => p.youtubeId && statsById.has(p.youtubeId))
-    .map((p) => {
+    .flatMap((p) => {
       const s = statsById.get(p.youtubeId!)!;
-      return prisma.project.update({
-        where: { id: p.id },
-        data: {
-          youtubeViews: s.views,
-          youtubeLikes: s.likes,
-          youtubeComments: s.comments,
-        },
-      });
+      return [
+        prisma.project.update({
+          where: { id: p.id },
+          data: {
+            youtubeViews: s.views,
+            youtubeLikes: s.likes,
+            youtubeComments: s.comments,
+          },
+        }),
+        prisma.analytics.create({
+          data: {
+            projectId: p.id,
+            platform: "YouTube",
+            views: s.views,
+            likes: s.likes,
+            comments: s.comments,
+            isManual: false,
+          },
+        }),
+      ];
     });
 
   try {
@@ -592,7 +604,7 @@ export async function syncYouTubeStats(): Promise<
     revalidatePath("/archive");
     return {
       success: true,
-      data: { updated: writes.length, total: projects.length },
+      data: { updated: writes.length / 2, total: projects.length },
     };
   } catch (err) {
     console.error("[syncYouTubeStats] db update failed", err);
@@ -661,6 +673,16 @@ export async function syncMetaStats(): Promise<
           metaViews: views,
           metaLikes: likes,
           metaComments: comments,
+        },
+      });
+      await prisma.analytics.create({
+        data: {
+          projectId: project.id,
+          platform: "Facebook",
+          views,
+          likes,
+          comments,
+          isManual: false,
         },
       });
       updated += 1;
@@ -762,6 +784,16 @@ export async function syncTikTokStats(): Promise<
           tiktokComments: comments,
         },
       });
+      await prisma.analytics.create({
+        data: {
+          projectId: project.id,
+          platform: "TikTok",
+          views,
+          likes,
+          comments,
+          isManual: false,
+        },
+      });
       updated += 1;
     } catch (err) {
       console.error("[syncTikTokStats] fetch/update failed", project.id, err);
@@ -775,6 +807,112 @@ export async function syncTikTokStats(): Promise<
   return {
     success: true,
     data: { updated, total: projects.length },
+  };
+}
+
+// ─── SYNC TIKTOK BATCH (Cron rotation — N oldest-synced) ───
+// RapidAPI quota limited (e.g. 100/mo). Pick N stalest projects per call.
+export async function syncTikTokStatsBatch(
+  limit: number
+): Promise<ActionResult<{ updated: number; total: number; picked: number }>> {
+  const rapidHost = process.env.TIKTOK_RAPIDAPI_HOST;
+  const rapidKey = process.env.TIKTOK_RAPIDAPI_KEY;
+  if (!rapidHost || !rapidKey) {
+    return {
+      success: false,
+      error: "TIKTOK_RAPIDAPI_HOST / TIKTOK_RAPIDAPI_KEY env vars missing.",
+    };
+  }
+
+  const candidates = await prisma.project.findMany({
+    where: { status: "Published", tiktokId: { not: null } },
+    select: { id: true, tiktokId: true },
+  });
+  if (candidates.length === 0) {
+    return { success: true, data: { updated: 0, total: 0, picked: 0 } };
+  }
+
+  const lastSynced = await prisma.analytics.groupBy({
+    by: ["projectId"],
+    where: {
+      platform: "TikTok",
+      projectId: { in: candidates.map((p) => p.id) },
+    },
+    _max: { fetchedAt: true },
+  });
+  const lastById = new Map<string, number>(
+    lastSynced.map((r) => [r.projectId, r._max.fetchedAt?.getTime() ?? 0])
+  );
+
+  const picked = candidates
+    .map((p) => ({ ...p, last: lastById.get(p.id) ?? 0 }))
+    .sort((a, b) => a.last - b.last)
+    .slice(0, Math.max(0, limit));
+
+  let updated = 0;
+  for (const project of picked) {
+    if (!project.tiktokId) continue;
+    try {
+      const res = await fetch(
+        `https://${rapidHost}/api/post/detail?videoId=${encodeURIComponent(
+          project.tiktokId
+        )}`,
+        {
+          headers: {
+            "x-rapidapi-host": rapidHost,
+            "x-rapidapi-key": rapidKey,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+      const data = await res.json();
+      if (data?.error || data?.message === "error") {
+        console.error(
+          "[syncTikTokStatsBatch] API error",
+          project.tiktokId,
+          data?.error ?? data?.message
+        );
+        continue;
+      }
+      const itemStruct = data?.itemInfo?.itemStruct;
+      const apiStats =
+        itemStruct?.stats ||
+        itemStruct?.statsV2 ||
+        data?.stats ||
+        data?.data?.stats ||
+        data?.aweme_detail?.stats ||
+        {};
+      const views = parseInt(apiStats.playCount || 0, 10);
+      const likes = parseInt(apiStats.diggCount || 0, 10);
+      const comments = parseInt(apiStats.commentCount || 0, 10);
+      await prisma.project.update({
+        where: { id: project.id },
+        data: { tiktokViews: views, tiktokLikes: likes, tiktokComments: comments },
+      });
+      await prisma.analytics.create({
+        data: {
+          projectId: project.id,
+          platform: "TikTok",
+          views,
+          likes,
+          comments,
+          isManual: false,
+        },
+      });
+      updated += 1;
+    } catch (err) {
+      console.error("[syncTikTokStatsBatch] fetch/update failed", project.id, err);
+      continue;
+    }
+  }
+
+  revalidatePath("/analytics");
+  revalidatePath("/archive");
+
+  return {
+    success: true,
+    data: { updated, total: candidates.length, picked: picked.length },
   };
 }
 

@@ -1,26 +1,48 @@
-// Cron scheduler — runs daily at midnight for analytics fetching
+// Cron scheduler — daily analytics fetching with TikTok quota rotation.
 import cron from "node-cron";
-import { prisma } from "@/lib/prisma";
+import {
+  syncYouTubeStats,
+  syncMetaStats,
+  syncTikTokStatsBatch,
+} from "@/actions/projects";
+
+// TikTok RapidAPI quota: 100/mo. 3/day = ~90/mo with headroom.
+const TIKTOK_DAILY_LIMIT = parseInt(
+  process.env.TIKTOK_DAILY_SYNC_LIMIT || "3",
+  10
+);
+
+let started = false;
 
 export function initCronJobs() {
-  // Daily analytics fetch at midnight
-  cron.schedule("0 0 * * *", async () => {
-    console.log("[CRON] Running daily analytics fetch...");
+  if (started) return;
+  started = true;
+
+  // Daily at 00:05 server time. YT + Meta full, TikTok N stalest.
+  cron.schedule("5 0 * * *", async () => {
+    console.log("[CRON] Daily analytics sync starting…");
     try {
-      const publishedProjects = await prisma.project.findMany({
-        where: { status: "Published" },
-      });
-      for (const project of publishedProjects) {
-        const platforms = JSON.parse(project.platformsTargeted || "[]");
-        for (const platform of platforms) {
-          // Stub: In production, call the appropriate service
-          console.log(`[CRON] Fetching ${platform} stats for: ${project.title}`);
-        }
-      }
-      console.log(`[CRON] Processed ${publishedProjects.length} projects.`);
+      const yt = await syncYouTubeStats();
+      console.log("[CRON] YouTube:", yt);
     } catch (err) {
-      console.error("[CRON] Error:", err);
+      console.error("[CRON] YouTube sync threw", err);
     }
+    try {
+      const meta = await syncMetaStats();
+      console.log("[CRON] Meta:", meta);
+    } catch (err) {
+      console.error("[CRON] Meta sync threw", err);
+    }
+    try {
+      const tt = await syncTikTokStatsBatch(TIKTOK_DAILY_LIMIT);
+      console.log("[CRON] TikTok batch:", tt);
+    } catch (err) {
+      console.error("[CRON] TikTok sync threw", err);
+    }
+    console.log("[CRON] Daily sync done.");
   });
-  console.log("[CRON] Analytics scheduler initialized (daily @ midnight)");
+
+  console.log(
+    `[CRON] Analytics scheduler initialized (daily @ 00:05, TikTok limit=${TIKTOK_DAILY_LIMIT}/day)`
+  );
 }
