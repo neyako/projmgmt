@@ -6,6 +6,8 @@ import PerformanceChart, {
 import PlatformBadge from "@/components/analytics/PlatformBadge";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 function formatNumber(n: number) {
   return n.toLocaleString("en-US");
 }

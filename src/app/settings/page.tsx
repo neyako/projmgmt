@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import AvatarUploadForm from "./AvatarUploadForm";
 import ChangePasswordForm from "./ChangePasswordForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions);
   const user = session?.user?.id

@@ -3,6 +3,7 @@ import TeamClient from "@/components/team/TeamClient";
 import { prisma } from "@/lib/prisma";
 import { teamUserSelect } from "@/lib/userSelect";
 
+export const dynamic = "force-dynamic";
 
 export default async function TeamPage({
   searchParams,

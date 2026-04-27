@@ -3,6 +3,7 @@ import ArchiveTable from "@/components/archive/ArchiveTable";
 import { prisma } from "@/lib/prisma";
 import { projectUserSelect } from "@/lib/userSelect";
 
+export const dynamic = "force-dynamic";
 
 export default async function ArchivePage({
   searchParams,

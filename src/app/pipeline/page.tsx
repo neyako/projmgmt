@@ -3,6 +3,7 @@ import KanbanBoardWrapper from "@/components/kanban/KanbanBoardWrapper";
 import { prisma } from "@/lib/prisma";
 import { projectUserSelect } from "@/lib/userSelect";
 
+export const dynamic = "force-dynamic";
 
 export default async function PipelinePage({
   searchParams,
