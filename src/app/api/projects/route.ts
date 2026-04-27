@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { projectUserSelect } from "@/lib/userSelect";
 
 // GET /api/projects — List all projects with relations
 export async function GET() {
   const projects = await prisma.project.findMany({
     include: {
-      creator: true,
-      aRollAssignee: true,
-      bRollAssignee: true,
-      editingAssignee: true,
+      creator: { select: projectUserSelect },
+      aRollAssignee: { select: projectUserSelect },
+      bRollAssignee: { select: projectUserSelect },
+      editingAssignee: { select: projectUserSelect },
       shotlistItems: { orderBy: { order: "asc" } },
       analytics: true,
     },
@@ -41,10 +42,10 @@ export async function POST(request: Request) {
       columnOrder: 0,
     },
     include: {
-      creator: true,
-      aRollAssignee: true,
-      bRollAssignee: true,
-      editingAssignee: true,
+      creator: { select: projectUserSelect },
+      aRollAssignee: { select: projectUserSelect },
+      bRollAssignee: { select: projectUserSelect },
+      editingAssignee: { select: projectUserSelect },
       shotlistItems: true,
       analytics: true,
     },

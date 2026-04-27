@@ -1,6 +1,7 @@
 import Shell from "@/components/layout/Shell";
 import ArchiveTable from "@/components/archive/ArchiveTable";
 import { prisma } from "@/lib/prisma";
+import { projectUserSelect } from "@/lib/userSelect";
 
 
 export default async function ArchivePage({
@@ -17,13 +18,13 @@ export default async function ArchivePage({
       ...(q && { title: { contains: q } }),
     },
     include: {
-      creator: true,
-      aRollAssignee: true,
-      bRollAssignee: true,
-      editingAssignee: true,
-      assignedCameraman: true,
-      assignedEditor: true,
-      assignedTalent: true,
+      creator: { select: projectUserSelect },
+      aRollAssignee: { select: projectUserSelect },
+      bRollAssignee: { select: projectUserSelect },
+      editingAssignee: { select: projectUserSelect },
+      assignedCameraman: { select: projectUserSelect },
+      assignedEditor: { select: projectUserSelect },
+      assignedTalent: { select: projectUserSelect },
       shotlistItems: { orderBy: { order: "asc" } },
     },
     orderBy: [{ publishDate: "desc" }],
@@ -57,13 +58,13 @@ export default async function ArchivePage({
       ...(q && { title: { contains: q } }),
     },
     include: {
-      creator: true,
-      aRollAssignee: true,
-      bRollAssignee: true,
-      editingAssignee: true,
-      assignedCameraman: true,
-      assignedEditor: true,
-      assignedTalent: true,
+      creator: { select: projectUserSelect },
+      aRollAssignee: { select: projectUserSelect },
+      bRollAssignee: { select: projectUserSelect },
+      editingAssignee: { select: projectUserSelect },
+      assignedCameraman: { select: projectUserSelect },
+      assignedEditor: { select: projectUserSelect },
+      assignedTalent: { select: projectUserSelect },
       shotlistItems: { orderBy: { order: "asc" } },
     },
     orderBy: [{ updatedAt: "desc" }],

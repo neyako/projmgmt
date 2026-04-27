@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { User } from "@prisma/client";
 import TeamMemberModal from "@/components/modals/TeamMemberModal";
 import { useRouter } from "next/navigation";
+import type { TeamUser } from "@/types";
 
-export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
+export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] }) {
   const router = useRouter();
   const [users, setUsers] = useState(initialUsers);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -13,7 +13,9 @@ export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
 
   useEffect(() => {
     setUsers(initialUsers);
-    setSelectedId(null);
+    setSelectedId((currentId) =>
+      currentId && initialUsers.some((user) => user.id === currentId) ? currentId : null
+    );
   }, [initialUsers]);
 
   const selectedUser = selectedId ? users.find(u => u.id === selectedId) ?? null : null;
@@ -77,6 +79,14 @@ export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
                       {u.email}
                     </span>
                   </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
+                      Login
+                    </span>
+                    <span className={u.hasLogin ? "text-[10px] font-mono text-success" : "text-[10px] font-mono text-warning"}>
+                      {u.hasLogin ? u.username : "NO CRED"}
+                    </span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -87,6 +97,7 @@ export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
                   <th className="ui-table-head p-4">Name</th>
                   <th className="ui-table-head p-4">Role</th>
                   <th className="ui-table-head p-4">Email</th>
+                  <th className="ui-table-head p-4">Login</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,6 +110,11 @@ export default function TeamClient({ initialUsers }: { initialUsers: User[] }) {
                     <td className="p-4 ui-table-cell font-bold">{u.name}</td>
                     <td className="p-4 ui-table-cell">{u.role.replace("_", " ")}</td>
                     <td className="p-4 ui-table-cell-muted">{u.email}</td>
+                    <td className="p-4 ui-table-cell">
+                      <span className={u.hasLogin ? "text-success" : "text-warning"}>
+                        {u.hasLogin ? u.username : "NO CRED"}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>

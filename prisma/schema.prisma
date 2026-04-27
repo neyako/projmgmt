@@ -103,6 +103,9 @@ model Project {
 
   // Scheduling
   dueDate           DateTime?
+  scriptingDueDate  DateTime?
+  filmingDueDate    DateTime?
+  editingDueDate    DateTime?
 
   // Assignees
   creatorId         String

@@ -32,8 +32,7 @@ import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
 import CopyBlock from "@/components/ui/CopyBlock";
 import { generateNasPaths } from "@/utils/nasPaths";
-import type { User } from "@prisma/client";
-import type { ProjectCardData, ShotItem } from "@/types";
+import type { ProjectCardData, ProjectUser, ShotItem } from "@/types";
 
 function parseJsonArray(json?: string | null): string[] {
   if (!json) return [];
@@ -837,6 +836,10 @@ function toDateInputValue(d?: Date | string | null): string {
   return `${year}-${month}-${day}`;
 }
 
+function todayInputValue(): string {
+  return toDateInputValue(new Date());
+}
+
 export default function ProjectDetailsModal({
   project,
   onClose,
@@ -845,7 +848,7 @@ export default function ProjectDetailsModal({
 }: ProjectDetailsModalProps) {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<ProjectUser[]>([]);
 
   const isEditing = !!project;
 
@@ -872,7 +875,10 @@ export default function ProjectDetailsModal({
   const scriptSaveSeqRef = useRef(0);
 
   // Interactive metadata state
-  const [dueDate, setDueDate] = useState("");
+  const [scriptingDueDate, setScriptingDueDate] = useState("");
+  const [filmingDueDate, setFilmingDueDate] = useState("");
+  const [editingDueDate, setEditingDueDate] = useState("");
+  const minDeadlineDate = todayInputValue();
   const [editorId, setEditorId] = useState("");
   const [cameramanId, setCameramanId] = useState("");
   const [talentId, setTalentId] = useState("");
@@ -937,7 +943,9 @@ export default function ProjectDetailsModal({
       setScriptSaveStatus("saved");
       setARollShots(parseShotItems(project.aRollShots));
       setBRollShots(parseShotItems(project.bRollShots));
-      setDueDate(toDateInputValue(project.dueDate));
+      setScriptingDueDate(toDateInputValue(project.scriptingDueDate));
+      setFilmingDueDate(toDateInputValue(project.filmingDueDate));
+      setEditingDueDate(toDateInputValue(project.editingDueDate));
       setEditorId(project.assignedEditor?.id || project.assignedEditorId || "");
       setCameramanId(project.assignedCameraman?.id || project.assignedCameramanId || "");
       setTalentId(project.assignedTalent?.id || project.assignedTalentId || "");
@@ -960,7 +968,9 @@ export default function ProjectDetailsModal({
       setScriptSaveStatus("idle");
       setARollShots([]);
       setBRollShots([]);
-      setDueDate("");
+      setScriptingDueDate("");
+      setFilmingDueDate("");
+      setEditingDueDate("");
       setEditorId("");
       setCameramanId("");
       setTalentId("");
@@ -1060,6 +1070,9 @@ export default function ProjectDetailsModal({
 
   function saveMetadata(patch: {
     dueDate?: string | null;
+    scriptingDueDate?: string | null;
+    filmingDueDate?: string | null;
+    editingDueDate?: string | null;
     assignedEditorId?: string | null;
     assignedCameramanId?: string | null;
     assignedTalentId?: string | null;
@@ -1077,6 +1090,21 @@ export default function ProjectDetailsModal({
       };
       if (patch.dueDate !== undefined) {
         parentPatch.dueDate = patch.dueDate ? new Date(patch.dueDate) : null;
+      }
+      if (patch.scriptingDueDate !== undefined) {
+        parentPatch.scriptingDueDate = patch.scriptingDueDate
+          ? new Date(patch.scriptingDueDate)
+          : null;
+      }
+      if (patch.filmingDueDate !== undefined) {
+        parentPatch.filmingDueDate = patch.filmingDueDate
+          ? new Date(patch.filmingDueDate)
+          : null;
+      }
+      if (patch.editingDueDate !== undefined) {
+        parentPatch.editingDueDate = patch.editingDueDate
+          ? new Date(patch.editingDueDate)
+          : null;
       }
       if (patch.assignedEditorId !== undefined) {
         parentPatch.assignedEditorId = patch.assignedEditorId;
@@ -1912,23 +1940,65 @@ export default function ProjectDetailsModal({
                 </div>
               )}
 
-              {/* Due Date */}
+              {/* Scope Deadlines */}
               <div className="mb-6">
                 <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                  Due Date
+                  Scope Deadlines
                 </label>
                 {isEditing ? (
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setDueDate(value);
-                      saveMetadata({ dueDate: value || null });
-                    }}
-                    className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
-                    style={{ colorScheme: "dark" }}
-                  />
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <div className="text-[10px] font-mono text-text-disabled uppercase tracking-widest mb-1">
+                        Scripting
+                      </div>
+                      <input
+                        type="date"
+                        value={scriptingDueDate}
+                        min={minDeadlineDate}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setScriptingDueDate(value);
+                          saveMetadata({ scriptingDueDate: value || null });
+                        }}
+                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
+                        style={{ colorScheme: "dark" }}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-mono text-text-disabled uppercase tracking-widest mb-1">
+                        Filming
+                      </div>
+                      <input
+                        type="date"
+                        value={filmingDueDate}
+                        min={minDeadlineDate}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFilmingDueDate(value);
+                          saveMetadata({ filmingDueDate: value || null });
+                        }}
+                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
+                        style={{ colorScheme: "dark" }}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-mono text-text-disabled uppercase tracking-widest mb-1">
+                        Editing
+                      </div>
+                      <input
+                        type="date"
+                        value={editingDueDate}
+                        min={minDeadlineDate}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setEditingDueDate(value);
+                          saveMetadata({ editingDueDate: value || null });
+                        }}
+                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
+                        style={{ colorScheme: "dark" }}
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <span className="text-xs font-bold text-text-display uppercase tracking-wider block">
                     Not set

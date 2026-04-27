@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { VALID_TRANSITIONS, type KanbanStage } from "@/lib/constants";
+import { projectUserSelect } from "@/lib/userSelect";
 
 // ─── RESULT TYPE ────────────────────────────────────────
 type ActionResult<T = unknown> =
@@ -17,6 +18,29 @@ function parseShotItemsJSON(
   } catch {
     return [];
   }
+}
+
+function toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseFutureDate(value: string | null | undefined, label: string) {
+  if (!value) {
+    return { success: true as const, date: null };
+  }
+
+  const today = toDateInputValue(new Date());
+  if (value < today) {
+    return {
+      success: false as const,
+      error: `${label} cannot be in the past.`,
+    };
+  }
+
+  return { success: true as const, date: new Date(value) };
 }
 
 // ─── CREATE PROJECT ─────────────────────────────────────
@@ -82,7 +106,6 @@ export async function updateProjectStatus(
 ): Promise<ActionResult> {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: { aRollAssignee: true, bRollAssignee: true },
   });
 
   if (!project) {
@@ -259,7 +282,10 @@ export async function toggleShotlistItem(
 
 // ─── GET ALL USERS (for forms) ──────────────────────────
 export async function getUsers() {
-  return prisma.user.findMany({ orderBy: { name: "asc" } });
+  return prisma.user.findMany({
+    select: projectUserSelect,
+    orderBy: { name: "asc" },
+  });
 }
 
 // ─── UPDATE PROJECT METADATA (Due Date + Assignees + Product Links) ─────
@@ -267,6 +293,9 @@ export async function updateProjectMetadata(
   projectId: string,
   data: {
     dueDate?: string | null;
+    scriptingDueDate?: string | null;
+    filmingDueDate?: string | null;
+    editingDueDate?: string | null;
     assignedEditorId?: string | null;
     assignedCameramanId?: string | null;
     assignedTalentId?: string | null;
@@ -274,11 +303,29 @@ export async function updateProjectMetadata(
   }
 ): Promise<ActionResult> {
   try {
+    const scriptingDate = parseFutureDate(data.scriptingDueDate, "Scripting deadline");
+    if (!scriptingDate.success) return { success: false, error: scriptingDate.error };
+
+    const filmingDate = parseFutureDate(data.filmingDueDate, "Filming deadline");
+    if (!filmingDate.success) return { success: false, error: filmingDate.error };
+
+    const editingDate = parseFutureDate(data.editingDueDate, "Editing deadline");
+    if (!editingDate.success) return { success: false, error: editingDate.error };
+
     await prisma.project.update({
       where: { id: projectId },
       data: {
         ...(data.dueDate !== undefined && {
           dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        }),
+        ...(data.scriptingDueDate !== undefined && {
+          scriptingDueDate: scriptingDate.date,
+        }),
+        ...(data.filmingDueDate !== undefined && {
+          filmingDueDate: filmingDate.date,
+        }),
+        ...(data.editingDueDate !== undefined && {
+          editingDueDate: editingDate.date,
         }),
         ...(data.assignedEditorId !== undefined && {
           assignedEditorId: data.assignedEditorId || null,

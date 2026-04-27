@@ -20,6 +20,26 @@ interface KanbanCardProps {
   onRequestPublish?: (project: ProjectCardData) => void;
 }
 
+function formatScopeDeadline(date?: Date | string | null) {
+  if (!date) return "";
+  const parsed = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed
+    .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+    .toUpperCase();
+}
+
+function getScopeDeadline(project: ProjectCardData) {
+  switch (project.status) {
+    case "Scripting":
+      return { label: "Scripting Due", date: project.scriptingDueDate };
+    case "Editing":
+      return { label: "Editing Due", date: project.editingDueDate };
+    default:
+      return null;
+  }
+}
+
 export default function KanbanCard({
   project,
   isDragOverlay = false,
@@ -43,6 +63,7 @@ export default function KanbanCard({
   };
 
   const platforms = parsePlatforms(project.platformsTargeted);
+  const scopeDeadline = getScopeDeadline(project);
   const assignmentValues: Array<
     string | { id: string; name?: string | null; avatarUrl?: string | null } | null | undefined
   > = [
@@ -146,6 +167,17 @@ export default function KanbanCard({
           {platforms.map((p) => (
             <Tag key={p} label={p} />
           ))}
+        </div>
+      )}
+
+      {scopeDeadline?.date && (
+        <div className="flex items-center justify-between gap-3 mt-xs border border-border-visible bg-input-surface px-2 py-1.5">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
+            {scopeDeadline.label}
+          </span>
+          <span className="text-[10px] font-mono uppercase tracking-widest whitespace-nowrap text-text-display">
+            {formatScopeDeadline(scopeDeadline.date)}
+          </span>
         </div>
       )}
 
