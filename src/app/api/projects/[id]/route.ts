@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { projectUserSelect } from "@/lib/userSelect";
 
 // GET /api/projects/[id]
 export async function GET(
@@ -10,10 +11,10 @@ export async function GET(
   const project = await prisma.project.findUnique({
     where: { id },
     include: {
-      creator: true,
-      aRollAssignee: true,
-      bRollAssignee: true,
-      editingAssignee: true,
+      creator: { select: projectUserSelect },
+      aRollAssignee: { select: projectUserSelect },
+      bRollAssignee: { select: projectUserSelect },
+      editingAssignee: { select: projectUserSelect },
       shotlistItems: { orderBy: { order: "asc" } },
       analytics: { orderBy: { fetchedAt: "desc" } },
     },
@@ -38,10 +39,10 @@ export async function PATCH(
     where: { id },
     data: body,
     include: {
-      creator: true,
-      aRollAssignee: true,
-      bRollAssignee: true,
-      editingAssignee: true,
+      creator: { select: projectUserSelect },
+      aRollAssignee: { select: projectUserSelect },
+      bRollAssignee: { select: projectUserSelect },
+      editingAssignee: { select: projectUserSelect },
       shotlistItems: { orderBy: { order: "asc" } },
       analytics: true,
     },

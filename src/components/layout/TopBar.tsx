@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Settings, LogOut } from "lucide-react";
+import { Sun, Moon, Settings, LogOut, Plus } from "lucide-react";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
 
 export default function TopBar() {
@@ -84,8 +84,9 @@ export default function TopBar() {
         <div className="flex items-center gap-md">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-text-display text-text-inverse text-[10px] font-mono tracking-widest uppercase px-6 py-2 hover:opacity-80 transition-opacity"
+            className="h-8 box-border bg-text-display text-text-inverse text-[9px] font-mono tracking-widest uppercase px-4 hover:opacity-80 transition-opacity flex items-center justify-center gap-2 leading-none"
           >
+            <Plus className="w-3 h-3 shrink-0" strokeWidth={1.25} />
             NEW PROJECT
           </button>
 

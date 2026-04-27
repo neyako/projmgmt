@@ -1,11 +1,31 @@
 import type { Project, User, ShotlistItem, Analytics } from "@prisma/client";
 
+export type ProjectUser = Pick<User, "id" | "name" | "role" | "avatarUrl">;
+
+export type PublicUser = Pick<
+  User,
+  "id" | "name" | "email" | "username" | "role" | "avatarUrl"
+>;
+
+export type TeamUser = PublicUser & {
+  hasLogin: boolean;
+};
+
+export type CredentialHandoff = {
+  email: string;
+  username: string;
+  temporaryPassword: string;
+  emailSubject: string;
+  emailBody: string;
+  emailDeliveryStatus: "pending_integration";
+};
+
 // ─── ENRICHED TYPES ─────────────────────────────────────
 export type ProjectWithRelations = Project & {
-  creator: User;
-  aRollAssignee: User | null;
-  bRollAssignee: User | null;
-  editingAssignee: User | null;
+  creator: ProjectUser;
+  aRollAssignee: ProjectUser | null;
+  bRollAssignee: ProjectUser | null;
+  editingAssignee: ProjectUser | null;
   shotlistItems: ShotlistItem[];
   analytics: Analytics[];
 };
@@ -36,9 +56,12 @@ export type ProjectCardData = Pick<
   aRollShots?: string;
   bRollShots?: string;
   dueDate?: Date | string | null;
-  assignedCameraman?: { id: string; name: string; role: string; avatarUrl?: string | null } | null;
-  assignedEditor?: { id: string; name: string; role: string; avatarUrl?: string | null } | null;
-  assignedTalent?: { id: string; name: string; role: string; avatarUrl?: string | null } | null;
+  scriptingDueDate?: Date | string | null;
+  filmingDueDate?: Date | string | null;
+  editingDueDate?: Date | string | null;
+  assignedCameraman?: ProjectUser | null;
+  assignedEditor?: ProjectUser | null;
+  assignedTalent?: ProjectUser | null;
   assignedCameramanId?: string | null;
   assignedEditorId?: string | null;
   assignedTalentId?: string | null;

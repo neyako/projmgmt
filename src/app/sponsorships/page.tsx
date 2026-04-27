@@ -18,10 +18,58 @@ export default async function SponsorshipsPage({
     orderBy: { createdAt: "desc" },
   });
 
+  const allSponsorships = await prisma.sponsorship.findMany({
+    select: {
+      budget: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const monthlyTotals = Array.from({ length: currentMonth + 1 }, (_, monthIndex) => {
+    const total = allSponsorships.reduce((sum, sponsorship) => {
+      const closedAt = sponsorship.createdAt;
+      const isSameMonth =
+        closedAt.getFullYear() === currentYear &&
+        closedAt.getMonth() === monthIndex;
+      if (!isSameMonth || sponsorship.status === "Cancelled") return sum;
+      return sum + sponsorship.budget;
+    }, 0);
+
+    const monthDate = new Date(currentYear, monthIndex, 1);
+    const label = monthDate
+      .toLocaleDateString("en-US", { month: "short" })
+      .toUpperCase();
+
+    return {
+      key: `${currentYear}-${String(monthIndex + 1).padStart(2, "0")}`,
+      label,
+      total,
+    };
+  });
+
+  const pendingSponsorships = allSponsorships.filter(
+    (sponsorship) => sponsorship.status === "Pending"
+  );
+
+  const summary = {
+    pendingCount: pendingSponsorships.length,
+    pendingTotal: pendingSponsorships.reduce(
+      (sum, sponsorship) => sum + sponsorship.budget,
+      0
+    ),
+    currentMonthTotal: monthlyTotals[currentMonth]?.total ?? 0,
+    currentMonthLabel: monthlyTotals[currentMonth]?.label ?? "",
+    monthlyTotals,
+  };
+
   return (
     <Shell>
       
-        <SponsorshipsClient initialSponsorships={sponsorships} />
+        <SponsorshipsClient initialSponsorships={sponsorships} summary={summary} />
       
     </Shell>
   );

@@ -32,6 +32,15 @@ function calcPercent(shots: ShotItem[]): number {
   return Math.round((done / shots.length) * 100);
 }
 
+function formatScopeDeadline(date?: Date | string | null) {
+  if (!date) return "";
+  const parsed = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed
+    .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+    .toUpperCase();
+}
+
 export default function FilmingSplitCard({
   project,
   onProjectUpdate,
@@ -85,6 +94,9 @@ export default function FilmingSplitCard({
   const bRollPercent = calcPercent(bRollShots);
   const aRollDone = aRollShots.filter((s) => s.isCompleted).length;
   const bRollDone = bRollShots.filter((s) => s.isCompleted).length;
+  const filmingDeadline = project.filmingDueDate
+    ? formatScopeDeadline(project.filmingDueDate)
+    : "";
 
   function getInitials(name: string) {
     return name
@@ -139,6 +151,17 @@ export default function FilmingSplitCard({
           {platforms.map((p) => (
             <Tag key={p} label={p} />
           ))}
+        </div>
+      )}
+
+      {project.filmingDueDate && (
+        <div className="flex items-center justify-between gap-3 mt-xs ml-2 border border-border-visible bg-input-surface px-2 py-1.5">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
+            Filming Due
+          </span>
+          <span className="text-[10px] font-mono uppercase tracking-widest whitespace-nowrap text-text-display">
+            {filmingDeadline}
+          </span>
         </div>
       )}
 

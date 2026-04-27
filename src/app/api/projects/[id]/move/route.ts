@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { VALID_TRANSITIONS, type KanbanStage } from "@/lib/constants";
+import { projectUserSelect } from "@/lib/userSelect";
 
 // PATCH /api/projects/[id]/move — Column transition with validation guards
 export async function PATCH(
@@ -12,7 +13,6 @@ export async function PATCH(
 
   const project = await prisma.project.findUnique({
     where: { id },
-    include: { aRollAssignee: true, bRollAssignee: true },
   });
 
   if (!project) {
@@ -78,10 +78,10 @@ export async function PATCH(
       ...(to === "Published" && { publishDate: new Date() }),
     },
     include: {
-      creator: true,
-      aRollAssignee: true,
-      bRollAssignee: true,
-      editingAssignee: true,
+      creator: { select: projectUserSelect },
+      aRollAssignee: { select: projectUserSelect },
+      bRollAssignee: { select: projectUserSelect },
+      editingAssignee: { select: projectUserSelect },
       shotlistItems: true,
       analytics: true,
     },

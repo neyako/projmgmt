@@ -1,6 +1,7 @@
 import Shell from "@/components/layout/Shell";
 import TeamClient from "@/components/team/TeamClient";
 import { prisma } from "@/lib/prisma";
+import { teamUserSelect } from "@/lib/userSelect";
 
 
 export default async function TeamPage({
@@ -15,13 +16,19 @@ export default async function TeamPage({
     where: {
       ...(q && { name: { contains: q } }),
     },
+    select: teamUserSelect,
     orderBy: { name: "asc" },
   });
+
+  const teamUsers = users.map(({ passwordHash, ...user }) => ({
+    ...user,
+    hasLogin: Boolean(user.username && passwordHash),
+  }));
 
   return (
     <Shell>
       
-        <TeamClient initialUsers={users} />
+        <TeamClient initialUsers={teamUsers} />
       
     </Shell>
   );

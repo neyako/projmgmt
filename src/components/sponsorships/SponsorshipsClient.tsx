@@ -7,6 +7,14 @@ import { useRouter } from "next/navigation";
 
 type TabKey = "All" | "Active" | "Pending" | "Archived";
 
+export type SponsorshipSummary = {
+  pendingCount: number;
+  pendingTotal: number;
+  currentMonthTotal: number;
+  currentMonthLabel: string;
+  monthlyTotals: { key: string; label: string; total: number }[];
+};
+
 const TABS: TabKey[] = ["All", "Active", "Pending", "Archived"];
 
 function statusDotColor(status: string): string {
@@ -33,10 +41,16 @@ function formatDate(d?: Date | string | null) {
     .toUpperCase();
 }
 
+function formatMoney(value: number) {
+  return `$${value.toLocaleString("en-US")}`;
+}
+
 export default function SponsorshipsClient({
   initialSponsorships,
+  summary,
 }: {
   initialSponsorships: Sponsorship[];
+  summary: SponsorshipSummary;
 }) {
   const router = useRouter();
   const [sponsorships, setSponsorships] = useState(initialSponsorships);
@@ -117,6 +131,71 @@ export default function SponsorshipsClient({
             {filtered.length} {filtered.length === 1 ? "deal" : "deals"}
           </div>
         </div>
+
+        <section className="mb-6">
+          <div className="ui-page-kicker mb-3">At A Glance</div>
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-3">
+            <div className="ui-panel p-4 min-w-0">
+              <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
+                <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
+                  Pending Payment
+                </div>
+                <div className="text-[10px] font-mono tracking-widest uppercase text-warning whitespace-nowrap">
+                  {summary.pendingCount} {summary.pendingCount === 1 ? "Deal" : "Deals"}
+                </div>
+              </div>
+              <div className="mt-4 text-style-display-md text-text-display break-words">
+                {formatMoney(summary.pendingTotal)}
+              </div>
+              <div className="mt-2 text-[10px] font-mono uppercase tracking-widest text-text-secondary">
+                All-Time Pending
+              </div>
+            </div>
+
+            <div className="ui-panel p-4 min-w-0">
+              <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
+                <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
+                  Closed This Month
+                </div>
+                <div className="text-[10px] font-mono tracking-widest uppercase text-success whitespace-nowrap">
+                  {summary.currentMonthLabel}
+                </div>
+              </div>
+              <div className="mt-4 text-style-display-md text-text-display break-words">
+                {formatMoney(summary.currentMonthTotal)}
+              </div>
+              <div className="mt-2 text-[10px] font-mono uppercase tracking-widest text-text-secondary">
+                Non-Cancelled Deals
+              </div>
+            </div>
+
+            <div className="ui-panel p-4 min-w-0">
+              <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
+                <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
+                  Monthly Revenue
+                </div>
+                <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary whitespace-nowrap">
+                  {summary.monthlyTotals[0]?.key.slice(0, 4)}
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                {summary.monthlyTotals.map((month) => (
+                  <div
+                    key={month.key}
+                    className="border border-border-visible bg-input-surface p-3 min-w-0"
+                  >
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
+                      {month.label}
+                    </div>
+                    <div className="mt-2 text-xs font-mono text-text-display break-words">
+                      {formatMoney(month.total)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {filtered.length === 0 ? (
           <div className="ui-panel p-12 text-center">
