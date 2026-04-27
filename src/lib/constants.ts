@@ -44,8 +44,7 @@ export const PLATFORMS = [
   "TikTok",
   "YT_Shorts",
   "YouTube",
-  "Instagram",
-  "Meta",
+  "Facebook",
 ] as const;
 
 export type Platform = (typeof PLATFORMS)[number];

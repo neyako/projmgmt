@@ -23,8 +23,8 @@ const CONFIG: Record<
     action: syncYouTubeStats,
   },
   meta: {
-    label: "[ SYNC META ]",
-    syncing: "[ SYNCING META... ]",
+    label: "[ SYNC FACEBOOK ]",
+    syncing: "[ SYNCING FB... ]",
     action: syncMetaStats,
   },
   tiktok: {
@@ -48,16 +48,15 @@ export default function SyncButton({ platform }: { platform: Platform }) {
       }
       const { updated, total } = result.data;
       if (total === 0) {
-        showToast(
-          `No published projects have a ${platform.toUpperCase()} ID.`,
-          "error"
-        );
+        const label =
+          platform === "meta" ? "FACEBOOK" : platform.toUpperCase();
+        showToast(`No published projects have a ${label} ID.`, "error");
         return;
       }
+      const label =
+        platform === "meta" ? "FACEBOOK" : platform.toUpperCase();
       showToast(
-        `Synced ${updated}/${total} ${platform.toUpperCase()} video${
-          total === 1 ? "" : "s"
-        }.`,
+        `Synced ${updated}/${total} ${label} video${total === 1 ? "" : "s"}.`,
         "success"
       );
     });
