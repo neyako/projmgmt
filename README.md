@@ -63,67 +63,58 @@ NEXTCLOUD_PASSWORD=""
 
 ### 4. Initialize SQLite
 
+Create the empty schema:
+
 ```bash
 npm run db:push
 ```
 
-To load sample production data:
+This produces a fresh `prisma/dev.db` with no users. The first-run wizard handles admin creation in step 6 — no manual bcrypt scripting required.
 
-```bash
-npm run db:seed
-```
-
-`npm run db:seed` is destructive. It clears existing users, projects, shotlist items, and analytics before inserting demo data.
-
-### 5. Create A Local Admin Login
-
-The seed script creates demo people and projects, but it does not create username/password credentials. Run this after `db:push` or after `db:seed`:
-
-```bash
-npx tsx -e '
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-
-const prisma = new PrismaClient();
-
-async function main() {
-  const passwordHash = await bcrypt.hash("change-me-now", 12);
-
-  await prisma.user.upsert({
-    where: { email: "admin@projmgmt.local" },
-    update: { username: "admin", passwordHash, role: "ADMIN" },
-    create: {
-      name: "Local Admin",
-      email: "admin@projmgmt.local",
-      username: "admin",
-      passwordHash,
-      role: "ADMIN",
-    },
-  });
-
-  console.log("Login: admin / change-me-now");
-}
-
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
-'
-```
-
-Sign in with `admin` / `change-me-now`, then change the password from `/settings`.
-
-### 6. Run The App
+### 5. Run The App
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`. Authenticated users land on `/pipeline`.
+Open `http://localhost:3000`.
 
-### 7. Verify A Local Build
+### 6. First-Run Initialization Wizard
+
+On a fresh database (`userCount === 0`), every route — including `/login` and `/` — redirects to `/setup`. The wizard captures:
+
+- `WORKSPACE_ID` — display label for the studio (e.g. `Local Studio`)
+- `ADMIN_USERNAME` — login identifier (e.g. `admin`, `root`)
+- `DISPLAY_NAME` — name shown in UI assignments
+- `ACCESS_KEY` + `CONFIRM_ACCESS_KEY` — password, minimum 8 characters
+
+Submitting `[ INITIALIZE WORKSPACE ]` runs `initializeStudio` (`src/app/setup/actions.ts`), which:
+
+1. Re-checks `prisma.user.count()` server-side. Any value `> 0` throws `"Studio already initialized."` — this prevents anyone from hitting `/setup` later to create a rogue admin.
+2. Hashes the password with `bcrypt` (10 rounds).
+3. Creates the user with `role: "ADMIN"` and a synthetic email of `${username}@local` (the schema requires a unique email; edit it later from `/settings` if you want a real address).
+4. Redirects to `/login` for the first sign-in.
+
+Once one user exists, `/setup` becomes inert and bounces back to `/login`.
+
+### 7. Optional Sample Data
+
+To load demo people and projects:
+
+```bash
+npm run db:seed
+```
+
+`npm run db:seed` is **destructive**: it deletes every existing `User`, `Project`, `ShotlistItem`, and `Analytics` row before inserting demo records.
+
+The seed and the wizard do not compose:
+
+- The seed wipes any admin the wizard created.
+- The seed populates users without passwords, so `userCount > 0` blocks the wizard *and* nobody can sign in.
+
+If you want demo content with a working login, run `npm run db:seed`, open `npm run db:studio`, and set a `passwordHash` on one demo user (use `bcrypt.hash(...)` from a one-liner). For a clean self-hosted deployment, skip the seed entirely and let the wizard create the first user.
+
+### 8. Verify A Local Build
 
 ```bash
 npm run build
@@ -150,7 +141,7 @@ Then set `NEXTAUTH_SECRET` in `.env` and run:
 docker compose up --build
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. On a fresh `projmgmt-data` volume the database is empty, so the first request lands on the [first-run wizard](#6-first-run-initialization-wizard) and you create the root admin from the browser — no `docker exec` bcrypt scripting required.
 
 Compose stores SQLite data in the `projmgmt-data` volume and uploaded avatars in the `projmgmt-avatars` volume. Set `PRISMA_DB_PUSH=false` only if you want to manage schema updates yourself.
 
