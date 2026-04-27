@@ -131,6 +131,57 @@ npm run build
 
 There are currently no configured `lint` or `test` scripts.
 
+## Docker
+
+The production image uses Next.js standalone output, Node.js 22, Prisma, and a persistent SQLite volume. It runs `prisma db push --skip-generate` on container start by default so the mounted SQLite database matches `prisma/schema.prisma`.
+
+### Local Compose
+
+Create a Docker env file from the example and set a real auth secret:
+
+```bash
+cp .env.example .env
+openssl rand -base64 32
+```
+
+Then set `NEXTAUTH_SECRET` in `.env` and run:
+
+```bash
+docker compose up --build
+```
+
+Open `http://localhost:3000`.
+
+Compose stores SQLite data in the `projmgmt-data` volume and uploaded avatars in the `projmgmt-avatars` volume. Set `PRISMA_DB_PUSH=false` only if you want to manage schema updates yourself.
+
+### GHCR Image
+
+Images are published to:
+
+```bash
+ghcr.io/neyako/projmgmt
+```
+
+Pull and run the latest default-branch image:
+
+```bash
+docker pull ghcr.io/neyako/projmgmt:latest
+docker compose up
+```
+
+`NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR` are baked into the client bundle by Next.js. For GitHub-built images, set those as repository variables before the workflow runs, or rebuild locally with Docker Compose build args.
+
+## CI/CD
+
+GitHub Actions workflow: `.github/workflows/docker-ghcr.yml`.
+
+It runs on pushes to `main`, `master`, `codex/**`, tags matching `v*.*.*`, pull requests into `main`/`master`, and manual dispatch.
+
+- `verify` installs dependencies, prepares a temporary SQLite schema, and runs `npm run build`.
+- `docker` builds the image with Buildx, pushes branch/tag/SHA tags to GHCR on non-PR events, and marks `latest` only for the default branch.
+
+The workflow uses the built-in `GITHUB_TOKEN` with `packages: write`; no registry PAT is needed for this repository.
+
 ## Daily Development
 
 Useful commands:

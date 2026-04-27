@@ -2,6 +2,7 @@ import Shell from "@/components/layout/Shell";
 import SponsorshipsClient from "@/components/sponsorships/SponsorshipsClient";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
 
 export default async function SponsorshipsPage({
   searchParams,
