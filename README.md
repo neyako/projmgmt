@@ -7,17 +7,98 @@
 
 Self-hosted production management for a small video team: pipeline tracking, filming shotlists, review loops, sponsorships, archive, analytics, and NAS-aware asset paths in a strict terminal-inspired UI.
 
-## Setup First
+![Pipeline Kanban board](design/screenshots/kanban_pipeline.png)
 
-This app is designed for a local or self-hosted environment with SQLite and optional access to NAS, Nextcloud, and platform analytics APIs.
+---
 
-### 1. Prerequisites
+## Overview
 
-- Node.js 20 or newer is recommended.
-- npm, included with Node.js.
-- A local `.env` file.
+projmgmt replaces generic project management tools with a focused workflow for high-bandwidth content teams. It is built around local storage paths, Nextcloud review links, split A-Roll/B-Roll filming checklists, and platform-specific performance tracking.
 
-### 2. Install
+Core areas:
+
+- **Pipeline** — drag-and-drop Kanban board across `Ideation`, `Scripting`, `Filming`, `Editing`, `Review`.
+- **Publishing checklist** — moving to `Published` opens a final metadata modal before the card leaves the board.
+- **Archive** — published and scrapped projects live outside the active pipeline.
+- **Analytics** — YouTube, Meta, and TikTok metrics are synced and displayed as per-platform totals.
+- **Sponsorships** — brand-deal CRM tied to the production workflow.
+- **Team** — user roster and role management.
+- **Settings** — avatar upload, password change, 2FA.
+
+### Screens
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="design/screenshots/project_details_modal.png" alt="Project details modal" /><br />
+      <sub><b>Project Details</b> — modal for status, assignees, dates, links</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="design/screenshots/analytics.png" alt="Analytics" /><br />
+      <sub><b>Analytics</b> — per-platform aggregates</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="design/screenshots/sponsorships.png" alt="Sponsorships" /><br />
+      <sub><b>Sponsorships</b> — brand-deal CRM</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="design/screenshots/team.png" alt="Team" /><br />
+      <sub><b>Team</b> — roster and roles</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="design/screenshots/login.png" alt="Login" /><br />
+      <sub><b>Login</b> — terminal-style auth</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="design/screenshots/settings.png" alt="Settings" /><br />
+      <sub><b>Settings</b> — profile, security, 2FA</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+## Workflow Rules
+
+- `Filming -> Editing` requires all parsed `aRollShots` and `bRollShots` to be complete.
+- `Editing -> Review` requires a Nextcloud review link.
+- Review rejection returns the project to `Editing` and stores feedback on the card.
+- Published projects move out of `/pipeline` and into `/archive`.
+- Archive and Analytics totals are computed from platform-specific columns:
+  - `youtubeViews`, `metaViews`, `tiktokViews`
+  - `youtubeLikes`, `metaLikes`, `tiktokLikes`
+  - `youtubeComments`, `metaComments`, `tiktokComments`
+
+### Roles
+
+- `ADMIN` — full access.
+- `MANAGER` — full operational access.
+- `MEMBER` — limited; blocked from `/analytics`, `/sponsorships`, and `/team`.
+
+---
+
+## Deployment
+
+Designed for a local or self-hosted environment with SQLite and optional access to NAS, Nextcloud, and platform analytics APIs. Two supported paths:
+
+- **Bare-metal Node.js** (`npm run dev` / `npm run build && npm run start`) — see [Local Setup](#local-setup).
+- **Docker Compose / GHCR image** — see [Docker](#docker).
+
+Both paths land on the same first-run wizard the moment the database is empty, so no manual user provisioning is ever required.
+
+### Local Setup
+
+#### 1. Prerequisites
+
+- Node.js 20 or newer.
+- npm (bundled with Node).
+- A local `.env` file (template below).
+
+#### 2. Install
 
 ```bash
 git clone https://github.com/neyako/projmgmt.git
@@ -25,9 +106,9 @@ cd projmgmt
 npm install
 ```
 
-`npm install` also runs `prisma generate` through the `postinstall` script.
+`npm install` runs `prisma generate` through the `postinstall` script.
 
-### 3. Configure `.env`
+#### 3. Configure `.env`
 
 Create `.env` in the project root:
 
@@ -42,7 +123,7 @@ NEXT_PUBLIC_NAS_SHARE="projects"
 NEXT_PUBLIC_NAS_ROOT_DIR="Studio"
 ```
 
-Generate a local auth secret with:
+Generate a local auth secret:
 
 ```bash
 openssl rand -base64 32
@@ -61,17 +142,15 @@ NEXTCLOUD_USER=""
 NEXTCLOUD_PASSWORD=""
 ```
 
-### 4. Initialize SQLite
-
-Create the empty schema:
+#### 4. Initialize SQLite
 
 ```bash
 npm run db:push
 ```
 
-This produces a fresh `prisma/dev.db` with no users. The first-run wizard handles admin creation in step 6 — no manual bcrypt scripting required.
+Produces a fresh `prisma/dev.db` with no users. The first-run wizard handles admin creation in step 6 — no manual bcrypt scripting required.
 
-### 5. Run The App
+#### 5. Run
 
 ```bash
 npm run dev
@@ -79,7 +158,9 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-### 6. First-Run Initialization Wizard
+#### 6. First-Run Initialization Wizard
+
+![First-run setup wizard](design/screenshots/setup_wizard.png)
 
 On a fresh database (`userCount === 0`), every route — including `/login` and `/` — redirects to `/setup`. The wizard captures:
 
@@ -97,7 +178,7 @@ Submitting `[ INITIALIZE WORKSPACE ]` runs `initializeStudio` (`src/app/setup/ac
 
 Once one user exists, `/setup` becomes inert and bounces back to `/login`.
 
-### 7. Optional Sample Data
+#### 7. Optional Sample Data
 
 To load demo people and projects:
 
@@ -114,7 +195,7 @@ The seed and the wizard do not compose:
 
 If you want demo content with a working login, run `npm run db:seed`, open `npm run db:studio`, and set a `passwordHash` on one demo user (use `bcrypt.hash(...)` from a one-liner). For a clean self-hosted deployment, skip the seed entirely and let the wizard create the first user.
 
-### 8. Verify A Local Build
+#### 8. Verify A Local Build
 
 ```bash
 npm run build
@@ -122,11 +203,11 @@ npm run build
 
 There are currently no configured `lint` or `test` scripts.
 
-## Docker
+### Docker
 
 The production image uses Next.js standalone output, Node.js 22, Prisma, and a persistent SQLite volume. It runs `prisma db push --skip-generate` on container start by default so the mounted SQLite database matches `prisma/schema.prisma`.
 
-### Local Compose
+#### Local Compose
 
 Create a Docker env file from the example and set a real auth secret:
 
@@ -135,7 +216,7 @@ cp .env.example .env
 openssl rand -base64 32
 ```
 
-Then set `NEXTAUTH_SECRET` in `.env` and run:
+Set `NEXTAUTH_SECRET` in `.env`, then run:
 
 ```bash
 docker compose up --build
@@ -145,7 +226,7 @@ Open `http://localhost:3000`. On a fresh `projmgmt-data` volume the database is 
 
 Compose stores SQLite data in the `projmgmt-data` volume and uploaded avatars in the `projmgmt-avatars` volume. Set `PRISMA_DB_PUSH=false` only if you want to manage schema updates yourself.
 
-### GHCR Image
+#### GHCR Image
 
 Images are published to:
 
@@ -162,20 +243,20 @@ docker compose up
 
 `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR` are baked into the client bundle by Next.js. For GitHub-built images, set those as repository variables before the workflow runs, or rebuild locally with Docker Compose build args.
 
-## CI/CD
+### CI/CD
 
 GitHub Actions workflow: `.github/workflows/docker-ghcr.yml`.
 
-It runs on pushes to `main`, `master`, `codex/**`, tags matching `v*.*.*`, pull requests into `main`/`master`, and manual dispatch.
+Triggers: pushes to `main`, `master`, `codex/**`, tags matching `v*.*.*`, pull requests into `main`/`master`, and manual dispatch.
 
 - `verify` installs dependencies, prepares a temporary SQLite schema, and runs `npm run build`.
 - `docker` builds the image with Buildx, pushes branch/tag/SHA tags to GHCR on non-PR events, and marks `latest` only for the default branch.
 
-The workflow uses the built-in `GITHUB_TOKEN` with `packages: write`; no registry PAT is needed for this repository.
+Uses the built-in `GITHUB_TOKEN` with `packages: write`; no registry PAT needed.
+
+---
 
 ## Daily Development
-
-Useful commands:
 
 ```bash
 npm run dev       # Next.js dev server with Turbopack
@@ -188,48 +269,17 @@ npm run db:studio # inspect/edit SQLite data
 
 Main local paths:
 
-- `src/app/` - App Router pages, layouts, API routes, global CSS, and app-level actions.
-- `src/actions/` - Primary Server Actions for database mutations.
-- `src/components/` - Layout, Kanban, modal, table, analytics, sponsorship, team, and UI components.
-- `src/lib/` - Auth, roles, Prisma client, constants, and helpers.
-- `src/services/` - Cron and external analytics service helpers.
-- `src/types/` - Shared types layered on Prisma models.
-- `src/utils/nasPaths.ts` - OS-aware SMB path generation.
-- `prisma/schema.prisma` - SQLite schema.
-- `prisma/seed.ts` - Destructive demo data seed.
-- `DESIGN.md` - Visual source of truth.
-- `AGENTS.md` - AI assistant and contributor guardrails.
-
-## Product Overview
-
-projmgmt replaces generic project management tools with a focused workflow for high-bandwidth content teams. It is built around local storage paths, Nextcloud review links, split A-Roll/B-Roll filming checklists, and platform-specific performance tracking.
-
-Core areas:
-
-- **Pipeline:** A drag-and-drop Kanban board for `Ideation`, `Scripting`, `Filming`, `Editing`, and `Review`.
-- **Publishing checklist:** Moving to `Published` opens a final metadata modal before the card leaves the board.
-- **Archive:** Published and scrapped projects live outside the active pipeline.
-- **Analytics:** YouTube, Meta, and TikTok metrics are synced and displayed as per-platform totals.
-- **Sponsorships:** Brand deal CRM tied to the production workflow.
-- **Team:** User roster and role management.
-- **Settings:** Current user avatar upload and password change.
-
-## Workflow Rules
-
-- `Filming -> Editing` requires all parsed `aRollShots` and `bRollShots` to be complete.
-- `Editing -> Review` requires a Nextcloud review link.
-- Review rejection returns the project to `Editing` and stores feedback on the card.
-- Published projects move out of `/pipeline` and into `/archive`.
-- Archive and Analytics totals must be computed from platform-specific columns:
-  - `youtubeViews`, `metaViews`, `tiktokViews`
-  - `youtubeLikes`, `metaLikes`, `tiktokLikes`
-  - `youtubeComments`, `metaComments`, `tiktokComments`
-
-## Roles
-
-- `ADMIN` - Full access.
-- `MANAGER` - Full operational access.
-- `MEMBER` - Limited access. Members are blocked from `/analytics`, `/sponsorships`, and `/team`.
+- `src/app/` — App Router pages, layouts, API routes, global CSS, and app-level actions.
+- `src/actions/` — primary Server Actions for database mutations.
+- `src/components/` — layout, Kanban, modal, table, analytics, sponsorship, team, UI components.
+- `src/lib/` — auth, roles, Prisma client, constants, helpers.
+- `src/services/` — cron and external analytics service helpers.
+- `src/types/` — shared types layered on Prisma models.
+- `src/utils/nasPaths.ts` — OS-aware SMB path generation.
+- `prisma/schema.prisma` — SQLite schema.
+- `prisma/seed.ts` — destructive demo data seed.
+- `DESIGN.md` — visual source of truth.
+- `AGENTS.md` — AI assistant and contributor guardrails.
 
 ## Design Contract
 
@@ -239,7 +289,7 @@ The UI is intentionally terminal-inspired and high contrast. Preserve it.
 - Follow `DESIGN.md`.
 - Do not introduce generic rounded corporate UI.
 - Do not add raw Tailwind palette colors such as `red-500`, `green-400`, or `emerald-500`.
-- Standard list/table pages should use `h-full w-full overflow-auto p-lg`.
+- Standard list/table pages use `h-full w-full overflow-auto p-lg`.
 - Keep visible controls sharp, uppercase, compact, and mono-heavy.
 
 ## Data Notes

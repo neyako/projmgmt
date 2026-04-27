@@ -1,5 +1,6 @@
 *.tsbuildinfo
-design/
+design/code/
+design/.DS_Store
 .claude/
 
 # dependencies
