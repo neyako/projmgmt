@@ -42,10 +42,13 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-ENV DATABASE_URL="file:../data/projmgmt.db"
+ENV DATABASE_URL="file:/app/data/projmgmt.db"
 ENV PRISMA_DB_PUSH=true
 
-RUN groupadd --system --gid 1001 nodejs \
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends gosu \
+  && rm -rf /var/lib/apt/lists/* \
+  && groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs \
   && mkdir -p /app/data /app/public/avatars \
   && chown -R nextjs:nodejs /app
@@ -60,8 +63,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --chown=nextjs:nodejs docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 
 RUN chmod +x /usr/local/bin/docker-entrypoint
-
-USER nextjs
 
 EXPOSE 3000
 

@@ -224,7 +224,7 @@ docker compose up --build
 
 Open `http://localhost:3000`. On a fresh `projmgmt-data` volume the database is empty, so the first request lands on the [first-run wizard](#6-first-run-initialization-wizard) and you create the root admin from the browser — no `docker exec` bcrypt scripting required.
 
-Compose stores SQLite data in the `projmgmt-data` volume and uploaded avatars in the `projmgmt-avatars` volume. Set `PRISMA_DB_PUSH=false` only if you want to manage schema updates yourself.
+Compose stores SQLite data in the `projmgmt-data` volume at `/app/data/projmgmt.db` and uploaded avatars in the `projmgmt-avatars` volume. The container fixes those mounted directory permissions on startup before running Prisma as the unprivileged app user. Set `PRISMA_DB_PUSH=false` only if you want to manage schema updates yourself.
 
 #### GHCR Image
 
