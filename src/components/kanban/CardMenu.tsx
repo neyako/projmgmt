@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useTransition } from "react";
 import { archiveProject, deleteProject } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n/client";
 
 interface CardMenuProps {
   projectId: string;
@@ -14,6 +15,7 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
   const { showToast } = useToast();
+  const t = useT();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -36,9 +38,9 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
     startTransition(async () => {
       const result = await archiveProject(projectId);
       if (result.success) {
-        showToast("Project scrapped.", "success");
+        showToast(t("kanban.projectScrapped"), "success");
       } else {
-        showToast(result.error || "Failed to archive project.", "error");
+        showToast(result.error || t("kanban.failedArchive"), "error");
       }
     });
   }
@@ -46,14 +48,14 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
   function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
     setIsOpen(false);
-    if (!confirm("Are you sure you want to delete this project?")) return;
+    if (!confirm(t("kanban.confirmDelete"))) return;
     onRemove?.();
     startTransition(async () => {
       const result = await deleteProject(projectId);
       if (result.success) {
-        showToast("Project deleted.", "success");
+        showToast(t("kanban.projectDeleted"), "success");
       } else {
-        showToast(result.error || "Failed to delete project.", "error");
+        showToast(result.error || t("kanban.failedDelete"), "error");
       }
     });
   }
@@ -78,13 +80,13 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
             onClick={handleArchive}
             className="text-left px-3 py-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest hover:bg-hover-surface hover:text-text-display transition-colors"
           >
-            Scrap
+            {t("kanban.scrap")}
           </button>
           <button
             onClick={handleDelete}
             className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent-subtle hover:text-accent transition-colors border-t border-border"
           >
-            Delete
+            {t("kanban.delete")}
           </button>
         </div>
       )}

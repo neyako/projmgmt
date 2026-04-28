@@ -6,6 +6,7 @@ import KanbanBoard from "./KanbanBoard";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
 import PublishModal from "@/components/modals/PublishModal";
 import type { ProjectCardData } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 interface KanbanBoardWrapperProps {
   initialProjects: ProjectCardData[];
@@ -16,6 +17,7 @@ export default function KanbanBoardWrapper({
 }: KanbanBoardWrapperProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useT();
   const [isMounted, setIsMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -56,10 +58,10 @@ export default function KanbanBoardWrapper({
     return (
       <div className="h-full md:w-max md:min-w-full p-md md:p-lg overflow-x-auto md:overflow-visible">
         <div className="flex gap-md md:gap-lg h-full md:min-w-max pb-lg snap-x snap-mandatory md:snap-none">
-          {["IDEATION", "SCRIPTING", "FILMING", "EDITING", "REVIEW"].map((stage) => (
+          {(["Ideation", "Scripting", "Filming", "Editing", "Review"] as const).map((stage) => (
             <div key={stage} className="w-[85vw] max-w-[320px] md:w-[280px] lg:w-[320px] flex flex-col flex-shrink-0 h-full snap-center">
               <div className="flex items-center gap-2 mb-md border-b border-border-visible pb-2">
-                <span className="text-style-label text-text-primary">{stage}</span>
+                <span className="text-style-label text-text-primary">{t(`stage.${stage}`)}</span>
                 <span className="text-style-label text-text-secondary">[ — ]</span>
               </div>
               <div className="flex-1 animate-pulse bg-surface-raised/10" />

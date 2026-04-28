@@ -7,6 +7,7 @@ import {
 } from "@dnd-kit/sortable";
 import { cn } from "@/lib/utils";
 import StatusDot from "@/components/ui/StatusDot";
+import { useT } from "@/lib/i18n/client";
 
 interface KanbanColumnProps {
   id: string;
@@ -26,6 +27,7 @@ export default function KanbanColumn({
   children,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
+  const t = useT();
 
   // Collect child IDs for SortableContext
   const childIds: string[] = [];
@@ -51,7 +53,7 @@ export default function KanbanColumn({
         <button
           onClick={onAddClick}
           className="text-text-secondary hover:text-text-primary transition-colors"
-          aria-label={`Add project to ${title}`}
+          aria-label={`${t("kanban.addProjectTo")} ${title}`}
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
         </button>
@@ -74,7 +76,7 @@ export default function KanbanColumn({
               <span className="material-symbols-outlined text-[24px]">
                 add_circle
               </span>
-              <span className="text-style-caption">ADD PROJECT</span>
+              <span className="text-style-caption">{t("kanban.addProject")}</span>
             </div>
           ) : (
             children

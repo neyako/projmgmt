@@ -3,9 +3,21 @@
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useT, useLocale } from "@/lib/i18n/client";
+import { setLocale } from "@/lib/i18n/actions";
+import { LOCALES, type Locale } from "@/lib/i18n/locales";
+import { cn } from "@/lib/utils";
 
 export default function LoginForm() {
   const router = useRouter();
+  const t = useT();
+  const currentLocale = useLocale();
+
+  async function handleLocaleChange(next: Locale) {
+    if (next === currentLocale) return;
+    await setLocale(next);
+    router.refresh();
+  }
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,7 +35,7 @@ export default function LoginForm() {
     });
 
     if (result?.error) {
-      setErrorMessage("INVALID_CREDENTIALS");
+      setErrorMessage(t("login.invalidCredentials"));
       setIsSubmitting(false);
       return;
     }
@@ -36,10 +48,10 @@ export default function LoginForm() {
     <div className="bg-background text-text-primary min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <main className="w-full max-w-[24rem] px-lg flex flex-col items-center gap-4xl">
         <header className="text-center flex flex-col items-center gap-xs">
-          <h1 className="text-style-display-xl text-text-display tracking-tighter">projmgmt</h1>
+          <h1 className="text-style-display-xl text-text-display tracking-tighter">{t("nav.appName")}</h1>
           <div className="flex items-center gap-sm opacity-50">
             <span className="block w-md h-2xs bg-border-visible" />
-            <span className="text-style-label text-text-secondary tracking-widest">SYS_AUTH</span>
+            <span className="text-style-label text-text-secondary tracking-widest">{t("login.header")}</span>
             <span className="block w-md h-2xs bg-border-visible" />
           </div>
         </header>
@@ -51,13 +63,13 @@ export default function LoginForm() {
                 htmlFor="username"
                 className="text-style-label text-text-secondary group-focus-within:text-text-display transition-colors"
               >
-                USERNAME
+                {t("login.username")}
               </label>
               <input
                 id="username"
                 name="username"
                 type="text"
-                placeholder="IDENTIFIER"
+                placeholder={t("login.identifier")}
                 autoComplete="username"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
@@ -70,13 +82,13 @@ export default function LoginForm() {
                 htmlFor="password"
                 className="text-style-label text-text-secondary group-focus-within:text-text-display transition-colors"
               >
-                ACCESS_KEY
+                {t("login.accessKey")}
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t("login.passwordPlaceholder")}
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -95,10 +107,28 @@ export default function LoginForm() {
               disabled={isSubmitting}
               className="bg-text-display text-text-inverse text-style-label rounded-full px-xl py-md min-w-[160px] hover:opacity-80 transition-opacity active:scale-95 duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "VERIFYING..." : "LOGIN"}
+              {isSubmitting ? t("login.verifying") : t("login.login")}
             </button>
           </div>
         </form>
+
+        <div className="flex items-center gap-2 opacity-70">
+          {LOCALES.map((code) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => handleLocaleChange(code)}
+              className={cn(
+                "text-style-label tracking-widest px-2 py-1 transition-colors",
+                code === currentLocale
+                  ? "text-text-display"
+                  : "text-text-secondary hover:text-text-display",
+              )}
+            >
+              {code.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </main>
     </div>
   );

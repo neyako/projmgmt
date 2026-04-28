@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import TeamMemberModal from "@/components/modals/TeamMemberModal";
 import { useRouter } from "next/navigation";
 import type { TeamUser } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] }) {
   const router = useRouter();
+  const t = useT();
   const [users, setUsers] = useState(initialUsers);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,10 +41,10 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
       <div className="h-full w-full overflow-auto p-lg">
         <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
           <div>
-            <h1 className="ui-page-kicker mb-1">Roster</h1>
-            <div className="ui-page-title text-xl md:text-2xl">Team Members</div>
+            <h1 className="ui-page-kicker mb-1">{t("team.title")}</h1>
+            <div className="ui-page-title text-xl md:text-2xl">{t("team.members")}</div>
             <div className="ui-page-meta mt-1">
-              {users.length} {users.length === 1 ? "member" : "members"} active
+              {users.length} {users.length === 1 ? t("team.memberSingular") : t("team.memberPlural")} {t("team.active")}
             </div>
           </div>
           <button
@@ -50,13 +52,13 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
             className="ui-button-outline px-6 py-2 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-[14px] mr-2">add</span>
-            NEW MEMBER
+            {t("team.newMember")}
           </button>
         </div>
 
         {users.length === 0 ? (
           <div className="ui-panel p-12 text-center">
-            <div className="ui-page-kicker">No Team Members Found</div>
+            <div className="ui-page-kicker">{t("team.noMembers")}</div>
           </div>
         ) : (
           <>
@@ -73,7 +75,7 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-border-visible pt-3 mt-1">
                     <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                      {u.role.replace("_", " ")}
+                      {t(`role.${u.role}`)}
                     </span>
                     <span className="text-[10px] font-mono text-text-secondary break-all text-right">
                       {u.email}
@@ -81,10 +83,10 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                      Login
+                      {t("team.loginColumn")}
                     </span>
                     <span className={u.hasLogin ? "text-[10px] font-mono text-success" : "text-[10px] font-mono text-warning"}>
-                      {u.hasLogin ? u.username : "NO CRED"}
+                      {u.hasLogin ? u.username : t("team.noCred")}
                     </span>
                   </div>
                 </button>
@@ -94,10 +96,10 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
             <table className="hidden md:table w-full text-left border-collapse">
               <thead>
                 <tr>
-                  <th className="ui-table-head p-4">Name</th>
-                  <th className="ui-table-head p-4">Role</th>
-                  <th className="ui-table-head p-4">Email</th>
-                  <th className="ui-table-head p-4">Login</th>
+                  <th className="ui-table-head p-4">{t("team.name")}</th>
+                  <th className="ui-table-head p-4">{t("team.role")}</th>
+                  <th className="ui-table-head p-4">{t("team.email")}</th>
+                  <th className="ui-table-head p-4">{t("team.loginColumn")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,11 +110,11 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
                     className="ui-table-row cursor-pointer"
                   >
                     <td className="p-4 ui-table-cell font-bold">{u.name}</td>
-                    <td className="p-4 ui-table-cell">{u.role.replace("_", " ")}</td>
+                    <td className="p-4 ui-table-cell">{t(`role.${u.role}`)}</td>
                     <td className="p-4 ui-table-cell-muted">{u.email}</td>
                     <td className="p-4 ui-table-cell">
                       <span className={u.hasLogin ? "text-success" : "text-warning"}>
-                        {u.hasLogin ? u.username : "NO CRED"}
+                        {u.hasLogin ? u.username : t("team.noCred")}
                       </span>
                     </td>
                   </tr>

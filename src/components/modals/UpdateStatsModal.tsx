@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { updateProjectStats } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n/client";
 
 interface UpdateStatsModalProps {
   project: {
@@ -39,6 +40,7 @@ export default function UpdateStatsModal({
   onUpdated,
 }: UpdateStatsModalProps) {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   const [views, setViews] = useState<string>(initialStatString(project.views));
@@ -61,7 +63,7 @@ export default function UpdateStatsModal({
     const l = Number(likes || 0);
     const c = Number(comments || 0);
     if ([v, l, c].some((n) => !Number.isFinite(n) || n < 0)) {
-      showToast("Stats must be non-negative numbers.", "error");
+      showToast(t("statsModal.negativeError"), "error");
       return;
     }
     startTransition(async () => {
@@ -75,7 +77,7 @@ export default function UpdateStatsModal({
         return;
       }
       onUpdated?.({ views: v, likes: l, comments: c });
-      showToast("Stats updated.", "success");
+      showToast(t("statsModal.updated"), "success");
       onClose();
     });
   }
@@ -96,7 +98,7 @@ export default function UpdateStatsModal({
         <div className="flex justify-between items-start mb-6 w-full gap-4">
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-bold text-text-display uppercase tracking-widest">
-              Manual Analytics Entry
+              {t("statsModal.title")}
             </h2>
             <p className="text-[10px] font-mono text-text-secondary uppercase tracking-widest mt-1 truncate">
               {project.finalTitle ?? project.title}
@@ -108,7 +110,7 @@ export default function UpdateStatsModal({
             disabled={isPending}
             className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors shrink-0"
           >
-            [ X ]
+            {t("statsModal.close")}
           </button>
         </div>
 
@@ -122,7 +124,7 @@ export default function UpdateStatsModal({
               htmlFor="stats-views"
               className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
             >
-              Views
+              {t("statsModal.views")}
             </label>
             <input
               id="stats-views"
@@ -143,7 +145,7 @@ export default function UpdateStatsModal({
               htmlFor="stats-likes"
               className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
             >
-              Likes
+              {t("statsModal.likes")}
             </label>
             <input
               id="stats-likes"
@@ -163,7 +165,7 @@ export default function UpdateStatsModal({
               htmlFor="stats-comments"
               className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
             >
-              Comments
+              {t("statsModal.comments")}
             </label>
             <input
               id="stats-comments"
@@ -186,7 +188,7 @@ export default function UpdateStatsModal({
             disabled={isPending}
             className="ui-button-outline px-4 py-2 disabled:opacity-50"
           >
-            [ CANCEL ]
+            {t("statsModal.cancel")}
           </button>
           <button
             type="submit"
@@ -198,7 +200,7 @@ export default function UpdateStatsModal({
             )}
           >
             <span className="material-symbols-outlined text-[14px]">save</span>
-            {isPending ? "SAVING..." : "[ SAVE STATS ]"}
+            {isPending ? t("statsModal.saving") : t("statsModal.saveStats")}
           </button>
         </div>
       </div>

@@ -2,13 +2,35 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n/client";
 
 export type PlatformKey = "youtube" | "tiktok" | "facebook";
 
-const META: Record<PlatformKey, { label: string; color: string }> = {
-  youtube: { label: "YT", color: "#FF0033" },
-  tiktok: { label: "TT", color: "#FF3B5C" },
-  facebook: { label: "FB", color: "#1877F2" },
+const META: Record<PlatformKey, { label: string; color: string; noIdKey: string; copiedKey: string; copyKey: string; noIdTitleKey: string }> = {
+  youtube: {
+    label: "YT",
+    color: "#FF0033",
+    noIdKey: "analytics.platform.noYt",
+    copiedKey: "analytics.platform.copiedYt",
+    copyKey: "analytics.platform.copyYt",
+    noIdTitleKey: "analytics.platform.ytNoId",
+  },
+  tiktok: {
+    label: "TT",
+    color: "#FF3B5C",
+    noIdKey: "analytics.platform.noTt",
+    copiedKey: "analytics.platform.copiedTt",
+    copyKey: "analytics.platform.copyTt",
+    noIdTitleKey: "analytics.platform.ttNoId",
+  },
+  facebook: {
+    label: "FB",
+    color: "#1877F2",
+    noIdKey: "analytics.platform.noFb",
+    copiedKey: "analytics.platform.copiedFb",
+    copyKey: "analytics.platform.copyFb",
+    noIdTitleKey: "analytics.platform.fbNoId",
+  },
 };
 
 function buildUrl(key: PlatformKey, id: string, handle: string) {
@@ -27,20 +49,21 @@ export default function PlatformBadge({
   tiktokHandle: string;
 }) {
   const { showToast } = useToast();
+  const t = useT();
   const [copied, setCopied] = useState(false);
   const meta = META[platform];
   const hasId = Boolean(id);
 
   async function handleClick() {
     if (!hasId) {
-      showToast(`No ${meta.label} video ID set on this project.`, "error");
+      showToast(t(meta.noIdKey), "error");
       return;
     }
     const url = buildUrl(platform, id!, tiktokHandle);
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      showToast(`Copied ${meta.label} link.`, "success");
+      showToast(t(meta.copiedKey), "success");
       setTimeout(() => setCopied(false), 1200);
       return;
     } catch {
@@ -56,10 +79,10 @@ export default function PlatformBadge({
       document.execCommand("copy");
       document.body.removeChild(ta);
       setCopied(true);
-      showToast(`Copied ${meta.label} link.`, "success");
+      showToast(t(meta.copiedKey), "success");
       setTimeout(() => setCopied(false), 1200);
     } catch {
-      showToast(`Copy blocked. URL: ${url}`, "error");
+      showToast(`${t("analytics.platform.copyBlocked")} ${url}`, "error");
     }
   }
 
@@ -67,7 +90,7 @@ export default function PlatformBadge({
     <button
       type="button"
       onClick={handleClick}
-      title={hasId ? `Copy ${meta.label} link` : `${meta.label} — no ID set`}
+      title={hasId ? t(meta.copyKey) : t(meta.noIdTitleKey)}
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-widest border rounded shrink-0 transition-colors ${
         hasId
           ? "border-border-visible text-text-display hover:border-text-display cursor-pointer"

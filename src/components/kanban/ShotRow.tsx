@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { ShotItem } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 interface ShotRowProps {
   shot: ShotItem;
@@ -10,6 +11,7 @@ interface ShotRowProps {
 }
 
 export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
+  const t = useT();
   return (
     <div
       onClick={(e) => e.stopPropagation()}
@@ -52,7 +54,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
           type="button"
           onClick={() => onDelete(shot.id)}
           className="text-text-disabled hover:text-accent transition-colors opacity-0 group-hover:opacity-100 text-[10px] font-mono shrink-0"
-          aria-label="Delete shot"
+          aria-label={t("kanban.deleteShot")}
         >
           ✕
         </button>

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { submitReview } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import type { ProjectCardData } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 interface ReviewPanelProps {
   project: ProjectCardData;
@@ -20,6 +21,7 @@ export default function ReviewPanel({
   const [feedback, setFeedback] = useState("");
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
+  const t = useT();
 
   function handleApprove() {
     // Intercept: publish must go through the checklist modal, not a direct
@@ -37,14 +39,14 @@ export default function ReviewPanel({
         showToast(result.error, "error");
         return;
       }
-      showToast(`Approved "${project.title}".`, "success");
+      showToast(t("kanban.approvedToast", { title: project.title }), "success");
     });
   }
 
   function handleReject() {
     const trimmed = feedback.trim();
     if (!trimmed) {
-      showToast("Add feedback before rejecting.", "error");
+      showToast(t("kanban.addFeedbackBeforeReject"), "error");
       return;
     }
     onProjectUpdate?.({
@@ -67,7 +69,7 @@ export default function ReviewPanel({
         showToast(result.error, "error");
         return;
       }
-      showToast(`Rejected "${project.title}" → Editing.`, "success");
+      showToast(t("kanban.rejectedToast", { title: project.title }), "success");
     });
   }
 
@@ -80,7 +82,7 @@ export default function ReviewPanel({
       <textarea
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
-        placeholder="Add feedback..."
+        placeholder={t("kanban.addFeedback")}
         className="w-full bg-surface border-b border-border-visible text-xs font-mono text-text-display p-2 min-h-[80px] resize-y focus:outline-none focus:border-text-display transition-colors"
       />
       <div className="flex gap-2">
@@ -93,7 +95,7 @@ export default function ReviewPanel({
             isPending && "opacity-50 cursor-wait"
           )}
         >
-          [ REJECT ]
+          {t("kanban.reject")}
         </button>
         <button
           type="button"
@@ -104,12 +106,12 @@ export default function ReviewPanel({
             isPending && "opacity-50 cursor-wait"
           )}
         >
-          [ APPROVE ]
+          {t("kanban.approve")}
         </button>
       </div>
       {project.reviewFeedback && (
         <div className="text-[10px] font-mono text-text-secondary italic">
-          Prev: {project.reviewFeedback}
+          {t("kanban.prev")} {project.reviewFeedback}
         </div>
       )}
     </div>

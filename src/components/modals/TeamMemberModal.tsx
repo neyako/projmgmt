@@ -6,6 +6,7 @@ import CopyBlock from "@/components/ui/CopyBlock";
 import { useToast } from "@/components/ui/Toast";
 import { USER_ROLES } from "@/lib/roles";
 import type { CredentialHandoff, TeamUser } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 interface TeamMemberModalProps {
   user: TeamUser | null;
@@ -15,6 +16,7 @@ interface TeamMemberModalProps {
 
 export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMemberModalProps) {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   const isEditing = !!user;
@@ -42,7 +44,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
-      showToast("Name and Email are required.", "error");
+      showToast(t("teamModal.nameEmailRequired"), "error");
       return;
     }
 
@@ -56,11 +58,11 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
       if (isEditing) {
         const result = await updateUser(user.id, data);
         if (result.success) {
-          showToast("Member updated.", "success");
+          showToast(t("teamModal.memberUpdated"), "success");
           onRefresh();
           onClose();
         } else {
-          showToast(result.error || "Failed to save.", "error");
+          showToast(result.error || t("teamModal.failedSave"), "error");
         }
         return;
       }
@@ -68,27 +70,24 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
       const result = await createUser(data);
       if (result.success) {
         setCredentialHandoff(result.data.credentials);
-        showToast(
-          "Member added. Login credentials generated.",
-          "success"
-        );
+        showToast(t("teamModal.memberAdded"), "success");
         onRefresh();
       } else {
-        showToast(result.error || "Failed to save.", "error");
+        showToast(result.error || t("teamModal.failedSave"), "error");
       }
     });
   }
 
   function handleDelete() {
-    if (!user || !confirm("Delete this team member?")) return;
+    if (!user || !confirm(t("teamModal.confirmDelete"))) return;
     startTransition(async () => {
       const result = await deleteUser(user.id);
       if (result.success) {
-        showToast("Member deleted.", "success");
+        showToast(t("teamModal.memberDeleted"), "success");
         onRefresh();
         onClose();
       } else {
-        showToast(result.error || "Failed to delete.", "error");
+        showToast(result.error || t("teamModal.failedDelete"), "error");
       }
     });
   }
@@ -97,9 +96,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
     if (!user) return;
 
     const confirmed = confirm(
-      user.hasLogin
-        ? "Reset login credentials for this member? Their old password will stop working."
-        : "Create login credentials for this member?"
+      user.hasLogin ? t("teamModal.confirmReset") : t("teamModal.confirmCreateLogin")
     );
     if (!confirmed) return;
 
@@ -108,10 +105,10 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
       if (result.success) {
         setCredentialHandoff(result.data.credentials);
-        showToast("Login credentials generated.", "success");
+        showToast(t("teamModal.credentialsGenerated"), "success");
         onRefresh();
       } else {
-        showToast(result.error || "Failed to reset credentials.", "error");
+        showToast(result.error || t("teamModal.failedReset"), "error");
       }
     });
   }
@@ -132,10 +129,10 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
       <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-modal-shell p-4 md:p-6 flex flex-col md:max-h-[90vh]">
         <div className="flex justify-between items-start pb-6 border-b border-border-visible shrink-0">
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
-            {isEditing ? "EDIT MEMBER" : "NEW MEMBER"}
+            {isEditing ? t("teamModal.edit") : t("teamModal.new")}
           </h2>
           <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors">
-            [ X ]
+            {t("teamModal.close")}
           </button>
         </div>
 
@@ -145,60 +142,60 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
               <div className="flex flex-col gap-4">
                 <div className="border border-success/40 bg-success/5 p-4">
                   <div className="text-[10px] font-mono tracking-widest text-success uppercase">
-                    One-Time Login Generated
+                    {t("teamModal.oneTimeLogin")}
                   </div>
                   <div className="mt-2 text-xs font-mono text-text-secondary">
-                    EMAIL DELIVERY: PENDING INTEGRATION
+                    {t("teamModal.emailPending")}
                   </div>
                 </div>
 
-                <CopyBlock label="LOGIN HANDOFF" copyValue={credentialCopy}>
+                <CopyBlock label={t("teamModal.loginHandoff")} copyValue={credentialCopy}>
                   <div className="grid gap-2 text-xs">
                     <div>
-                      <span className="text-text-secondary uppercase tracking-widest">Email: </span>
+                      <span className="text-text-secondary uppercase tracking-widest">{t("teamModal.emailLabel")} </span>
                       <span className="text-text-display break-all">{credentialHandoff.email}</span>
                     </div>
                     <div>
-                      <span className="text-text-secondary uppercase tracking-widest">Username: </span>
+                      <span className="text-text-secondary uppercase tracking-widest">{t("teamModal.usernameLabel")} </span>
                       <span className="text-text-display break-all">{credentialHandoff.username}</span>
                     </div>
                     <div>
-                      <span className="text-text-secondary uppercase tracking-widest">Temporary Password: </span>
+                      <span className="text-text-secondary uppercase tracking-widest">{t("teamModal.tempPasswordLabel")} </span>
                       <span className="text-text-display break-all">{credentialHandoff.temporaryPassword}</span>
                     </div>
                   </div>
                 </CopyBlock>
 
                 <CopyBlock
-                  label="EMAIL DRAFT"
+                  label={t("teamModal.emailDraft")}
                   copyValue={`To: ${credentialHandoff.email}\nSubject: ${credentialHandoff.emailSubject}\n\n${credentialHandoff.emailBody}`}
                 />
               </div>
             )}
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Full Name</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.fullName")}</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full ui-input p-2"
-                placeholder="e.g. Jane Doe"
+                placeholder={t("teamModal.fullNamePlaceholder")}
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Email Address</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.emailAddress")}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full ui-input p-2 color-scheme-dark"
-                placeholder="e.g. jane@studio.com"
+                placeholder={t("teamModal.emailPlaceholder")}
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Role</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.role")}</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
@@ -206,7 +203,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
               >
                 {USER_ROLES.map((r) => (
                   <option key={r} value={r}>
-                    {r}
+                    {t(`role.${r}`)}
                   </option>
                 ))}
               </select>
@@ -217,10 +214,10 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
                 <div className="flex flex-col gap-3">
                   <div>
                     <div className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2">
-                      Login Credentials
+                      {t("teamModal.loginCredentials")}
                     </div>
                     <div className={user?.hasLogin ? "text-xs font-mono text-success break-all" : "text-xs font-mono text-warning"}>
-                      {user?.hasLogin ? user.username : "NO LOGIN CONFIGURED"}
+                      {user?.hasLogin ? user.username : t("teamModal.noLoginConfigured")}
                     </div>
                   </div>
                   <button
@@ -229,7 +226,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
                     disabled={isPending}
                     className="ui-button-outline px-4 py-2 w-full disabled:opacity-50"
                   >
-                    {user?.hasLogin ? "RESET LOGIN" : "CREATE LOGIN"}
+                    {user?.hasLogin ? t("teamModal.resetLogin") : t("teamModal.createLogin")}
                   </button>
                 </div>
               </div>

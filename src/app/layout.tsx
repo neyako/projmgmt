@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Providers from "./providers";
+import { getLocale } from "@/lib/i18n/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,13 +8,14 @@ export const metadata: Metadata = {
   description: "projmgmt — self-hosted production management",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* Google Fonts: Doto, Space Grotesk, Space Mono */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,7 +35,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background text-text-primary min-h-screen w-full antialiased">
-        <Providers>{children}</Providers>
+        <Providers locale={locale}>{children}</Providers>
       </body>
     </html>
   );

@@ -8,6 +8,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Settings, LogOut, Plus } from "lucide-react";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
+import { useT } from "@/lib/i18n/client";
 
 export default function TopBar() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function TopBar() {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const isDarkMode = theme === "dark";
+  const t = useT();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -75,7 +77,7 @@ export default function TopBar() {
               type="text"
               value={currentSearch}
               onChange={handleSearchChange}
-              placeholder="SEARCH PROJECTS"
+              placeholder={t("nav.searchProjects")}
               className="bg-transparent border-none text-text-display font-mono text-xs focus:outline-none placeholder:text-text-disabled w-48 p-0"
             />
           </div>
@@ -87,20 +89,20 @@ export default function TopBar() {
             className="h-8 box-border bg-text-display text-text-inverse text-[9px] font-mono tracking-widest uppercase px-4 hover:opacity-80 transition-opacity flex items-center justify-center gap-2 leading-none"
           >
             <Plus className="w-3 h-3 shrink-0" strokeWidth={1.25} />
-            NEW PROJECT
+            {t("nav.newProjectShort")}
           </button>
 
           <div className="relative" ref={menuRef}>
             <button
               onClick={handleToggleMenu}
               className="w-8 h-8 bg-surface border border-border flex items-center justify-center hover:bg-surface-raised transition-colors overflow-hidden"
-              aria-label="Open user menu"
+              aria-label={t("nav.openUserMenu")}
               aria-expanded={isMenuOpen}
             >
               {session?.user?.avatarUrl ? (
                 <Image
                   src={session.user.avatarUrl}
-                  alt="User avatar"
+                  alt={t("nav.userAvatar")}
                   width={32}
                   height={32}
                   className="w-8 h-8 object-cover"
@@ -117,7 +119,7 @@ export default function TopBar() {
               <div className="ui-user-dropdown absolute right-0 top-full mt-2 z-50 w-56 border border-border-visible text-xs font-mono">
                 <div className="px-4 py-3 border-b border-border-visible">
                   <div className="ui-user-dropdown-heading font-bold tracking-widest truncate whitespace-nowrap">
-                    {session?.user?.username || session?.user?.name || "GUEST"}
+                    {session?.user?.username || session?.user?.name || t("nav.guest")}
                   </div>
                 </div>
 
@@ -128,7 +130,7 @@ export default function TopBar() {
                     className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors whitespace-nowrap tracking-widest"
                   >
                     <Settings className="w-4 h-4" />
-                    <span>SETTINGS</span>
+                    <span>{t("nav.settings")}</span>
                   </Link>
 
                   <button
@@ -138,10 +140,10 @@ export default function TopBar() {
                   >
                     <div className="flex items-center gap-3">
                       {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                      <span>{isDarkMode ? "DARK MODE" : "LIGHT MODE"}</span>
+                      <span>{isDarkMode ? t("nav.darkMode") : t("nav.lightMode")}</span>
                     </div>
                     <span className="ui-user-dropdown-toggle transition-colors">
-                      [{isDarkMode ? "LIGHT" : "DARK"}]
+                      {isDarkMode ? t("nav.lightTag") : t("nav.darkTag")}
                     </span>
                   </button>
                 </div>
@@ -153,7 +155,7 @@ export default function TopBar() {
                     className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors whitespace-nowrap tracking-widest"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>LOG OUT</span>
+                    <span>{t("nav.logout")}</span>
                   </button>
                 </div>
               </div>

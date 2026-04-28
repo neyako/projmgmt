@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { createSponsorship, updateSponsorship, deleteSponsorship } from "@/actions/sponsorships";
 import { useToast } from "@/components/ui/Toast";
 import type { Sponsorship } from "@prisma/client";
+import { useT } from "@/lib/i18n/client";
 
 interface SponsorshipModalProps {
   sponsorship: Sponsorship | null;
@@ -23,6 +24,7 @@ function toDateInputValue(d?: Date | null): string {
 
 export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: SponsorshipModalProps) {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   const isEditing = !!sponsorship;
@@ -45,7 +47,7 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!brandName.trim()) {
-      showToast("Brand name is required.", "error");
+      showToast(t("sponsorshipModal.brandRequired"), "error");
       return;
     }
 
@@ -67,25 +69,25 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
       }
 
       if (result.success) {
-        showToast(`Sponsorship ${isEditing ? "updated" : "created"}.`, "success");
+        showToast(t(isEditing ? "sponsorshipModal.updated" : "sponsorshipModal.created"), "success");
         onRefresh();
         onClose();
       } else {
-        showToast(result.error || "Failed to save.", "error");
+        showToast(result.error || t("projectModal.updateFailed"), "error");
       }
     });
   }
 
   function handleDelete() {
-    if (!sponsorship || !confirm("Delete this sponsorship?")) return;
+    if (!sponsorship || !confirm(t("sponsorshipModal.confirmDelete"))) return;
     startTransition(async () => {
       const result = await deleteSponsorship(sponsorship.id);
       if (result.success) {
-        showToast("Sponsorship deleted.", "success");
+        showToast(t("sponsorshipModal.deleted"), "success");
         onRefresh();
         onClose();
       } else {
-        showToast(result.error || "Failed to delete.", "error");
+        showToast(result.error || t("projectModal.updateFailed"), "error");
       }
     });
   }
@@ -97,10 +99,10 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
       <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[45rem] ui-modal-shell flex flex-col md:max-h-[90vh]">
         <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
-            {isEditing ? "EDIT SPONSORSHIP" : "NEW SPONSORSHIP"}
+            {isEditing ? t("sponsorshipModal.edit") : t("sponsorshipModal.new")}
           </h2>
           <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors">
-            [ X ]
+            {t("sponsorshipModal.close")}
           </button>
         </div>
 
@@ -109,51 +111,51 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Brand / Client</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.brand")}</label>
                 <input
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
                   className="w-full ui-input p-2 w-full"
-                  placeholder="e.g. TechCorp"
+                  placeholder={t("sponsorshipModal.brandPlaceholder")}
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Contact Email</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.contactEmail")}</label>
                 <input
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
                   className="w-full ui-input p-2 w-full"
-                  placeholder="e.g. john@techcorp.com"
+                  placeholder={t("sponsorshipModal.contactEmailPlaceholder")}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Budget ($)</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.budget")}</label>
                 <input
                   type="number"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
                   className="w-full ui-input p-2 w-full"
-                  placeholder="5000"
+                  placeholder={t("sponsorshipModal.budgetPlaceholder")}
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Status</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.status")}</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full ui-input p-2 w-full appearance-none"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Cancelled">Cancelled</option>
+                  <option value="Active">{t("sponsorshipModal.active")}</option>
+                  <option value="Pending">{t("sponsorshipModal.pending")}</option>
+                  <option value="Completed">{t("sponsorshipModal.completed")}</option>
+                  <option value="Cancelled">{t("sponsorshipModal.cancelled")}</option>
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Due Date</label>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.dueDate")}</label>
                 <input
                   type="date"
                   value={dueDate}
@@ -165,12 +167,12 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
             </div>
 
             <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Notes</label>
+              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.notes")}</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full ui-textarea p-3 min-h-[100px] resize-y w-full"
-                placeholder="Deliverables, requirements..."
+                placeholder={t("sponsorshipModal.notesPlaceholder")}
               />
             </div>
           </form>
@@ -179,17 +181,17 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
         <div className="flex flex-col md:flex-row md:justify-between gap-3 p-4 md:p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
             <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
-              DELETE
+              {t("sponsorshipModal.delete")}
             </button>
           ) : (
             <div />
           )}
           <div className="flex flex-col md:flex-row gap-3 md:ml-auto">
             <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
-              CANCEL
+              {t("sponsorshipModal.cancel")}
             </button>
             <button type="submit" form="sponsorship-form" disabled={isPending} className="ui-button-primary px-6 py-2 disabled:opacity-50">
-              {isPending ? "SAVING..." : "SAVE"}
+              {isPending ? t("sponsorshipModal.saving") : t("sponsorshipModal.save")}
             </button>
           </div>
         </div>

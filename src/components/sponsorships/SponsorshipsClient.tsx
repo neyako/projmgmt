@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import type { Sponsorship } from "@prisma/client";
 import SponsorshipModal from "@/components/modals/SponsorshipModal";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
 
 type TabKey = "All" | "Active" | "Pending" | "Archived";
 
@@ -53,6 +54,7 @@ export default function SponsorshipsClient({
   summary: SponsorshipSummary;
 }) {
   const router = useRouter();
+  const t = useT();
   const [sponsorships, setSponsorships] = useState(initialSponsorships);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -101,61 +103,69 @@ export default function SponsorshipsClient({
       <div className="h-full w-full overflow-auto p-lg">
         <div className="mb-6">
           <h1 className="ui-page-kicker mb-1">
-            Pipeline
+            {t("sponsorships.title")}
           </h1>
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-border-visible pb-2">
             <div className="flex gap-3 md:gap-6 overflow-x-auto pb-1 md:pb-0">
-              {TABS.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                    activeTab === tab
-                      ? "text-text-display"
-                      : "text-text-disabled hover:text-text-secondary"
-                  }`}
-                >
-                  [ {tab.toUpperCase()} ]
-                </button>
-              ))}
+              {TABS.map((tab) => {
+                const tabKeyMap: Record<TabKey, string> = {
+                  All: "sponsorships.all",
+                  Active: "sponsorships.activeFilter",
+                  Pending: "sponsorships.pendingFilter",
+                  Archived: "sponsorships.archivedFilter",
+                };
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
+                      activeTab === tab
+                        ? "text-text-display"
+                        : "text-text-disabled hover:text-text-secondary"
+                    }`}
+                  >
+                    {t(tabKeyMap[tab])}
+                  </button>
+                );
+              })}
             </div>
             <button
               onClick={handleOpenNew}
               className="ui-button-outline px-6 py-2 flex items-center justify-center shrink-0"
             >
               <span className="material-symbols-outlined text-[14px] mr-2">add</span>
-              NEW SPONSORSHIP
+              {t("sponsorships.newSponsorship")}
             </button>
           </div>
           <div className="ui-page-meta mt-2">
-            {filtered.length} {filtered.length === 1 ? "deal" : "deals"}
+            {filtered.length} {filtered.length === 1 ? t("sponsorships.deal") : t("sponsorships.deals")}
           </div>
         </div>
 
         <section className="mb-6">
-          <div className="ui-page-kicker mb-3">At A Glance</div>
+          <div className="ui-page-kicker mb-3">{t("sponsorships.atAGlance")}</div>
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-3">
             <div className="ui-panel p-4 min-w-0">
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
-                  Pending Payment
+                  {t("sponsorships.pendingPayment")}
                 </div>
                 <div className="text-[10px] font-mono tracking-widest uppercase text-warning whitespace-nowrap">
-                  {summary.pendingCount} {summary.pendingCount === 1 ? "Deal" : "Deals"}
+                  {summary.pendingCount} {summary.pendingCount === 1 ? t("sponsorships.dealSingular") : t("sponsorships.dealPlural")}
                 </div>
               </div>
               <div className="mt-4 text-style-display-md text-text-display break-words">
                 {formatMoney(summary.pendingTotal)}
               </div>
               <div className="mt-2 text-[10px] font-mono uppercase tracking-widest text-text-secondary">
-                All-Time Pending
+                {t("sponsorships.allTimePending")}
               </div>
             </div>
 
             <div className="ui-panel p-4 min-w-0">
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
-                  Closed This Month
+                  {t("sponsorships.closedThisMonth")}
                 </div>
                 <div className="text-[10px] font-mono tracking-widest uppercase text-success whitespace-nowrap">
                   {summary.currentMonthLabel}
@@ -165,14 +175,14 @@ export default function SponsorshipsClient({
                 {formatMoney(summary.currentMonthTotal)}
               </div>
               <div className="mt-2 text-[10px] font-mono uppercase tracking-widest text-text-secondary">
-                Non-Cancelled Deals
+                {t("sponsorships.nonCancelled")}
               </div>
             </div>
 
             <div className="ui-panel p-4 min-w-0">
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
-                  Monthly Revenue
+                  {t("sponsorships.monthlyRevenue")}
                 </div>
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary whitespace-nowrap">
                   {summary.monthlyTotals[0]?.key.slice(0, 4)}
@@ -200,7 +210,7 @@ export default function SponsorshipsClient({
         {filtered.length === 0 ? (
           <div className="ui-panel p-12 text-center">
             <div className="ui-page-kicker">
-              No {activeTab} Sponsorships Found
+              {t("sponsorships.noFoundFor", { tab: t(`sponsorships.tab${activeTab}`) })}
             </div>
           </div>
         ) : (
@@ -227,20 +237,20 @@ export default function SponsorshipsClient({
                         className={`w-1.5 h-1.5 rounded-full ${statusDotColor(s.status)}`}
                       />
                       <span className="uppercase tracking-widest text-[10px] text-text-secondary">
-                        {s.status}
+                        {t(`sponsorshipModal.${s.status.toLowerCase()}`)}
                       </span>
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 border-t border-border-visible pt-3">
                     <div>
-                      <div className="ui-page-kicker">Due</div>
+                      <div className="ui-page-kicker">{t("sponsorships.due")}</div>
                       <div className="text-xs font-mono text-text-display">
                         {formatDate(s.dueDate)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="ui-page-kicker">Value</div>
+                      <div className="ui-page-kicker">{t("sponsorships.value")}</div>
                       <div className="text-xs font-mono text-success">
                         ${s.budget.toLocaleString()}
                       </div>
@@ -254,19 +264,19 @@ export default function SponsorshipsClient({
               <thead>
                 <tr>
                   <th className="ui-table-head p-4">
-                    Brand
+                    {t("sponsorships.brand")}
                   </th>
                   <th className="ui-table-head p-4">
-                    Status
+                    {t("sponsorships.statusCol")}
                   </th>
                   <th className="ui-table-head p-4">
-                    Contact
+                    {t("sponsorships.contact")}
                   </th>
                   <th className="ui-table-head p-4">
-                    Due Date
+                    {t("sponsorships.dueDate")}
                   </th>
                   <th className="ui-table-head p-4 text-right">
-                    Value
+                    {t("sponsorships.value")}
                   </th>
                 </tr>
               </thead>
@@ -286,7 +296,7 @@ export default function SponsorshipsClient({
                           className={`w-1.5 h-1.5 rounded-full ${statusDotColor(s.status)}`}
                         />
                         <span className="uppercase tracking-widest text-[10px]">
-                          {s.status}
+                          {t(`sponsorshipModal.${s.status.toLowerCase()}`)}
                         </span>
                       </span>
                     </td>

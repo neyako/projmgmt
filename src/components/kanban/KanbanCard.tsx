@@ -10,6 +10,7 @@ import { parsePlatforms } from "@/lib/utils";
 import FilmingSplitCard from "./FilmingSplitCard";
 import ReviewPanel from "./ReviewPanel";
 import CardMenu from "./CardMenu";
+import { useT } from "@/lib/i18n/client";
 
 interface KanbanCardProps {
   project: ProjectCardData;
@@ -32,9 +33,9 @@ function formatScopeDeadline(date?: Date | string | null) {
 function getScopeDeadline(project: ProjectCardData) {
   switch (project.status) {
     case "Scripting":
-      return { label: "Scripting Due", date: project.scriptingDueDate };
+      return { labelKey: "kanban.scriptingDue", date: project.scriptingDueDate };
     case "Editing":
-      return { label: "Editing Due", date: project.editingDueDate };
+      return { labelKey: "kanban.editingDue", date: project.editingDueDate };
     default:
       return null;
   }
@@ -56,6 +57,7 @@ export default function KanbanCard({
     transition,
     isDragging,
   } = useSortable({ id: project.id });
+  const t = useT();
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -173,7 +175,7 @@ export default function KanbanCard({
       {scopeDeadline?.date && (
         <div className="flex items-center justify-between gap-3 mt-xs border border-border-visible bg-input-surface px-2 py-1.5">
           <span className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
-            {scopeDeadline.label}
+            {t(scopeDeadline.labelKey)}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-widest whitespace-nowrap text-text-display">
             {formatScopeDeadline(scopeDeadline.date)}
@@ -185,7 +187,7 @@ export default function KanbanCard({
       {project.status === "Editing" && project.reviewFeedback && (
         <div className="mt-3 p-2 bg-accent-subtle border-l-2 border-accent rounded-sm">
           <span className="text-[9px] font-mono text-accent uppercase tracking-widest mb-1 block">
-            REVISION NOTES
+            {t("kanban.revisionNotes")}
           </span>
           <p className="text-xs font-mono text-accent/80 line-clamp-3">
             {project.reviewFeedback}

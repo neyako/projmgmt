@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 interface CopyBlockProps {
   label: string;
@@ -19,6 +20,7 @@ export default function CopyBlock({
   className,
 }: CopyBlockProps) {
   const [copied, setCopied] = useState(false);
+  const t = useT();
 
   function handleCopy() {
     // Optimistic UI feedback — copy is fire-and-forget.
@@ -66,7 +68,7 @@ export default function CopyBlock({
           copied ? "text-success" : "text-text-secondary hover:text-text-display"
         )}
       >
-        {copied ? "[ COPIED! ]" : "[ COPY ]"}
+        {copied ? t("ui.copied") : t("ui.copy")}
       </button>
       <div className="whitespace-pre-wrap break-words">
         {children ?? copyValue}

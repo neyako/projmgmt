@@ -5,6 +5,7 @@ import PerformanceChart, {
 } from "@/components/analytics/PerformanceChart";
 import PlatformBadge from "@/components/analytics/PlatformBadge";
 import { prisma } from "@/lib/prisma";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -140,9 +141,10 @@ async function buildTimeSeries(): Promise<DayPoint[]> {
 }
 
 export default async function AnalyticsPage() {
-  const [publishedRaw, timeSeries] = await Promise.all([
+  const [publishedRaw, timeSeries, t] = await Promise.all([
     prisma.project.findMany({ where: { status: "Published" } }),
     buildTimeSeries(),
+    getT(),
   ]);
 
   const tiktokHandle = process.env.TIKTOK_HANDLE || "neyakowo";
@@ -177,9 +179,9 @@ export default async function AnalyticsPage() {
   );
 
   const metrics = [
-    { label: "TOTAL VIEWS", value: totalViews },
-    { label: "TOTAL LIKES", value: totalLikes },
-    { label: "TOTAL COMMENTS", value: totalComments },
+    { label: t("analytics.totalViews"), value: totalViews },
+    { label: t("analytics.totalLikes"), value: totalLikes },
+    { label: t("analytics.totalComments"), value: totalComments },
   ];
 
   return (
@@ -189,10 +191,10 @@ export default async function AnalyticsPage() {
 
           {/* ─── HEADER ──────────────────────────────────── */}
           <div className="mb-8 md:mb-12">
-            <h1 className="ui-page-kicker mb-1">Performance</h1>
+            <h1 className="ui-page-kicker mb-1">{t("analytics.title")}</h1>
             <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 w-full">
               <div className="ui-page-title text-xl md:text-2xl">
-                Performance Analytics
+                {t("analytics.subtitle")}
               </div>
               <div className="flex items-center gap-2 flex-wrap lg:ml-auto">
                 <SyncButton platform="youtube" />
@@ -201,9 +203,9 @@ export default async function AnalyticsPage() {
               </div>
             </div>
             <div className="ui-page-meta mt-1">
-              {published.length} {published.length === 1 ? "video" : "videos"} published
+              {published.length} {published.length === 1 ? t("analytics.videoSingular") : t("analytics.videoPlural")} {t("analytics.published")}
               <span className="mx-2 text-text-disabled">·</span>
-              auto-sync daily 00:05
+              {t("analytics.autoSync")}
             </div>
           </div>
 
@@ -232,13 +234,13 @@ export default async function AnalyticsPage() {
           {/* ─── Top Performers (Bar-Chart Leaderboard) ── */}
           <div>
             <h2 className="ui-page-kicker mb-6">
-              Top Performers
+              {t("analytics.topPerformers")}
             </h2>
 
             {published.length === 0 ? (
               <div className="ui-panel p-12 text-center">
                 <div className="ui-page-kicker">
-                  No Published Videos Yet
+                  {t("analytics.noPublished")}
                 </div>
               </div>
             ) : (
@@ -257,15 +259,15 @@ export default async function AnalyticsPage() {
 
                   const rowMetrics: string[] = [];
                   if (hasYoutube)
-                    rowMetrics.push(`YT: ${formatNumber(p.youtubeViews ?? 0)}`);
+                    rowMetrics.push(`${t("analytics.yt")} ${formatNumber(p.youtubeViews ?? 0)}`);
                   if (hasTikTok)
-                    rowMetrics.push(`TT: ${formatNumber(p.tiktokViews ?? 0)}`);
+                    rowMetrics.push(`${t("analytics.tt")} ${formatNumber(p.tiktokViews ?? 0)}`);
                   if (hasFacebook)
-                    rowMetrics.push(`FB: ${formatNumber(p.metaViews ?? 0)}`);
+                    rowMetrics.push(`${t("analytics.fb")} ${formatNumber(p.metaViews ?? 0)}`);
                   const metricString =
                     rowMetrics.length > 0
                       ? rowMetrics.join(" | ")
-                      : "NO PLATFORM DATA";
+                      : t("analytics.noPlatformData");
 
                   const isShortForm = hasPlatform(p.platforms, [
                     "TIKTOK",
@@ -310,12 +312,12 @@ export default async function AnalyticsPage() {
                             </span>
                             {isShortForm && (
                               <span className="px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
-                                Short Form
+                                {t("analytics.shortForm")}
                               </span>
                             )}
                             {isLongForm && (
                               <span className="px-1.5 py-0.5 border border-border-visible text-text-secondary text-[9px] uppercase rounded shrink-0">
-                                Long Form
+                                {t("analytics.longForm")}
                               </span>
                             )}
                           </div>
@@ -327,9 +329,9 @@ export default async function AnalyticsPage() {
                           <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest mt-1 flex flex-wrap gap-x-2 gap-y-0">
                             <span>{formatDate(p.publishedAt ?? p.publishDate)}</span>
                             <span className="text-text-disabled">|</span>
-                            <span className="tabular-nums">{formatNumber(p.totalLikes)} LIKES</span>
+                            <span className="tabular-nums">{formatNumber(p.totalLikes)} {t("analytics.likes")}</span>
                             <span className="text-text-disabled">|</span>
-                            <span className="tabular-nums">{formatNumber(p.totalComments)} COMMENTS</span>
+                            <span className="tabular-nums">{formatNumber(p.totalComments)} {t("analytics.comments")}</span>
                           </span>
                         </div>
                         <span className="text-sm font-mono text-text-display tracking-wider tabular-nums shrink-0 sm:text-right">

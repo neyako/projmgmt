@@ -2,8 +2,10 @@ import { getServerSession } from "next-auth";
 import Shell from "@/components/layout/Shell";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getT } from "@/lib/i18n/server";
 import AvatarUploadForm from "./AvatarUploadForm";
 import ChangePasswordForm from "./ChangePasswordForm";
+import LanguageForm from "./LanguageForm";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,7 @@ export default async function SettingsPage() {
         select: { name: true, email: true, avatarUrl: true },
       })
     : null;
+  const t = await getT();
 
   return (
     <Shell>
@@ -22,22 +25,22 @@ export default async function SettingsPage() {
         <div className="w-full max-w-[48rem] mx-auto flex flex-col gap-12">
           <header>
             <h1 className="text-2xl md:text-3xl font-bold text-text-display uppercase tracking-widest mb-4">
-              System Settings
+              {t("settings.title")}
             </h1>
             <p className="text-sm font-mono text-text-secondary max-w-[28rem]">
-              Manage your local workspace, rendering preferences, and user account parameters.
+              {t("settings.subtitle")}
             </p>
           </header>
 
           <section className="border-t border-border-visible pt-8">
-            <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">PROFILE</h3>
+            <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">{t("settings.profile")}</h3>
             <div className="flex flex-col gap-8 w-full">
               <AvatarUploadForm avatarUrl={user?.avatarUrl ?? null} />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                 <div className="flex flex-col gap-2 w-full">
                   <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                    DISPLAY NAME
+                    {t("settings.displayName")}
                   </label>
                   <input
                     type="text"
@@ -48,7 +51,7 @@ export default async function SettingsPage() {
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                    EMAIL ADDRESS
+                    {t("settings.emailAddress")}
                   </label>
                   <input
                     type="email"
@@ -62,7 +65,12 @@ export default async function SettingsPage() {
           </section>
 
           <section className="border-t border-border-visible pt-8 w-full">
-            <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">SECURITY</h3>
+            <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">{t("settings.preferences")}</h3>
+            <LanguageForm />
+          </section>
+
+          <section className="border-t border-border-visible pt-8 w-full">
+            <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">{t("settings.security")}</h3>
             <ChangePasswordForm />
           </section>
 
@@ -73,7 +81,7 @@ export default async function SettingsPage() {
               className="bg-text-display text-text-inverse text-[10px] font-mono uppercase tracking-widest px-6 py-2 hover:opacity-80 transition-opacity flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[16px]">save</span>
-              SAVE CHANGES
+              {t("settings.saveChanges")}
             </button>
           </div>
         </div>

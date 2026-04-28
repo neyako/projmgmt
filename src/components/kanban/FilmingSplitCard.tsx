@@ -11,6 +11,7 @@ import { updateProjectShotlist } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import CardMenu from "./CardMenu";
 import type { ProjectCardData, ShotItem } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 interface FilmingSplitCardProps {
   project: ProjectCardData;
@@ -48,6 +49,7 @@ export default function FilmingSplitCard({
 }: FilmingSplitCardProps) {
   const [, startTransition] = useTransition();
   const { showToast } = useToast();
+  const t = useT();
 
   const platforms = parsePlatforms(project.platformsTargeted);
   const assignmentValues: Array<
@@ -157,7 +159,7 @@ export default function FilmingSplitCard({
       {project.filmingDueDate && (
         <div className="flex items-center justify-between gap-3 mt-xs ml-2 border border-border-visible bg-input-surface px-2 py-1.5">
           <span className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
-            Filming Due
+            {t("kanban.filmingDue")}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-widest whitespace-nowrap text-text-display">
             {filmingDeadline}
@@ -183,7 +185,7 @@ export default function FilmingSplitCard({
               >
                 {aRollPercent === 100 ? "check_circle" : "radio_button_unchecked"}
               </span>
-              <span className="text-style-caption text-text-primary">A-ROLL</span>
+              <span className="text-style-caption text-text-primary">{t("kanban.aRoll")}</span>
               <span className="text-[10px] font-mono text-text-disabled">
                 {aRollDone}/{aRollShots.length}
               </span>
@@ -227,7 +229,7 @@ export default function FilmingSplitCard({
               >
                 {bRollPercent === 100 ? "check_circle" : "radio_button_unchecked"}
               </span>
-              <span className="text-style-caption text-text-primary">B-ROLL</span>
+              <span className="text-style-caption text-text-primary">{t("kanban.bRoll")}</span>
               <span className="text-[10px] font-mono text-text-disabled">
                 {bRollDone}/{bRollShots.length}
               </span>

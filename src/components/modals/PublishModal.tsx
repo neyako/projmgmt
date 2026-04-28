@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { publishProject } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import type { ProjectCardData } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 interface PublishModalProps {
   project: ProjectCardData;
@@ -29,6 +30,7 @@ export default function PublishModal({
   onPublished,
 }: PublishModalProps) {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   const isShort = project.format === "Short_Form";
@@ -70,7 +72,7 @@ export default function PublishModal({
     e.preventDefault();
     const trimmedTitle = finalTitle.trim();
     if (!trimmedTitle) {
-      showToast("Final video title is required.", "error");
+      showToast(t("publishModal.titleRequired"), "error");
       return;
     }
     startTransition(async () => {
@@ -97,7 +99,7 @@ export default function PublishModal({
         id: project.id,
         status: "Published",
       });
-      showToast(`Published "${trimmedTitle}".`, "success");
+      showToast(t("publishModal.publishedToast", { title: trimmedTitle }), "success");
       onClose();
     });
   }
@@ -117,20 +119,20 @@ export default function PublishModal({
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <div className="w-2 h-2 rounded-full bg-success" />
               <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                ID: {project.id.slice(0, 8)}
+                {t("publishModal.id")} {project.id.slice(0, 8)}
               </span>
               <span className="ui-tag-muted px-2 py-1">
-                {project.status}
+                {t(`stageDisplay.${project.status}`)}
               </span>
               <span className="ui-tag-muted px-2 py-1">
-                {project.format.replace("_", " ")}
+                {t(`format.${project.format}`)}
               </span>
             </div>
             <h2 className="text-2xl font-bold text-text-display uppercase tracking-widest">
-              PUBLISHING CHECKLIST
+              {t("publishModal.checklist")}
             </h2>
             <p className="text-[10px] font-mono text-text-secondary uppercase tracking-widest mt-2">
-              Finalize metadata before leaving the pipeline.
+              {t("publishModal.subtitle")}
             </p>
           </div>
           <button
@@ -139,7 +141,7 @@ export default function PublishModal({
             disabled={isPending}
             className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors ml-4 shrink-0"
           >
-            [ X ]
+            {t("publishModal.close")}
           </button>
         </div>
 
@@ -151,14 +153,14 @@ export default function PublishModal({
         >
           <div>
             <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-              Final Video Title
+              {t("publishModal.finalTitle")}
               <span className="text-accent ml-1">*</span>
             </label>
             <input
               type="text"
               value={finalTitle}
               onChange={(e) => setFinalTitle(e.target.value)}
-              placeholder="Tech Review: Desk Setup"
+              placeholder={t("publishModal.finalTitlePlaceholder")}
               className={INPUT_CLASS}
               autoFocus
             />
@@ -169,12 +171,12 @@ export default function PublishModal({
             <>
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                  Base Caption
+                  {t("publishModal.baseCaption")}
                 </label>
                 <textarea
                   value={baseCaption}
                   onChange={(e) => setBaseCaption(e.target.value)}
-                  placeholder="POV: you finally cleaned the desk..."
+                  placeholder={t("publishModal.baseCaptionPlaceholder")}
                   className={cn(
                     INPUT_CLASS,
                     "min-h-[96px] resize-y"
@@ -184,17 +186,17 @@ export default function PublishModal({
 
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                  Hashtags
+                  {t("publishModal.hashtags")}
                 </label>
                 <input
                   type="text"
                   value={hashtags}
                   onChange={(e) => setHashtags(e.target.value)}
-                  placeholder="tech review setup"
+                  placeholder={t("publishModal.hashtagsPlaceholder")}
                   className={INPUT_CLASS}
                 />
                 <p className="text-[10px] font-mono text-text-disabled mt-2">
-                  Space separated. `#` prepended automatically on copy.
+                  {t("publishModal.hashtagsHint")}
                 </p>
               </div>
             </>
@@ -205,7 +207,7 @@ export default function PublishModal({
             <>
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                  A/B Titles
+                  {t("publishModal.abTitles")}
                 </label>
                 <div className="flex flex-col gap-3">
                   {abTitles.map((value, i) => (
@@ -214,7 +216,7 @@ export default function PublishModal({
                       type="text"
                       value={value}
                       onChange={(e) => updateArrayAt(setAbTitles, i, e.target.value)}
-                      placeholder={`Title ${i + 1}`}
+                      placeholder={t("publishModal.titleN", { n: i + 1 })}
                       className={INPUT_CLASS}
                     />
                   ))}
@@ -223,7 +225,7 @@ export default function PublishModal({
 
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                  Thumbnails
+                  {t("publishModal.thumbnails")}
                 </label>
                 <div className="flex flex-col gap-3">
                   {thumbnails.map((value, i) => (
@@ -232,7 +234,7 @@ export default function PublishModal({
                       type="text"
                       value={value}
                       onChange={(e) => updateArrayAt(setThumbnails, i, e.target.value)}
-                      placeholder={`Thumbnail ${i + 1} (path or URL)`}
+                      placeholder={t("publishModal.thumbnailPlaceholder", { n: i + 1 })}
                       className={INPUT_CLASS}
                     />
                   ))}
@@ -244,7 +246,7 @@ export default function PublishModal({
           {/* ─── Platform IDs (for API sync) ─── */}
           <div>
             <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-              YouTube Video ID
+              {t("publishModal.youtubeId")}
             </label>
             <input
               type="text"
@@ -255,13 +257,13 @@ export default function PublishModal({
               className={INPUT_CLASS}
             />
             <p className="text-[10px] font-mono text-text-disabled mt-2">
-              11-char ID from the YouTube URL. Enables YT Data API v3 sync.
+              {t("publishModal.youtubeIdHint")}
             </p>
           </div>
 
           <div>
             <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-              Meta Reel ID
+              {t("publishModal.metaId")}
             </label>
             <input
               type="text"
@@ -272,13 +274,13 @@ export default function PublishModal({
               className={INPUT_CLASS}
             />
             <p className="text-[10px] font-mono text-text-disabled mt-2">
-              Media/Reel ID from the Meta Graph API (IG / FB).
+              {t("publishModal.metaIdHint")}
             </p>
           </div>
 
           <div>
             <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-              TikTok Video ID
+              {t("publishModal.tiktokId")}
             </label>
             <input
               type="text"
@@ -289,14 +291,14 @@ export default function PublishModal({
               className={INPUT_CLASS}
             />
             <p className="text-[10px] font-mono text-text-disabled mt-2">
-              Video ID from the TikTok Display API.
+              {t("publishModal.tiktokIdHint")}
             </p>
           </div>
 
           {/* ─── Always ─── */}
           <div>
             <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-              Publish Date
+              {t("publishModal.publishDate")}
             </label>
             <input
               type="date"
@@ -316,7 +318,7 @@ export default function PublishModal({
             disabled={isPending}
             className="ui-button-outline px-4 py-2 disabled:opacity-50"
           >
-            [ CANCEL ]
+            {t("publishModal.cancel")}
           </button>
           <button
             type="submit"
@@ -328,7 +330,7 @@ export default function PublishModal({
             )}
           >
             <span className="material-symbols-outlined text-[14px]">check</span>
-            {isPending ? "PUBLISHING..." : "[ CONFIRM & PUBLISH ]"}
+            {isPending ? t("publishModal.publishing") : t("publishModal.confirmPublish")}
           </button>
         </div>
       </div>
