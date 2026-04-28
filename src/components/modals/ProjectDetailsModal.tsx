@@ -25,6 +25,7 @@ import {
   toggleProjectPlatform,
   scanForDraft,
 } from "@/actions/projects";
+import { getSponsorshipDeals } from "@/actions/sponsorships";
 import { updateProjectScript } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
 import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
@@ -799,6 +800,8 @@ interface ProjectDetailsModalProps {
   onProjectUpdate?: (updatedProject: Partial<ProjectCardData> & { id: string }) => void;
 }
 
+type SponsorshipDealOption = Awaited<ReturnType<typeof getSponsorshipDeals>>[number];
+
 function parseShotItems(json?: string): ShotItem[] {
   try {
     return json ? JSON.parse(json) : [];
@@ -841,6 +844,20 @@ function todayInputValue(): string {
   return toDateInputValue(new Date());
 }
 
+function formatDealDate(d?: Date | string | null): string {
+  if (!d) return "—";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(dt.getTime())) return "—";
+  return dt
+    .toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" })
+    .toUpperCase();
+}
+
+function formatDealMoney(value?: number | null): string {
+  if (!value) return "—";
+  return `$${value.toLocaleString("en-US")}`;
+}
+
 export default function ProjectDetailsModal({
   project,
   onClose,
@@ -850,6 +867,7 @@ export default function ProjectDetailsModal({
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<ProjectUser[]>([]);
+  const [sponsorshipDeals, setSponsorshipDeals] = useState<SponsorshipDealOption[]>([]);
 
   const isEditing = !!project;
 
@@ -859,6 +877,7 @@ export default function ProjectDetailsModal({
   const [format, setFormat] = useState<string>("Short_Form");
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [briefingNotes, setBriefingNotes] = useState("");
+  const [sponsorshipId, setSponsorshipId] = useState("");
 
   // Shot lists (local state from JSON)
   const [aRollShots, setARollShots] = useState<ShotItem[]>([]);
@@ -903,6 +922,11 @@ export default function ProjectDetailsModal({
 
   useEffect(() => {
     getUsers().then(setUsers);
+    getSponsorshipDeals()
+      .then(setSponsorshipDeals)
+      .catch((error) => {
+        console.error("[ProjectDetailsModal:getSponsorshipDeals]", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -940,6 +964,7 @@ export default function ProjectDetailsModal({
       setFormat(project.format);
       setPlatforms(parsePlatforms(project.platformsTargeted));
       setBriefingNotes(project.briefingNotes || "");
+      setSponsorshipId(project.sponsorshipId || project.sponsorship?.id || "");
       setLocalScript(script);
       lastSavedScriptRef.current = script;
       setScriptSaveStatus("saved");
@@ -965,6 +990,7 @@ export default function ProjectDetailsModal({
       setFormat("Short_Form");
       setPlatforms([]);
       setBriefingNotes("");
+      setSponsorshipId("");
       setLocalScript("");
       lastSavedScriptRef.current = "";
       setScriptSaveStatus("idle");
@@ -1035,6 +1061,21 @@ export default function ProjectDetailsModal({
     setPlatforms((prev) =>
       prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
     );
+  }
+
+  function handleContentTypeSelect(nextContentType: string) {
+    setContentType(nextContentType);
+    if (nextContentType !== "Sponsored") {
+      setSponsorshipId("");
+      setBriefingNotes("");
+      setProductLinks("");
+    }
+  }
+
+  function handleSponsorshipSelect(nextId: string) {
+    setSponsorshipId(nextId);
+    const deal = sponsorshipDeals.find((item) => item.id === nextId);
+    setBriefingNotes(deal?.notes || "");
   }
 
   function toggleShot(list: "a" | "b", shotId: string) {
@@ -1364,6 +1405,10 @@ export default function ProjectDetailsModal({
       showToast("Project title is required.", "error");
       return;
     }
+    if (contentType === "Sponsored" && !sponsorshipId) {
+      showToast("Select a sponsorship deal.", "error");
+      return;
+    }
     startTransition(async () => {
       const result = await createProject({
         title,
@@ -1371,6 +1416,8 @@ export default function ProjectDetailsModal({
         format,
         platformsTargeted: platforms,
         briefingNotes: contentType === "Sponsored" ? briefingNotes : undefined,
+        productLinks: contentType === "Sponsored" ? productLinks.trim() || undefined : undefined,
+        sponsorshipId: contentType === "Sponsored" ? sponsorshipId : undefined,
       });
       if (result.success) {
         showToast("Project created.", "success");
@@ -1406,6 +1453,13 @@ export default function ProjectDetailsModal({
           : scriptSaveStatus === "saved"
             ? "[ SAVED ]"
             : "[ AUTOSAVE ]";
+  const selectedSponsorship =
+    sponsorshipDeals.find((deal) => deal.id === sponsorshipId) ?? null;
+  const linkedSponsorship = isEditing ? project.sponsorship ?? null : null;
+  const briefingContext =
+    isEditing && project.contentType === "Sponsored"
+      ? project.briefingNotes?.trim() || linkedSponsorship?.notes?.trim() || ""
+      : "";
 
   // Determine status color
   const statusColors: Record<string, string> = {
@@ -1481,7 +1535,7 @@ export default function ProjectDetailsModal({
                   <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Content Type</label>
                   <div className="flex gap-2 flex-wrap">
                     {CONTENT_TYPES.map((ct) => (
-                      <button key={ct} type="button" onClick={() => setContentType(ct)} className={cn(
+                      <button key={ct} type="button" onClick={() => handleContentTypeSelect(ct)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
                         contentType === ct ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
                       )}>{ct.replace("_", " ")}</button>
@@ -1515,18 +1569,89 @@ export default function ProjectDetailsModal({
                   </div>
                 </div>
 
-                {/* Briefing Notes */}
+                {/* Sponsorship Deal */}
                 {contentType === "Sponsored" && (
-                  <div>
-                    <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                      Briefing Notes<span className="text-accent ml-1">*</span>
-                    </label>
-                    <textarea
-                      value={briefingNotes}
-                      onChange={(e) => setBriefingNotes(e.target.value)}
-                      placeholder="Client requirements, talking points, deliverables..."
-                      className="w-full ui-textarea p-3 text-sm min-h-[100px] resize-y"
-                    />
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
+                        Sponsorship Deal<span className="text-accent ml-1">*</span>
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={sponsorshipId}
+                          onChange={(e) => handleSponsorshipSelect(e.target.value)}
+                          className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 pr-6 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer color-scheme-dark"
+                        >
+                          <option value="" className="bg-surface text-text-primary">
+                            {sponsorshipDeals.length > 0 ? "SELECT SPONSORSHIP DEAL" : "NO ACTIVE DEALS FOUND"}
+                          </option>
+                          {sponsorshipDeals.map((deal) => (
+                            <option key={deal.id} value={deal.id} className="bg-surface text-text-primary">
+                              {deal.brandName} / {deal.status} / {formatDealMoney(deal.budget)}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown />
+                      </div>
+                    </div>
+
+                    {selectedSponsorship && (
+                      <div className="border border-border-visible bg-surface p-3 font-mono text-xs">
+                        <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-2">
+                          <span className="text-text-display uppercase tracking-widest">
+                            {selectedSponsorship.brandName}
+                          </span>
+                          <span className="text-text-secondary uppercase tracking-widest">
+                            {selectedSponsorship.status}
+                          </span>
+                        </div>
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] uppercase tracking-widest">
+                          <div>
+                            <div className="text-text-disabled">Budget</div>
+                            <div className="mt-1 text-success">{formatDealMoney(selectedSponsorship.budget)}</div>
+                          </div>
+                          <div>
+                            <div className="text-text-disabled">Due</div>
+                            <div className="mt-1 text-text-display">{formatDealDate(selectedSponsorship.dueDate)}</div>
+                          </div>
+                          <div>
+                            <div className="text-text-disabled">Contact</div>
+                            <div className="mt-1 text-text-display break-all">
+                              {selectedSponsorship.contactEmail || "—"}
+                            </div>
+                          </div>
+                        </div>
+                        {selectedSponsorship.notes && (
+                          <div className="mt-3 border-t border-border-visible pt-3 text-text-secondary whitespace-pre-wrap">
+                            {selectedSponsorship.notes}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
+                        Briefing Snapshot
+                      </label>
+                      <textarea
+                        value={briefingNotes}
+                        onChange={(e) => setBriefingNotes(e.target.value)}
+                        placeholder="Deal notes are copied here when selected. Add production specifics if needed..."
+                        className="w-full ui-textarea p-3 text-sm min-h-[100px] resize-y"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
+                        Product / Tracking Links
+                      </label>
+                      <textarea
+                        value={productLinks}
+                        onChange={(e) => setProductLinks(e.target.value)}
+                        placeholder="Product page, affiliate links, tracking URLs..."
+                        className="w-full ui-textarea p-3 text-sm min-h-[80px] resize-y"
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -1833,15 +1958,45 @@ export default function ProjectDetailsModal({
                   </div>
                 </div>
 
-                {/* ── Briefing Notes (Sponsored) ── */}
-                {project.contentType === "Sponsored" && project.briefingNotes && (
+                {/* ── Sponsorship Context (Sponsored) ── */}
+                {project.contentType === "Sponsored" && (linkedSponsorship || briefingContext) && (
                   <div>
                     <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                      Briefing Notes
+                      Sponsorship Context
                     </label>
-                    <div className="bg-surface border border-border-visible p-3 text-xs font-mono text-text-secondary whitespace-pre-wrap">
-                      {project.briefingNotes}
-                    </div>
+                    {linkedSponsorship && (
+                      <div className="mb-3 border border-border-visible bg-surface p-3 font-mono text-xs">
+                        <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-2">
+                          <span className="text-text-display uppercase tracking-widest">
+                            {linkedSponsorship.brandName}
+                          </span>
+                          <span className="text-text-secondary uppercase tracking-widest">
+                            {linkedSponsorship.status}
+                          </span>
+                        </div>
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] uppercase tracking-widest">
+                          <div>
+                            <div className="text-text-disabled">Budget</div>
+                            <div className="mt-1 text-success">{formatDealMoney(linkedSponsorship.budget)}</div>
+                          </div>
+                          <div>
+                            <div className="text-text-disabled">Due</div>
+                            <div className="mt-1 text-text-display">{formatDealDate(linkedSponsorship.dueDate)}</div>
+                          </div>
+                          <div>
+                            <div className="text-text-disabled">Contact</div>
+                            <div className="mt-1 text-text-display break-all">
+                              {linkedSponsorship.contactEmail || "—"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {briefingContext && (
+                      <div className="bg-surface border border-border-visible p-3 text-xs font-mono text-text-secondary whitespace-pre-wrap">
+                        {briefingContext}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1981,6 +2136,7 @@ export default function ProjectDetailsModal({
                     type="text"
                     readOnly
                     value={
+                      linkedSponsorship?.brandName ||
                       project.briefingNotes?.split("\n")[0]?.replace(/^Client:\s*/i, "") ||
                       ""
                     }

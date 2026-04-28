@@ -16,6 +16,11 @@ export default async function SponsorshipsPage({
     where: {
       ...(q && { brandName: { contains: q } }),
     },
+    include: {
+      _count: {
+        select: { projects: true },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 

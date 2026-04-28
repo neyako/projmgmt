@@ -26,6 +26,17 @@ export default async function PipelinePage({
       assignedCameraman: { select: projectUserSelect },
       assignedEditor: { select: projectUserSelect },
       assignedTalent: { select: projectUserSelect },
+      sponsorship: {
+        select: {
+          id: true,
+          brandName: true,
+          contactEmail: true,
+          budget: true,
+          status: true,
+          dueDate: true,
+          notes: true,
+        },
+      },
       shotlistItems: { orderBy: { order: "asc" } },
     },
     orderBy: [{ columnOrder: "asc" }],

@@ -9,6 +9,7 @@ import {
   provisionNextcloudFolder,
 } from "@/lib/nextcloud";
 import { projectUserSelect } from "@/lib/userSelect";
+import type { Sponsorship } from "@prisma/client";
 
 // ─── RESULT TYPE ────────────────────────────────────────
 type ActionResult<T = unknown> =
@@ -66,6 +67,22 @@ function getNextcloudFolderName(project: { folderName?: string | null; title: st
   return project.folderName?.trim() || project.title;
 }
 
+function formatSponsoredDealContext(
+  sponsorship: Sponsorship,
+  projectBriefing?: string
+) {
+  const header = [
+    `Client: ${sponsorship.brandName}`,
+    sponsorship.contactEmail ? `Contact: ${sponsorship.contactEmail}` : null,
+    `Deal Status: ${sponsorship.status}`,
+    sponsorship.budget > 0 ? `Budget: $${sponsorship.budget.toLocaleString("en-US")}` : null,
+    sponsorship.dueDate ? `Due: ${toDateInputValue(sponsorship.dueDate)}` : null,
+  ].filter(Boolean);
+
+  const notes = projectBriefing?.trim() || sponsorship.notes?.trim();
+  return notes ? `${header.join("\n")}\n\n${notes}` : header.join("\n");
+}
+
 // ─── CREATE PROJECT ─────────────────────────────────────
 export async function createProject(formData: {
   title: string;
@@ -73,14 +90,27 @@ export async function createProject(formData: {
   format: string;
   platformsTargeted: string[];
   briefingNotes?: string;
+  productLinks?: string;
+  sponsorshipId?: string;
   creatorId?: string;
 }): Promise<ActionResult> {
   if (!formData.title?.trim()) {
     return { success: false, error: "Title is required." };
   }
 
-  if (formData.contentType === "Sponsored" && !formData.briefingNotes?.trim()) {
-    return { success: false, error: "Sponsored projects require Briefing Notes." };
+  let sponsorship: Sponsorship | null = null;
+  if (formData.contentType === "Sponsored") {
+    if (!formData.sponsorshipId) {
+      return { success: false, error: "Sponsored projects require a sponsorship deal." };
+    }
+
+    sponsorship = await prisma.sponsorship.findUnique({
+      where: { id: formData.sponsorshipId },
+    });
+
+    if (!sponsorship || sponsorship.status === "Cancelled" || sponsorship.status === "Completed") {
+      return { success: false, error: "Select an active or pending sponsorship deal." };
+    }
   }
 
   // Auto-resolve creator: use provided ID, or default to first user
@@ -106,7 +136,13 @@ export async function createProject(formData: {
         contentType: formData.contentType,
         format: formData.format,
         platformsTargeted: JSON.stringify(formData.platformsTargeted),
-        briefingNotes: formData.briefingNotes || null,
+        briefingNotes:
+          formData.contentType === "Sponsored" && sponsorship
+            ? formatSponsoredDealContext(sponsorship, formData.briefingNotes)
+            : formData.briefingNotes?.trim() || null,
+        productLinks: formData.productLinks?.trim() || null,
+        sponsorshipId:
+          formData.contentType === "Sponsored" && sponsorship ? sponsorship.id : null,
         creatorId: creatorId,
         status: "Ideation",
         columnOrder: (maxOrder._max.columnOrder ?? -1) + 1,
@@ -118,6 +154,7 @@ export async function createProject(formData: {
     });
 
     revalidatePath("/pipeline");
+    revalidatePath("/sponsorships");
     return { success: true, data: project };
   } catch (err) {
     console.error("[createProject]", err);

@@ -342,6 +342,7 @@
     "statusCol": "Status",
     "contact": "Contact",
     "dueDate": "Due Date",
+    "projects": "Projects",
     "tabAll": "All",
     "tabActive": "Active",
     "tabPending": "Pending",
