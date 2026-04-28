@@ -89,6 +89,7 @@ model Project {
   storagePath       String?  // NAS path, e.g. \\truenas\projects\vid01
   folderName        String?
   reviewLink        String?  // Nextcloud share URL
+  draftVersion      Int      @default(1)
 
   // Review feedback (populated on Reject)
   reviewFeedback    String?

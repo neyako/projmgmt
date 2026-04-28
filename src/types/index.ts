@@ -44,6 +44,7 @@ export type ProjectCardData = Pick<
   | "storagePath"
   | "folderName"
   | "reviewLink"
+  | "draftVersion"
   | "briefingNotes"
   | "script"
   | "reviewFeedback"

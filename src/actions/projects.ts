@@ -3,6 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { VALID_TRANSITIONS, type KanbanStage } from "@/lib/constants";
+import {
+  archiveNextcloudFolder,
+  generateDraftReviewLink,
+  provisionNextcloudFolder,
+} from "@/lib/nextcloud";
 import { projectUserSelect } from "@/lib/userSelect";
 
 // ─── RESULT TYPE ────────────────────────────────────────
@@ -41,6 +46,24 @@ function parseFutureDate(value: string | null | undefined, label: string) {
   }
 
   return { success: true as const, date: new Date(value) };
+}
+
+async function archiveNextcloudFolderForStatus(status: string, projectTitle: string) {
+  if (status !== "Published") return;
+
+  try {
+    await archiveNextcloudFolder(projectTitle);
+  } catch (err) {
+    console.error("[archiveNextcloudFolderForStatus]", err);
+  }
+}
+
+function isDraftRejection(from: string, to: string): boolean {
+  return from === "Review" && to === "Editing";
+}
+
+function getNextcloudFolderName(project: { folderName?: string | null; title: string }): string {
+  return project.folderName?.trim() || project.title;
 }
 
 // ─── CREATE PROJECT ─────────────────────────────────────
@@ -88,6 +111,10 @@ export async function createProject(formData: {
         status: "Ideation",
         columnOrder: (maxOrder._max.columnOrder ?? -1) + 1,
       },
+    });
+
+    void provisionNextcloudFolder(project.title).catch((error) => {
+      console.error("[createProject:provisionNextcloudFolder]", error);
     });
 
     revalidatePath("/pipeline");
@@ -152,14 +179,18 @@ export async function updateProjectStatus(
       data: {
         status: to,
         ...(to === "Published" && { publishDate: new Date() }),
-        ...(from === "Review" && to === "Editing" && {
+        ...(isDraftRejection(from, to) && {
           reviewFeedback: feedback?.trim() || null,
+          reviewLink: null,
+          draftVersion: { increment: 1 },
         }),
         ...(from === "Editing" && to === "Review" && {
           reviewFeedback: null, // Clear feedback on resubmit
         }),
       },
     });
+
+    await archiveNextcloudFolderForStatus(to, getNextcloudFolderName(project));
 
     revalidatePath("/pipeline");
     revalidatePath("/archive");
@@ -176,13 +207,33 @@ export async function updateProjectStatusDirect(
   newStatus: string
 ): Promise<ActionResult> {
   try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { folderName: true, status: true, title: true },
+    });
+    if (!project) {
+      return { success: false, error: "Project not found." };
+    }
+
+    const from = project.status;
     const updated = await prisma.project.update({
       where: { id: projectId },
       data: {
         status: newStatus,
         ...(newStatus === "Published" && { publishDate: new Date() }),
+        ...(isDraftRejection(from, newStatus) && {
+          reviewFeedback: null,
+          reviewLink: null,
+          draftVersion: { increment: 1 },
+        }),
+        ...(from === "Editing" && newStatus === "Review" && {
+          reviewFeedback: null,
+        }),
       },
     });
+
+    await archiveNextcloudFolderForStatus(newStatus, getNextcloudFolderName(project));
+
     revalidatePath("/pipeline");
     revalidatePath("/archive");
     return { success: true, data: updated };
@@ -374,6 +425,51 @@ export async function updateProjectAssets(
   }
 }
 
+export async function scanForDraft(
+  projectId: string,
+  projectName: string
+): Promise<{ success: true; link: string; version: number } | { success: false; error: string }> {
+  if (!projectId) {
+    return { success: false, error: "Project is required before scanning Nextcloud." };
+  }
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { draftVersion: true, folderName: true, title: true },
+    });
+
+    if (!project) {
+      return { success: false, error: "Project not found." };
+    }
+
+    const scanProjectName = getNextcloudFolderName(project) || projectName.trim();
+
+    if (!scanProjectName) {
+      return { success: false, error: "Project name is required before scanning Nextcloud." };
+    }
+
+    const newLink = await generateDraftReviewLink(scanProjectName, project.draftVersion);
+
+    if (!newLink) {
+      return { success: false, error: "No draft file detected in Nextcloud yet." };
+    }
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { reviewLink: newLink },
+    });
+
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
+
+    return { success: true, link: newLink, version: project.draftVersion };
+  } catch (err) {
+    console.error("[scanForDraft]", err);
+    return { success: false, error: "Failed to scan Nextcloud drafts." };
+  }
+}
+
 // ─── SUBMIT REVIEW (Approve / Reject with feedback) ─────
 export async function submitReview(
   projectId: string,
@@ -396,8 +492,18 @@ export async function submitReview(
       data:
         action === "approve"
           ? { status: "Published", publishDate: new Date() }
-          : { status: "Editing", reviewFeedback: feedback?.trim() || null },
+          : {
+              status: "Editing",
+              reviewFeedback: feedback?.trim() || null,
+              reviewLink: null,
+              draftVersion: { increment: 1 },
+            },
     });
+
+    if (action === "approve") {
+      await archiveNextcloudFolderForStatus("Published", getNextcloudFolderName(project));
+    }
+
     revalidatePath("/pipeline");
     revalidatePath("/archive");
     return { success: true, data: updated };
@@ -520,6 +626,9 @@ export async function publishProject(
           : null,
       },
     });
+
+    await archiveNextcloudFolderForStatus("Published", getNextcloudFolderName(project));
+
     revalidatePath("/pipeline");
     revalidatePath("/archive");
     revalidatePath("/analytics");

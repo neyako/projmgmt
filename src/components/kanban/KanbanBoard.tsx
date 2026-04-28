@@ -209,6 +209,20 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
           setProjects(snapshot);
           showToast(result.error, "error");
         } else {
+          if (originalProject.status === "Review" && draggedProject.status === "Editing") {
+            setProjects((prev) =>
+              prev.map((p) =>
+                p.id === draggedProject.id
+                  ? {
+                      ...p,
+                      reviewFeedback: null,
+                      reviewLink: null,
+                      draftVersion: originalProject.draftVersion + 1,
+                    }
+                  : p
+              )
+            );
+          }
           showToast(
             `Moved "${draggedProject.title}" to ${draggedProject.status}.`,
             "success"

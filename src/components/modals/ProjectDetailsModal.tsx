@@ -23,6 +23,7 @@ import {
   updatePlatformIds,
   updateProjectStatusDirect,
   toggleProjectPlatform,
+  scanForDraft,
 } from "@/actions/projects";
 import { updateProjectScript } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
@@ -885,6 +886,7 @@ export default function ProjectDetailsModal({
 
   // Asset Management state
   const [reviewLink, setReviewLink] = useState("");
+  const [isScanningDraft, setIsScanningDraft] = useState(false);
   const [detectedOS, setDetectedOS] = useState<"mac" | "win" | "unknown">("unknown");
 
   // Ideation metadata
@@ -1150,6 +1152,26 @@ export default function ProjectDetailsModal({
     });
   }
 
+  async function handleScanForDrafts() {
+    if (!project || isScanningDraft) return;
+
+    setIsScanningDraft(true);
+    try {
+      const result = await scanForDraft(project.id, project.title);
+
+      if (!result.success) {
+        showToast(result.error, "warning");
+        return;
+      }
+
+      setReviewLink(result.link);
+      onProjectUpdate?.({ id: project.id, reviewLink: result.link, draftVersion: result.version });
+      showToast("Draft review link detected.", "success");
+    } finally {
+      setIsScanningDraft(false);
+    }
+  }
+
   function saveRawFolderName() {
     if (!project) return;
     const nextFolderName = tempFolderName.trim();
@@ -1227,11 +1249,23 @@ export default function ProjectDetailsModal({
     if (!project || stage === project.status) return;
     const prevStatus = project.status;
     const prevPublishDate = project.publishDate ?? null;
+    const prevReviewLink = project.reviewLink ?? null;
+    const prevDraftVersion = project.draftVersion;
+    const prevReviewFeedback = project.reviewFeedback ?? null;
+    const isDraftRejection = prevStatus === "Review" && stage === "Editing";
 
+    if (isDraftRejection) {
+      setReviewLink("");
+    }
     onProjectUpdate?.({
       id: project.id,
       status: stage,
       ...(stage === "Published" && { publishDate: new Date() }),
+      ...(isDraftRejection && {
+        reviewFeedback: null,
+        reviewLink: null,
+        draftVersion: project.draftVersion + 1,
+      }),
     });
     startTransition(async () => {
       const result = await updateProjectStatusDirect(project.id, stage);
@@ -1240,7 +1274,13 @@ export default function ProjectDetailsModal({
           id: project.id,
           status: prevStatus,
           publishDate: prevPublishDate,
+          reviewFeedback: prevReviewFeedback,
+          reviewLink: prevReviewLink,
+          draftVersion: prevDraftVersion,
         });
+        if (isDraftRejection) {
+          setReviewLink(prevReviewLink || "");
+        }
         showToast(result.error, "error");
       }
     });
@@ -1768,6 +1808,16 @@ export default function ProjectDetailsModal({
                       placeholder="https://nc.studio.local/s/..."
                       className="flex-1 min-w-0 bg-transparent text-xs font-mono text-text-primary px-3 py-2.5 outline-none placeholder:text-text-disabled"
                     />
+                    {!reviewLink && (
+                      <button
+                        type="button"
+                        onClick={handleScanForDrafts}
+                        disabled={isScanningDraft}
+                        className="text-[10px] font-mono uppercase tracking-widest text-success hover:text-text-display hover:bg-hover-surface px-3 py-2.5 border-l border-border-visible transition-colors shrink-0 whitespace-nowrap disabled:cursor-wait disabled:opacity-50"
+                      >
+                        {isScanningDraft ? "[ SCANNING... ]" : `[ SCAN FOR DRAFT ${project.draftVersion} ]`}
+                      </button>
+                    )}
                     {reviewLink && (
                       <a
                         href={reviewLink}
