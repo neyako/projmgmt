@@ -26,6 +26,7 @@ import {
   scanForDraft,
 } from "@/actions/projects";
 import { getSponsorshipDeals } from "@/actions/sponsorships";
+import { getNasConfig } from "@/actions/settings";
 import { updateProjectScript } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
 import { useLocale, useT } from "@/lib/i18n/client";
@@ -36,7 +37,7 @@ import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
 import CopyBlock from "@/components/ui/CopyBlock";
-import { generateNasPaths } from "@/utils/nasPaths";
+import { generateNasPaths, type NasConfig } from "@/utils/nasPaths";
 import type { ProjectCardData, ProjectUser, ShotItem } from "@/types";
 
 function parseJsonArray(json?: string | null): string[] {
@@ -913,6 +914,7 @@ export default function ProjectDetailsModal({
   const [reviewLink, setReviewLink] = useState("");
   const [isScanningDraft, setIsScanningDraft] = useState(false);
   const [detectedOS, setDetectedOS] = useState<"mac" | "win" | "unknown">("unknown");
+  const [nasConfig, setNasConfig] = useState<NasConfig | null>(null);
 
   // Ideation metadata
   const [productLinks, setProductLinks] = useState("");
@@ -932,6 +934,11 @@ export default function ProjectDetailsModal({
       .then(setSponsorshipDeals)
       .catch((error) => {
         console.error("[ProjectDetailsModal:getSponsorshipDeals]", error);
+      });
+    getNasConfig()
+      .then(setNasConfig)
+      .catch((error) => {
+        console.error("[ProjectDetailsModal:getNasConfig]", error);
       });
   }, []);
 
@@ -1444,8 +1451,8 @@ export default function ProjectDetailsModal({
   const completedShots = allShots.filter((s) => s.isCompleted).length;
   const completionPct = allShots.length > 0 ? Math.round((completedShots / allShots.length) * 100) : 0;
   const currentFolderName = isEditing ? folderName.trim() || project.folderName || "" : "";
-  const nasPaths = isEditing && currentFolderName
-    ? generateNasPaths(currentFolderName, project.status, project.publishDate)
+  const nasPaths = isEditing && currentFolderName && nasConfig
+    ? generateNasPaths(currentFolderName, project.status, project.publishDate, nasConfig)
     : null;
   const rawPath = detectedOS === "mac" ? nasPaths?.macPath : detectedOS === "win" ? nasPaths?.winPath : "";
   const osBadge = detectedOS === "mac" ? "[  ]" : detectedOS === "win" ? "[ ⊞ ]" : "[ ? ]";

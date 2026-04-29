@@ -1,11 +1,18 @@
+export type NasConfig = {
+  nasIp: string;
+  nasShare: string;
+  nasRootDir: string;
+};
+
 export function generateNasPaths(
   folderName: string,
   status: string,
-  publishDate?: Date | string | null
+  publishDate?: Date | string | null,
+  config?: NasConfig
 ) {
-  const nasIp = process.env.NEXT_PUBLIC_NAS_IP ?? "";
-  const nasShare = process.env.NEXT_PUBLIC_NAS_SHARE ?? "";
-  const nasRootDir = process.env.NEXT_PUBLIC_NAS_ROOT_DIR ?? "";
+  const nasIp = config?.nasIp ?? process.env.NEXT_PUBLIC_NAS_IP ?? "";
+  const nasShare = config?.nasShare ?? process.env.NEXT_PUBLIC_NAS_SHARE ?? "";
+  const nasRootDir = config?.nasRootDir ?? process.env.NEXT_PUBLIC_NAS_ROOT_DIR ?? "";
 
   let subDir = "Working";
   if (status === "Published") {
