@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 // ─── TYPES ──────────────────────────────────────────────
 interface Toast {
@@ -25,6 +26,7 @@ export function useToast() {
 // ─── PROVIDER ───────────────────────────────────────────
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const t = useT();
 
   const showToast = useCallback(
     (message: string, type: Toast["type"] = "error") => {
@@ -75,10 +77,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div className="flex flex-col gap-xs flex-1">
               <span className="text-style-label text-text-secondary">
                 {toast.type === "error"
-                  ? "SYS_ERROR"
+                  ? t("toast.error")
                   : toast.type === "success"
-                    ? "SYS_OK"
-                    : "SYS_WARN"}
+                    ? t("toast.ok")
+                    : t("toast.warn")}
               </span>
               <span className="text-style-body-sm text-text-primary">
                 {toast.message}

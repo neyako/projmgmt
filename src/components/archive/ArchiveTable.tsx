@@ -6,6 +6,7 @@ import UpdateStatsModal from "@/components/modals/UpdateStatsModal";
 import { restoreProjectToPipeline } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import type { ProjectCardData } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 type ArchiveProject = ProjectCardData & {
   publishDate?: Date | string | null;
@@ -36,6 +37,7 @@ function formatDate(d?: Date | string | null) {
 
 export default function ArchiveTable({ published, scrapped }: ArchiveTableProps) {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   const [activeTab, setActiveTab] = useState<"Published" | "Scrapped">("Published");
@@ -91,7 +93,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
       setPublishedData((prev) => prev.filter((p) => p.id !== projectId));
       setScrappedData((prev) => prev.filter((p) => p.id !== projectId));
       if (selectedId === projectId) setSelectedId(null);
-      showToast("Project restored to Ideation.", "success");
+      showToast(t("archive.restored"), "success");
     });
   }
 
@@ -100,7 +102,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
       <div className="h-full w-full overflow-auto p-lg">
         <div className="mb-6">
           <h1 className="ui-page-kicker mb-1">
-            Archive
+            {t("archive.title")}
           </h1>
           <div className="flex gap-3 md:gap-6 border-b border-border-visible pb-2 overflow-x-auto">
             <button
@@ -109,7 +111,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                 activeTab === "Published" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
               }`}
             >
-              [ PUBLISHED ]
+              {t("archive.published")}
             </button>
             <button
               onClick={() => setActiveTab("Scrapped")}
@@ -117,18 +119,18 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                 activeTab === "Scrapped" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
               }`}
             >
-              [ SCRAPPED ]
+              {t("archive.scrapped")}
             </button>
           </div>
           <div className="ui-page-meta mt-2">
-            {activeData.length} {activeData.length === 1 ? "project" : "projects"}
+            {activeData.length} {activeData.length === 1 ? t("archive.project") : t("archive.projects")}
           </div>
         </div>
 
         {activeData.length === 0 ? (
           <div className="ui-panel p-12 text-center">
             <div className="ui-page-kicker">
-              No {activeTab} Projects Found
+              {t("archive.noFoundFor", { tab: t(`archive.tab${activeTab}`) })}
             </div>
           </div>
         ) : (
@@ -166,26 +168,26 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                       <span className="inline-flex items-center gap-2 shrink-0">
                         <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
                         <span className="uppercase tracking-widest text-[10px] text-text-secondary">
-                          {project.status}
+                          {t(`stageDisplay.${project.status}`)}
                         </span>
                       </span>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3 border-t border-border-visible pt-3">
                       <div>
-                        <div className="ui-page-kicker">Views</div>
+                        <div className="ui-page-kicker">{t("archive.views")}</div>
                         <div className="text-sm font-mono text-text-display">
                           {totalViews.toLocaleString()}
                         </div>
                       </div>
                       <div>
-                        <div className="ui-page-kicker">Likes</div>
+                        <div className="ui-page-kicker">{t("archive.likes")}</div>
                         <div className="text-sm font-mono text-text-display">
                           {totalLikes.toLocaleString()}
                         </div>
                       </div>
                       <div>
-                        <div className="ui-page-kicker">Comments</div>
+                        <div className="ui-page-kicker">{t("archive.comments")}</div>
                         <div className="text-sm font-mono text-text-display">
                           {totalComments.toLocaleString()}
                         </div>
@@ -202,7 +204,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                           disabled={isPending}
                           className="ui-button-outline px-3 py-2 disabled:opacity-50"
                         >
-                          [ UPDATE STATS ]
+                          {t("archive.updateStats")}
                         </button>
                       )}
                       <button
@@ -213,7 +215,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                         disabled={isPending}
                         className="ui-button-outline px-3 py-2 disabled:opacity-50"
                       >
-                        RESTORE TO PIPELINE
+                        {t("archive.restore")}
                       </button>
                     </div>
                   </div>
@@ -225,25 +227,25 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
               <thead>
                 <tr>
                   <th className="ui-table-head p-4">
-                    Video Title
+                    {t("archive.videoTitle")}
                   </th>
                   <th className="ui-table-head p-4">
-                    Status
+                    {t("archive.status")}
                   </th>
                   <th className="ui-table-head p-4">
-                    {activeTab === "Published" ? "Publish Date" : "Last Updated"}
+                    {activeTab === "Published" ? t("archive.publishDate") : t("archive.lastUpdated")}
                   </th>
                   <th className="ui-table-head p-4 text-right">
-                    Views
+                    {t("archive.views")}
                   </th>
                   <th className="ui-table-head p-4 text-right">
-                    Likes
+                    {t("archive.likes")}
                   </th>
                   <th className="ui-table-head p-4 text-right">
-                    Comments
+                    {t("archive.comments")}
                   </th>
                   <th className="ui-table-head p-4 text-right">
-                    Action
+                    {t("archive.action")}
                   </th>
                 </tr>
               </thead>
@@ -273,7 +275,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                         <span className="inline-flex items-center gap-2">
                           <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
                           <span className="uppercase tracking-widest text-[10px]">
-                            {project.status}
+                            {t(`stageDisplay.${project.status}`)}
                           </span>
                         </span>
                       </td>
@@ -300,7 +302,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                               disabled={isPending}
                               className="ui-button-outline px-3 py-1 disabled:opacity-50"
                             >
-                              [ UPDATE STATS ]
+                              {t("archive.updateStats")}
                             </button>
                           )}
                           <button
@@ -311,7 +313,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                             disabled={isPending}
                             className="ui-button-outline px-3 py-1 disabled:opacity-50"
                           >
-                            Restore to Pipeline
+                            {t("archive.restoreShort")}
                           </button>
                         </div>
                       </td>

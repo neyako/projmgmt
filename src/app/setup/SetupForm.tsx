@@ -3,9 +3,11 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { initializeStudio } from "./actions";
+import { useT } from "@/lib/i18n/client";
 
 export default function SetupForm() {
   const router = useRouter();
+  const t = useT();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -36,10 +38,10 @@ export default function SetupForm() {
       <main className="w-full max-w-[28rem] border border-border-visible bg-surface p-2xl flex flex-col gap-2xl">
         <header className="flex flex-col gap-md border-b border-border-visible pb-lg">
           <h1 className="text-style-label text-text-display tracking-widest">
-            [ PROJMGMT // INITIALIZATION_PROTOCOL ]
+            {t("setup.header")}
           </h1>
           <p className="text-style-caption text-text-secondary leading-relaxed">
-            No active users detected. Initialize root administrator account.
+            {t("setup.subheader")}
           </p>
         </header>
 
@@ -49,13 +51,13 @@ export default function SetupForm() {
               htmlFor="workspaceName"
               className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
             >
-              WORKSPACE_ID
+              {t("setup.workspaceId")}
             </label>
             <input
               id="workspaceName"
               name="workspaceName"
               type="text"
-              placeholder="LOCAL_STUDIO"
+              placeholder={t("setup.workspaceIdPlaceholder")}
               autoComplete="off"
               required
               className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
@@ -67,13 +69,13 @@ export default function SetupForm() {
               htmlFor="username"
               className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
             >
-              ADMIN_USERNAME
+              {t("setup.adminUsername")}
             </label>
             <input
               id="username"
               name="username"
               type="text"
-              placeholder="root"
+              placeholder={t("setup.adminUsernamePlaceholder")}
               autoComplete="username"
               required
               className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
@@ -85,13 +87,13 @@ export default function SetupForm() {
               htmlFor="displayName"
               className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
             >
-              DISPLAY_NAME
+              {t("setup.displayName")}
             </label>
             <input
               id="displayName"
               name="displayName"
               type="text"
-              placeholder="Operator"
+              placeholder={t("setup.displayNamePlaceholder")}
               autoComplete="name"
               required
               className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
@@ -103,13 +105,13 @@ export default function SetupForm() {
               htmlFor="password"
               className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
             >
-              ACCESS_KEY
+              {t("setup.accessKey")}
             </label>
             <input
               id="password"
               name="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t("setup.passwordPlaceholder")}
               autoComplete="new-password"
               minLength={8}
               required
@@ -122,13 +124,13 @@ export default function SetupForm() {
               htmlFor="confirmPassword"
               className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
             >
-              CONFIRM_ACCESS_KEY
+              {t("setup.confirmAccessKey")}
             </label>
             <input
               id="confirmPassword"
               name="confirmPassword"
               type="password"
-              placeholder="••••••••"
+              placeholder={t("setup.passwordPlaceholder")}
               autoComplete="new-password"
               minLength={8}
               required
@@ -146,7 +148,7 @@ export default function SetupForm() {
               disabled={isSubmitting}
               className="bg-text-display text-text-inverse text-style-label tracking-widest px-xl py-md min-w-[240px] hover:opacity-80 transition-opacity active:scale-95 duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "[ INITIALIZING... ]" : "[ INITIALIZE WORKSPACE ]"}
+              {isSubmitting ? t("setup.initializing") : t("setup.initialize")}
             </button>
           </div>
         </form>

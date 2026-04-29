@@ -19,6 +19,7 @@ import { updateProjectStatus } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import type { ProjectCardData, ShotItem } from "@/types";
 import type { KanbanStage } from "@/lib/constants";
+import { useT } from "@/lib/i18n/client";
 
 function parseShotItems(json?: string): ShotItem[] {
   try {
@@ -40,6 +41,7 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const { showToast } = useToast();
+  const t = useT();
 
   // Keep a snapshot to revert on failed moves
   const [snapshot, setSnapshot] = useState<ProjectCardData[]>(projects);
@@ -78,7 +80,13 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
     const to = targetStatus as KanbanStage;
 
     if (!VALID_TRANSITIONS[from]?.includes(to)) {
-      return { ok: false, error: `Cannot move from ${from} to ${to}.` };
+      return {
+        ok: false,
+        error: t("kanban.cannotMove", {
+          from: t(`stageDisplay.${from}`),
+          to: t(`stageDisplay.${to}`),
+        }),
+      };
     }
 
     if (from === "Filming" && to === "Editing") {
@@ -87,16 +95,13 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
       const aReady = aShots.length > 0 && aShots.every((s) => s.isCompleted);
       const bReady = bShots.length > 0 && bShots.every((s) => s.isCompleted);
       if (!aReady || !bReady) {
-        return {
-          ok: false,
-          error: "All A-Roll and B-Roll shots must be completed before moving to Editing.",
-        };
+        return { ok: false, error: t("kanban.shotsRequired") };
       }
     }
 
     if (from === "Editing" && to === "Review") {
       if (!project.reviewLink) {
-        return { ok: false, error: "A Nextcloud Review Link is required before Review." };
+        return { ok: false, error: t("kanban.reviewLinkRequired") };
       }
     }
 
@@ -210,7 +215,10 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
           showToast(result.error, "error");
         } else {
           showToast(
-            `Moved "${draggedProject.title}" to ${draggedProject.status}.`,
+            t("kanban.movedToast", {
+              title: draggedProject.title,
+              stage: t(`stageDisplay.${draggedProject.status}`),
+            }),
             "success"
           );
         }
@@ -250,7 +258,7 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
           <KanbanColumn
             key={stage}
             id={stage}
-            title={stage.toUpperCase()}
+            title={t(`stage.${stage}`)}
             count={columns[stage]?.length ?? 0}
             isFilming={stage === "Filming"}
             onAddClick={onNewProjectClick}

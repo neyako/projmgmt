@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { LogOut, Menu, Moon, Settings, Sun, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
+import { useT } from "@/lib/i18n/client";
 
 const memberHiddenRoutes = new Set(["/analytics", "/sponsorships", "/team"]);
 
@@ -27,6 +28,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const visibleNavItems = getVisibleNavItems(session?.user?.role);
   const isDarkMode = theme === "dark";
+  const t = useT();
 
   useEffect(() => {
     setIsOpen(false);
@@ -60,7 +62,7 @@ export default function Sidebar() {
       <nav className="hidden md:flex flex-col gap-2 p-3 lg:p-4 h-full fixed left-0 top-0 w-56 lg:w-64 border-r border-border bg-background z-50">
         <div className="mb-lg lg:mb-xl px-2 lg:px-3">
           <h1 className="font-[family-name:var(--font-label)] text-[32px] lg:text-[44px] font-black text-text-display tracking-tight leading-none">
-            projmgmt
+            {t("nav.appName")}
           </h1>
         </div>
 
@@ -86,7 +88,7 @@ export default function Sidebar() {
                 >
                   {item.icon}
                 </span>
-                {item.label}
+                {t(item.i18nKey)}
               </Link>
             );
           })}
@@ -95,14 +97,14 @@ export default function Sidebar() {
 
       <header className="flex md:hidden fixed top-0 inset-x-0 h-14 z-[90] items-center justify-between border-b border-border bg-background px-4 pointer-events-auto">
         <h1 className="font-[family-name:var(--font-label)] text-base font-bold text-text-display tracking-widest uppercase">
-          projmgmt
+          {t("nav.appName")}
         </h1>
         <button
           type="button"
           onClick={() => setIsOpen(true)}
           onPointerDown={() => setIsOpen(true)}
           className="w-11 h-10 border border-border-visible bg-background text-text-display flex items-center justify-center touch-manipulation"
-          aria-label="Open navigation menu"
+          aria-label={t("nav.openMenu")}
           aria-expanded={isOpen}
         >
           <Menu className="w-5 h-5" />
@@ -113,14 +115,14 @@ export default function Sidebar() {
         <div className="fixed inset-0 z-[90] md:hidden bg-background flex flex-col">
           <div className="flex items-center justify-between h-14 shrink-0 border-b border-border-visible px-4">
             <span className="text-style-label text-text-display tracking-widest">
-              [ MENU ]
+              {t("nav.menu")}
             </span>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
               onPointerDown={() => setIsOpen(false)}
               className="w-11 h-10 border border-border-visible bg-background text-text-display flex items-center justify-center touch-manipulation"
-              aria-label="Close navigation menu"
+              aria-label={t("nav.closeMenu")}
             >
               <X className="w-5 h-5" />
             </button>
@@ -149,7 +151,7 @@ export default function Sidebar() {
                     >
                       {item.icon}
                     </span>
-                    {item.label}
+                    {t(item.i18nKey)}
                   </Link>
                 );
               })}
@@ -162,7 +164,7 @@ export default function Sidebar() {
               onClick={handleNewProjectClick}
               className="ui-button-primary px-4 py-3 min-h-[44px] text-left"
             >
-              + NEW PROJECT
+              {t("nav.newProject")}
             </button>
             <button
               type="button"
@@ -175,16 +177,16 @@ export default function Sidebar() {
                 ) : (
                   <Sun className="w-4 h-4" />
                 )}
-                <span>{isDarkMode ? "DARK MODE" : "LIGHT MODE"}</span>
+                <span>{isDarkMode ? t("nav.darkMode") : t("nav.lightMode")}</span>
               </span>
-              <span>[ {isDarkMode ? "LIGHT" : "DARK"} ]</span>
+              <span>{isDarkMode ? t("nav.lightTag") : t("nav.darkTag")}</span>
             </button>
             <Link
               href="/settings"
               className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center gap-3"
             >
               <Settings className="w-4 h-4" />
-              <span>SETTINGS</span>
+              <span>{t("nav.settings")}</span>
             </Link>
             <button
               type="button"
@@ -192,7 +194,7 @@ export default function Sidebar() {
               className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center gap-3"
             >
               <LogOut className="w-4 h-4" />
-              <span>LOG OUT</span>
+              <span>{t("nav.logout")}</span>
             </button>
           </div>
         </div>

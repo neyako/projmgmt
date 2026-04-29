@@ -7,35 +7,48 @@ import {
   syncTikTokStats,
 } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n/client";
 
 type Platform = "youtube" | "meta" | "tiktok";
 
-const CONFIG: Record<
-  Platform,
-  { label: string; syncing: string; action: () => Promise<
+interface SyncConfig {
+  labelKey: string;
+  syncingKey: string;
+  noIdKey: string;
+  label: string;
+  action: () => Promise<
     | { success: true; data: { updated: number; total: number } }
     | { success: false; error: string }
-  > }
-> = {
+  >;
+}
+
+const CONFIG: Record<Platform, SyncConfig> = {
   youtube: {
-    label: "[ SYNC YOUTUBE ]",
-    syncing: "[ SYNCING YT... ]",
+    labelKey: "analytics.syncYoutube",
+    syncingKey: "analytics.syncingYt",
+    noIdKey: "analytics.noYtId",
+    label: "YOUTUBE",
     action: syncYouTubeStats,
   },
   meta: {
-    label: "[ SYNC FACEBOOK ]",
-    syncing: "[ SYNCING FB... ]",
+    labelKey: "analytics.syncFacebook",
+    syncingKey: "analytics.syncingFb",
+    noIdKey: "analytics.noFbId",
+    label: "FACEBOOK",
     action: syncMetaStats,
   },
   tiktok: {
-    label: "[ SYNC TIKTOK ]",
-    syncing: "[ SYNCING TT... ]",
+    labelKey: "analytics.syncTiktok",
+    syncingKey: "analytics.syncingTt",
+    noIdKey: "analytics.noTtId",
+    label: "TIKTOK",
     action: syncTikTokStats,
   },
 };
 
 export default function SyncButton({ platform }: { platform: Platform }) {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const cfg = CONFIG[platform];
 
@@ -48,16 +61,17 @@ export default function SyncButton({ platform }: { platform: Platform }) {
       }
       const { updated, total } = result.data;
       if (total === 0) {
-        const label =
-          platform === "meta" ? "FACEBOOK" : platform.toUpperCase();
-        showToast(`No published projects have a ${label} ID.`, "error");
+        showToast(t(cfg.noIdKey), "error");
         return;
       }
-      const label =
-        platform === "meta" ? "FACEBOOK" : platform.toUpperCase();
       showToast(
-        `Synced ${updated}/${total} ${label} video${total === 1 ? "" : "s"}.`,
-        "success"
+        t("analytics.syncedToast", {
+          updated,
+          total,
+          label: cfg.label,
+          plural: total === 1 ? "" : "s",
+        }),
+        "success",
       );
     });
   }
@@ -69,7 +83,7 @@ export default function SyncButton({ platform }: { platform: Platform }) {
       disabled={isPending}
       className="ui-button-outline px-3 py-1 disabled:opacity-50 disabled:cursor-wait"
     >
-      {isPending ? cfg.syncing : cfg.label}
+      {isPending ? t(cfg.syncingKey) : t(cfg.labelKey)}
     </button>
   );
 }

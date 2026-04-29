@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 export type DayPoint = {
   date: string; // YYYY-MM-DD
@@ -11,11 +12,11 @@ export type DayPoint = {
 
 type Range = "30d" | "90d" | "1y" | "lifetime";
 
-const RANGES: { key: Range; label: string; days: number | null }[] = [
-  { key: "30d", label: "30D", days: 30 },
-  { key: "90d", label: "90D", days: 90 },
-  { key: "1y", label: "1Y", days: 365 },
-  { key: "lifetime", label: "LIFETIME", days: null },
+const RANGES: { key: Range; labelKey: string; days: number | null }[] = [
+  { key: "30d", labelKey: "analytics.ranges.30d", days: 30 },
+  { key: "90d", labelKey: "analytics.ranges.90d", days: 90 },
+  { key: "1y", labelKey: "analytics.ranges.1y", days: 365 },
+  { key: "lifetime", labelKey: "analytics.ranges.lifetime", days: null },
 ];
 
 const PLATFORM_META = [
@@ -40,6 +41,7 @@ function formatDateLabel(iso: string) {
 type PlatKey = "youtube" | "meta" | "tiktok";
 
 export default function PerformanceChart({ points }: { points: DayPoint[] }) {
+  const t = useT();
   const [range, setRange] = useState<Range>("90d");
   const [hover, setHover] = useState<number | null>(null);
   const [visible, setVisible] = useState<Set<PlatKey>>(
@@ -126,7 +128,7 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
   return (
     <div className="ui-panel p-4 md:p-5 lg:p-6">
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <span className="ui-page-kicker">Cross-Platform Views</span>
+        <span className="ui-page-kicker">{t("analytics.crossPlatform")}</span>
         <div className="flex gap-1">
           {RANGES.map((r) => (
             <button
@@ -139,7 +141,7 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
                   : "border-border-visible text-text-secondary hover:text-text-display"
               }`}
             >
-              {r.label}
+              {t(r.labelKey)}
             </button>
           ))}
         </div>
@@ -158,7 +160,7 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
                   ? "border-text-display text-text-display"
                   : "border-border-visible text-text-disabled hover:text-text-secondary"
               }`}
-              title={on ? `Hide ${m.label}` : `Show ${m.label}`}
+              title={on ? t("analytics.hide", { label: m.label }) : t("analytics.show", { label: m.label })}
             >
               <span
                 className="inline-block w-2 h-2"
@@ -172,7 +174,7 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
 
       {filtered.length === 0 ? (
         <div className="py-12 text-center ui-page-kicker">
-          No snapshots yet — sync to start tracking.
+          {t("analytics.noSnapshots")}
         </div>
       ) : (
         <>

@@ -3,9 +3,11 @@
 import { useState, useTransition } from "react";
 import { changePassword } from "@/actions/auth";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n/client";
 
 export default function ChangePasswordForm() {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -15,12 +17,12 @@ export default function ChangePasswordForm() {
     event.preventDefault();
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      showToast("All password fields are required.", "error");
+      showToast(t("settings.passwordsRequired"), "error");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showToast("New passwords do not match.", "error");
+      showToast(t("settings.passwordsMismatch"), "error");
       return;
     }
 
@@ -35,7 +37,7 @@ export default function ChangePasswordForm() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      showToast("Password updated.", "success");
+      showToast(t("settings.passwordUpdated"), "success");
     });
   }
 
@@ -43,7 +45,7 @@ export default function ChangePasswordForm() {
     <form id="change-password-form" onSubmit={handleSubmit} className="flex flex-col gap-6 w-full">
       <div className="flex flex-col gap-2">
         <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-          CURRENT PASSWORD
+          {t("settings.currentPassword")}
         </label>
         <input
           type="password"
@@ -56,7 +58,7 @@ export default function ChangePasswordForm() {
 
       <div className="flex flex-col gap-2">
         <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-          NEW PASSWORD
+          {t("settings.newPassword")}
         </label>
         <input
           type="password"
@@ -69,7 +71,7 @@ export default function ChangePasswordForm() {
 
       <div className="flex flex-col gap-2">
         <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-          CONFIRM NEW PASSWORD
+          {t("settings.confirmNewPassword")}
         </label>
         <input
           type="password"

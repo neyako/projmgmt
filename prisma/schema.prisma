@@ -18,6 +18,7 @@ model User {
   role             String   @default("MEMBER") // ADMIN | MANAGER | MEMBER
   twoFactorEnabled Boolean  @default(false)
   twoFactorSecret  String?
+  language         String   @default("en") // "en" | "vi"
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

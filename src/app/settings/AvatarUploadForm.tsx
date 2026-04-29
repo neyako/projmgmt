@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { uploadAvatar } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n/client";
 
 interface AvatarUploadFormProps {
   avatarUrl: string | null;
@@ -16,6 +17,7 @@ export default function AvatarUploadForm({ avatarUrl }: AvatarUploadFormProps) {
   const router = useRouter();
   const { update } = useSession();
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -39,7 +41,7 @@ export default function AvatarUploadForm({ avatarUrl }: AvatarUploadFormProps) {
 
       await update();
       router.refresh();
-      showToast("Avatar uploaded.", "success");
+      showToast(t("settings.avatarUploaded"), "success");
     });
   }
 
@@ -49,7 +51,7 @@ export default function AvatarUploadForm({ avatarUrl }: AvatarUploadFormProps) {
         {avatarUrl ? (
           <Image
             src={avatarUrl}
-            alt="User avatar"
+            alt={t("nav.userAvatar")}
             width={80}
             height={80}
             className="w-20 h-20 object-cover"
@@ -65,10 +67,10 @@ export default function AvatarUploadForm({ avatarUrl }: AvatarUploadFormProps) {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-            USER AVATAR
+            {t("settings.userAvatar")}
           </span>
           <span className="text-xs font-mono text-text-primary">
-            LOCAL FILE / PUBLIC AVATARS
+            {t("settings.uploadHint")}
           </span>
         </div>
 
@@ -86,7 +88,7 @@ export default function AvatarUploadForm({ avatarUrl }: AvatarUploadFormProps) {
           disabled={isPending}
           className="border border-border-visible text-text-display text-[10px] font-mono uppercase tracking-widest px-4 py-2 hover:bg-surface-raised transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? "[ UPLOADING ]" : "[ UPLOAD AVATAR ]"}
+          {isPending ? t("settings.uploading") : t("settings.uploadAvatar")}
         </button>
       </div>
     </div>

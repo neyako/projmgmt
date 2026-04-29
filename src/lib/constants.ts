@@ -60,12 +60,13 @@ export const VALID_TRANSITIONS: Record<KanbanStage, KanbanStage[]> = {
 };
 
 // ─── NAV ITEMS ──────────────────────────────────────────
+// `i18nKey` resolves via dictionary at render time. `label` is the English fallback.
 export const NAV_ITEMS = [
-  { label: "PIPELINE", icon: "view_kanban", href: "/pipeline" },
-  { label: "ARCHIVE", icon: "inventory_2", href: "/archive" },
-  { label: "ANALYTICS", icon: "insert_chart", href: "/analytics" },
-  { label: "SPONSORSHIPS", icon: "handshake", href: "/sponsorships" },
-  { label: "TEAM", icon: "group", href: "/team" },
+  { i18nKey: "nav.pipeline", label: "PIPELINE", icon: "view_kanban", href: "/pipeline" },
+  { i18nKey: "nav.archive", label: "ARCHIVE", icon: "inventory_2", href: "/archive" },
+  { i18nKey: "nav.analytics", label: "ANALYTICS", icon: "insert_chart", href: "/analytics" },
+  { i18nKey: "nav.sponsorships", label: "SPONSORSHIPS", icon: "handshake", href: "/sponsorships" },
+  { i18nKey: "nav.team", label: "TEAM", icon: "group", href: "/team" },
 ] as const;
 
 export const NAV_FOOTER_ITEMS = [] as const;

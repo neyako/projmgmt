@@ -77,11 +77,13 @@
   --radius-full: 9999px;
 
   /* Typography - Font Families */
-  --font-display: "Doto", "Space Mono", monospace;
+  --font-display: "Doto", "JetBrains Mono", monospace;
   --font-heading: "Space Grotesk", "DM Sans", system-ui, sans-serif;
   --font-body: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  --font-label: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
-  --font-caption: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+  --font-label: "JetBrains Mono", "SF Mono", "Space Mono", monospace;
+  --font-caption: "JetBrains Mono", "SF Mono", "Space Mono", monospace;
+  --font-mono: "JetBrains Mono", "SF Mono", "Space Mono", ui-monospace, monospace;
+  --font-sans: "Space Grotesk", "DM Sans", system-ui, sans-serif;
 
   /* Typography - Font Sizes */
   --text-display-xl: 72px;
