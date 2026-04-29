@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { initializeStudio } from "./actions";
 import { useT } from "@/lib/i18n/client";
+import { Wordmark } from "@/components/brand/Logo";
 
 export default function SetupForm() {
   const router = useRouter();
@@ -37,9 +38,10 @@ export default function SetupForm() {
     <div className="bg-background text-text-primary min-h-screen flex flex-col items-center justify-center overflow-hidden p-lg">
       <main className="w-full max-w-[28rem] border border-border-visible bg-surface p-2xl flex flex-col gap-2xl">
         <header className="flex flex-col gap-md border-b border-border-visible pb-lg">
-          <h1 className="text-style-label text-text-display tracking-widest">
+          <Wordmark size="md" weight={900} cursorBlink />
+          <h2 className="text-style-label text-text-display tracking-widest">
             {t("setup.header")}
-          </h1>
+          </h2>
           <p className="text-style-caption text-text-secondary leading-relaxed">
             {t("setup.subheader")}
           </p>

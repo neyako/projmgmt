@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="projmgmt">
+  <rect width="180" height="180" fill="#0a0a0a"/>
+  <rect x="14" y="14" width="152" height="152" fill="none" stroke="#333333" stroke-width="1"/>
+  <g fill="none" stroke="#222222" stroke-width="1">
+    <path d="M14 24 L24 24 L24 14"/>
+    <path d="M156 14 L156 24 L166 24"/>
+    <path d="M14 156 L24 156 L24 166"/>
+    <path d="M156 166 L156 156 L166 156"/>
+  </g>
+  <text
+    x="90"
+    y="118"
+    text-anchor="middle"
+    font-family="'Space Mono', 'JetBrains Mono', ui-monospace, monospace"
+    font-weight="700"
+    font-size="92"
+    letter-spacing="-0.04em"
+  >
+    <tspan fill="#ffffff">p</tspan><tspan fill="#D71921">_</tspan>
+  </text>
+  <text
+    x="90"
+    y="158"
+    text-anchor="middle"
+    font-family="'Space Mono', 'JetBrains Mono', ui-monospace, monospace"
+    font-weight="700"
+    font-size="9"
+    letter-spacing="0.18em"
+    fill="#666666"
+  >PROJMGMT</text>
+</svg>

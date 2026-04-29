@@ -6,6 +6,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "projmgmt",
   description: "projmgmt — self-hosted production management",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
+      { url: "/icon-light.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" },
+    ],
+    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
+    shortcut: ["/icon.svg"],
+  },
 };
 
 export default async function RootLayout({
@@ -25,7 +33,7 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Doto:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&display=swap&subset=latin,latin-ext,vietnamese"
+          href="https://fonts.googleapis.com/css2?family=Doto:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400;1,700&display=swap&subset=latin,latin-ext,vietnamese"
           rel="stylesheet"
         />
         {/* Material Symbols Outlined */}

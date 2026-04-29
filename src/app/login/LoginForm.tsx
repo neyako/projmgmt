@@ -7,6 +7,7 @@ import { useT, useLocale } from "@/lib/i18n/client";
 import { setLocale } from "@/lib/i18n/actions";
 import { LOCALES, type Locale } from "@/lib/i18n/locales";
 import { cn } from "@/lib/utils";
+import { Wordmark } from "@/components/brand/Logo";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function LoginForm() {
     <div className="bg-background text-text-primary min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <main className="w-full max-w-[24rem] px-lg flex flex-col items-center gap-4xl">
         <header className="text-center flex flex-col items-center gap-xs">
-          <h1 className="text-style-display-xl text-text-display tracking-tighter">{t("nav.appName")}</h1>
+          <Wordmark as="h1" size="xl" weight={700} cursorBlink />
           <div className="flex items-center gap-sm opacity-50">
             <span className="block w-md h-2xs bg-border-visible" />
             <span className="text-style-label text-text-secondary tracking-widest">{t("login.header")}</span>

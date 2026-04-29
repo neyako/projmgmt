@@ -9,6 +9,7 @@ import { LogOut, Menu, Moon, Settings, Sun, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import { useT } from "@/lib/i18n/client";
+import { Wordmark } from "@/components/brand/Logo";
 
 const memberHiddenRoutes = new Set(["/analytics", "/sponsorships", "/team"]);
 
@@ -61,9 +62,13 @@ export default function Sidebar() {
     <>
       <nav className="hidden md:flex flex-col gap-2 p-3 lg:p-4 h-full fixed left-0 top-0 w-56 lg:w-64 border-r border-border bg-background z-50">
         <div className="mb-lg lg:mb-xl px-2 lg:px-3">
-          <h1 className="font-[family-name:var(--font-label)] text-[32px] lg:text-[44px] font-black text-text-display tracking-tight leading-none">
-            {t("nav.appName")}
-          </h1>
+          <Wordmark
+            as="h1"
+            weight={900}
+            size="md"
+            cursorBlink
+            className="lg:text-[32px]"
+          />
         </div>
 
         <div className="flex-1 flex flex-col gap-sm">
@@ -96,9 +101,7 @@ export default function Sidebar() {
       </nav>
 
       <header className="flex md:hidden fixed top-0 inset-x-0 h-14 z-[90] items-center justify-between border-b border-border bg-background px-4 pointer-events-auto">
-        <h1 className="font-[family-name:var(--font-label)] text-base font-bold text-text-display tracking-widest uppercase">
-          {t("nav.appName")}
-        </h1>
+        <Wordmark as="h1" size="sm" weight={700} cursorBlink />
         <button
           type="button"
           onClick={() => setIsOpen(true)}
