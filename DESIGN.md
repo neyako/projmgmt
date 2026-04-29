@@ -217,6 +217,12 @@ Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves
 - **Form Inputs**: minimalist. No bounding boxes. `border-b border-border-visible bg-transparent`. Text `text-text-display` in `text-style-caption`. Label sits above and shifts to `text-text-display` on focus via `group-focus-within`.
 - **Buttons**: pill (`rounded-full`), `min-w-[160px]`, `bg-text-display text-text-inverse`. The login screen is the **only** place pill primary buttons are used.
 
+### C.1 First-Run Setup
+- `/setup` appears only while `prisma.user.count() === 0`; `/` and `/login` redirect there in an uninitialized database.
+- Shell: centered `max-w-[28rem]`, sharp `border border-border-visible bg-surface p-2xl`, and the shared `Wordmark` header.
+- Inputs mirror auth: transparent underlines, `.text-style-label` labels, `.text-style-caption` input text, `focus:border-text-display`.
+- Submit action is sharp high-contrast (`bg-text-display text-text-inverse`) and labeled with terminal command copy. Error copy must use `text-error` or another semantic token, never raw palette classes.
+
 ### D. Dashboards, Tables & List Pages
 
 **Page Container**
@@ -231,7 +237,7 @@ Prefer the semantic class set ([globals.css:426-454](src/app/globals.css:426)) o
 
 **Status Cells**: inline link `font-label text-text-secondary` with leading `w-1.5 h-1.5 rounded-full` token-colored dot (`StatusDot`).
 
-**Tab Filters**: huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive `text-gray-600` (consider migrating to `text-text-disabled`); active `text-text-display` wrapped `[ ACTIVE ]`. Header actions (e.g. `NEW SPONSORSHIP`) align right in the bottom-bordered tab row.
+**Tab Filters**: huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive `text-text-disabled` with `hover:text-text-secondary`; active `text-text-display`. Header actions (e.g. `NEW SPONSORSHIP`) align right in the bottom-bordered tab row.
 
 **Sponsorship Deal Rows**: table and mobile cards include a compact linked project count. Render the count as plain mono data, not a badge; the row is still primarily about brand, status, contact, due date, and deal value. Deal value renders in the current user's preferred currency, with the source amount underneath when it differs. The header metadata includes preferred currency, last rate refresh, a discreet provider attribution link, and any missing-rate warning in `text-warning`.
 
@@ -242,7 +248,7 @@ Prefer the semantic class set ([globals.css:426-454](src/app/globals.css:426)) o
 ### E. Settings
 - **Layout**: `max-w-[48rem]` centered. Categories separated by `border-t border-border-visible pt-8`.
 - **Inputs**: transparent under-bordered `border-0 border-b border-border-visible`.
-- **Avatar Upload Form** ([AvatarUploadForm.tsx](src/app/settings/AvatarUploadForm.tsx)): preview chip is `w-20 h-20 border border-border-visible bg-surface` (sharp). Action button uses bracket notation `[ UPLOAD AVATAR ]`. Files land in `/public/uploads/avatars/*`; the directory is git-tracked via `.gitkeep` and uploads are gitignored.
+- **Avatar Upload Form** ([AvatarUploadForm.tsx](src/app/settings/AvatarUploadForm.tsx)): preview chip is `w-20 h-20 border border-border-visible bg-surface` (sharp). Action button uses bracket notation `[ UPLOAD AVATAR ]`. Files land in `public/avatars/*`, are served through `/api/avatars/[filename]`, and Docker persists them through the `projmgmt-avatars` volume.
 - **Currency Preference Form** ([CurrencyPreferenceForm.tsx](src/app/settings/CurrencyPreferenceForm.tsx)): lives under Preferences beside Language. Use `.ui-select`, mono uppercase labels, and save-on-select behavior with toast feedback.
 - **Save Action**: bottom-anchored, right-aligned, sharp `bg-text-display text-text-inverse` (or `Button variant="primary"`).
 

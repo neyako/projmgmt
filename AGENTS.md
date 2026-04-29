@@ -8,7 +8,7 @@ This file is the operating manual for AI assistants working in this repository. 
 
 Do not attempt to "normalize" or "refactor" the UI to standard web defaults. The terminal aesthetic is mandatory. Do not introduce generic corporate UI patterns, rounded borders, decorative gradients, or raw Tailwind palette colors such as `red-500`, `green-400`, or `emerald-500`. Everything visual must route through `DESIGN.md`, `src/app/globals.css`, and the semantic Tailwind theme tokens.
 
-This is a dark, high-contrast, terminal-inspired production dashboard. Preserve that identity even when fixing small bugs.
+This is a high-contrast, terminal-inspired production dashboard with dark as the default and token-driven light-mode parity. Preserve that identity even when fixing small bugs.
 
 ## 2. Project Snapshot
 
@@ -38,7 +38,7 @@ This is a dark, high-contrast, terminal-inspired production dashboard. Preserve 
 - `prisma/seed.ts` - Local seed script. It deletes existing users, projects, shotlist items, and analytics before seeding.
 - `DESIGN.md` - Source of truth for visual design.
 - `README.md` - Product overview and local setup.
-- `CLAUDE.md` - General LLM caution guidelines. Follow it where it does not conflict with this file.
+- No tracked `CLAUDE.md` is currently present. Treat this file and `DESIGN.md` as the contributor and AI-assistant source of truth.
 
 ## 4. Development Commands
 
@@ -70,9 +70,12 @@ Do not read or expose secret values from `.env` unless explicitly asked. When ad
 Known variables used by the codebase:
 
 - `DATABASE_URL` - Prisma SQLite connection.
-- `NEXT_PUBLIC_NAS_IP` - NAS host used for generated SMB paths.
-- `NEXT_PUBLIC_NAS_SHARE` - NAS share name.
-- `NEXT_PUBLIC_NAS_ROOT_DIR` - NAS root directory.
+- `NEXTAUTH_URL` - canonical app URL used by NextAuth.
+- `NEXTAUTH_SECRET` - required NextAuth signing secret.
+- `NEXT_PUBLIC_NAS_IP` - public/build-time NAS host fallback used for generated SMB paths.
+- `NEXT_PUBLIC_NAS_SHARE` - public/build-time NAS share fallback.
+- `NEXT_PUBLIC_NAS_ROOT_DIR` - public/build-time NAS root directory fallback.
+- `NAS_IP`, `NAS_SHARE`, `NAS_ROOT_DIR` - runtime NAS aliases preferred by server-generated path display, especially in Docker/self-hosted deployments where rebuilding should not be required for path changes.
 - `YOUTUBE_API_KEY` - YouTube stats sync.
 - `META_ACCESS_TOKEN` - Meta stats sync.
 - `TIKTOK_RAPIDAPI_HOST` - TikTok stats sync host.
@@ -100,7 +103,8 @@ Currency rates use the no-key ExchangeRate-API Open Access endpoint (`https://op
 
 Main routes:
 
-- `/` redirects to `/pipeline`.
+- `/` redirects to `/setup` while the database has no users, otherwise to `/pipeline`.
+- `/setup` creates the first `ADMIN` user and redirects to `/login` once any user exists.
 - `/pipeline` shows non-archived projects on the Kanban board.
 - `/archive` shows `Published` and `Scrapped` projects.
 - `/analytics` shows platform-specific analytics totals for published projects.
@@ -112,7 +116,7 @@ Main routes:
 Auth and RBAC:
 
 - Roles are `ADMIN`, `MANAGER`, and `MEMBER` in `src/lib/roles.ts`.
-- `src/middleware.ts` requires auth for app routes except API/static/login paths.
+- `src/middleware.ts` requires auth for app routes except API/static/login/setup paths, and rewrites public `/avatars/*` requests to `/api/avatars/*`.
 - `MEMBER` users are blocked from `/analytics`, `/sponsorships`, and `/team`.
 - The sidebar also hides those routes for `MEMBER`.
 - NextAuth session fields are extended with `id`, `role`, `username`, and `avatarUrl`.
@@ -205,6 +209,7 @@ Other schema notes:
 - `Project.status` can also be `Scrapped` even though it is not in `KANBAN_STAGES`.
 - `Project.draftVersion` starts at `1` and is the only source of truth for which draft the scanner expects.
 - `Project.sponsorshipId` links Sponsored projects to `Sponsorship`; pipeline/archive queries that feed `ProjectCardData` should include the sponsorship relation when the modal needs deal context.
+- `Sponsorship.status` currently uses `Active`, `Pending`, `Completed`, and `Cancelled`; only `Active` and `Pending` deals can be linked when creating a Sponsored project.
 - `Sponsorship.budget` stores the source deal amount and `Sponsorship.currency` stores its ISO currency code. Do not overwrite the source amount with a converted display value.
 - `User.preferredCurrency` controls converted sponsorship totals for that account. It defaults to `VND`.
 - `CurrencyRate` caches pair rates between supported currencies. Rates are fetched from USD-based upstream data and expanded into pair rates inside `src/lib/currencyRates.ts`.
@@ -284,6 +289,7 @@ Existing API routes:
 - `src/app/api/projects/[id]/shotlist/route.ts`
 - `src/app/api/analytics/route.ts`
 - `src/app/api/users/route.ts`
+- `src/app/api/avatars/[filename]/route.ts`
 - `src/app/api/auth/[...nextauth]/route.ts`
 
 These are available, but the active UI generally uses Server Actions. When adding or fixing UI mutations, prefer the Server Action path so `revalidatePath`, optimistic state, and typed action results remain consistent.

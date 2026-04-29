@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="public/README%20Header.html">
+    <img src="public/readme-header.png" alt="projmgmt README header" width="100%" />
+  </a>
+</p>
+
 # projmgmt
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
@@ -24,7 +30,7 @@ Core areas:
 - **Analytics** — YouTube, Meta, and TikTok metrics are synced and displayed as per-platform totals.
 - **Sponsorships** — brand-deal CRM tied to Sponsored project creation, briefing context, project counts, and per-deal source currencies converted to each user's preferred currency.
 - **Team** — user roster and role management.
-- **Settings** — avatar upload, password change, language, preferred currency, 2FA.
+- **Settings** — avatar upload, password change, language, and preferred currency.
 
 ### Screens
 
@@ -56,7 +62,7 @@ Core areas:
     </td>
     <td align="center" width="50%">
       <img src="design/screenshots/settings.png" alt="Settings" /><br />
-      <sub><b>Settings</b> — profile, security, 2FA</sub>
+      <sub><b>Settings</b> — profile, security, language, currency</sub>
     </td>
   </tr>
 </table>
@@ -101,7 +107,7 @@ Both paths land on the same first-run wizard the moment the database is empty, s
 
 #### 1. Prerequisites
 
-- Node.js 20 or newer.
+- Node.js 22 recommended. This matches the Docker image and CI workflow.
 - npm (bundled with Node).
 - A local `.env` file (template below).
 
@@ -128,6 +134,12 @@ NEXTAUTH_SECRET="replace-with-a-generated-secret"
 NEXT_PUBLIC_NAS_IP="192.168.1.10"
 NEXT_PUBLIC_NAS_SHARE="projects"
 NEXT_PUBLIC_NAS_ROOT_DIR="Studio"
+
+# Runtime NAS aliases for Docker/self-hosted deployments.
+# These override the public values for server-generated NAS paths without rebuilding.
+NAS_IP=""
+NAS_SHARE=""
+NAS_ROOT_DIR=""
 ```
 
 Generate a local auth secret:
@@ -147,11 +159,13 @@ TIKTOK_RAPIDAPI_KEY=""
 NEXTCLOUD_URL=""
 NEXTCLOUD_USER=""
 NEXTCLOUD_PASSWORD=""
-NEXTCLOUD_BASE_PATH="/Media/Source/Studio/Working"
-NEXTCLOUD_ARCHIVE_PATH="/Media/Source/Studio/Done"
+NEXTCLOUD_BASE_PATH="/Studio_Projects"
+NEXTCLOUD_ARCHIVE_PATH="/Done"
 ```
 
 Nextcloud paths are WebDAV paths relative to the authenticated user's files root. `NEXTCLOUD_BASE_PATH` is where active project folders are created and scanned. `NEXTCLOUD_ARCHIVE_PATH` is optional for draft scanning but required for automatic folder moves on approval/publish.
+
+NAS path display prefers the runtime `NAS_IP`, `NAS_SHARE`, and `NAS_ROOT_DIR` aliases when they are set, then falls back to the `NEXT_PUBLIC_NAS_*` values.
 
 Currency conversion uses the no-key [ExchangeRate-API Open Access](https://www.exchangerate-api.com/docs/free) endpoint. Rates are cached in SQLite, warmed on server start, refreshed daily by cron, and discreetly attributed in the Sponsorships page.
 
@@ -254,7 +268,7 @@ docker pull ghcr.io/neyako/projmgmt:latest
 docker compose up
 ```
 
-`NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR` are baked into the client bundle by Next.js. For GitHub-built images, set those as repository variables before the workflow runs, or rebuild locally with Docker Compose build args.
+For NAS path generation in Docker, prefer the runtime `NAS_IP`, `NAS_SHARE`, and `NAS_ROOT_DIR` variables; they work without rebuilding the image. `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR` remain public build-time fallbacks. For GitHub-built images, set those public fallbacks as repository variables before the workflow runs, or rebuild locally with Docker Compose build args.
 
 ### CI/CD
 
@@ -283,12 +297,14 @@ npm run db:studio # inspect/edit SQLite data
 Main local paths:
 
 - `src/app/` — App Router pages, layouts, API routes, global CSS, and app-level actions.
+- `src/app/setup/` — first-run initialization wizard for creating the first admin.
 - `src/actions/` — primary Server Actions for database mutations.
 - `src/components/` — layout, Kanban, modal, table, analytics, sponsorship, team, UI components.
 - `src/lib/` — auth, roles, Prisma client, constants, currency conversion helpers, Nextcloud WebDAV service, helpers.
 - `src/services/` — cron, currency-rate refresh scheduling, and external analytics service helpers.
 - `src/types/` — shared types layered on Prisma models.
 - `src/utils/nasPaths.ts` — OS-aware SMB path generation.
+- `src/app/api/avatars/[filename]/route.ts` — serves uploaded avatars from `public/avatars`, including Docker-mounted avatar storage.
 - `prisma/schema.prisma` — SQLite schema.
 - `prisma/seed.ts` — destructive demo data seed.
 - `DESIGN.md` — visual source of truth.
@@ -315,7 +331,7 @@ Several fields are JSON strings in SQLite and must be parsed/stringified by the 
 - `abTitles`
 - `thumbnails`
 
-`folderName` is the source of truth for local media location. RAW paths are generated from `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR`; do not hardcode SMB roots in components.
+`folderName` is the source of truth for local media location. RAW paths are generated from runtime `NAS_IP`, `NAS_SHARE`, and `NAS_ROOT_DIR` when present, with `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR` as build-time fallbacks; do not hardcode SMB roots in components.
 
 Nextcloud draft review links are internal file links generated from WebDAV `fileid` metadata. Editors should name review files as `draft 1 - project folder name.ext`, `draft 2 - project folder name.ext`, and so on. The scanner uses `Project.draftVersion` and only accepts the currently expected number.
 
