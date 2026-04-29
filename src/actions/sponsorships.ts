@@ -5,6 +5,29 @@ import { prisma } from "@/lib/prisma";
 
 type ActionResult<T = unknown> = { success: true; data: T } | { success: false; error: string };
 
+export async function getSponsorshipDeals() {
+  const deals = await prisma.sponsorship.findMany({
+    where: {
+      status: { in: ["Active", "Pending"] },
+    },
+    select: {
+      id: true,
+      brandName: true,
+      contactEmail: true,
+      budget: true,
+      status: true,
+      dueDate: true,
+      notes: true,
+    },
+    orderBy: [{ status: "asc" }, { dueDate: "asc" }, { brandName: "asc" }],
+  });
+
+  return deals.map((deal) => ({
+    ...deal,
+    dueDate: deal.dueDate ? deal.dueDate.toISOString() : null,
+  }));
+}
+
 export async function createSponsorship(data: {
   brandName: string;
   contactEmail?: string;

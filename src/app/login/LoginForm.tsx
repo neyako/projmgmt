@@ -12,16 +12,16 @@ export default function LoginForm() {
   const router = useRouter();
   const t = useT();
   const currentLocale = useLocale();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleLocaleChange(next: Locale) {
     if (next === currentLocale) return;
     await setLocale(next);
     router.refresh();
   }
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

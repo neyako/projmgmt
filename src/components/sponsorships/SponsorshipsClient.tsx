@@ -7,6 +7,11 @@ import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 
 type TabKey = "All" | "Active" | "Pending" | "Archived";
+type SponsorshipListItem = Sponsorship & {
+  _count?: {
+    projects: number;
+  };
+};
 
 export type SponsorshipSummary = {
   pendingCount: number;
@@ -17,13 +22,6 @@ export type SponsorshipSummary = {
 };
 
 const TABS: TabKey[] = ["All", "Active", "Pending", "Archived"];
-
-const TAB_FILTER_KEY: Record<TabKey, string> = {
-  All: "sponsorships.all",
-  Active: "sponsorships.activeFilter",
-  Pending: "sponsorships.pendingFilter",
-  Archived: "sponsorships.archivedFilter",
-};
 
 function statusDotColor(status: string): string {
   switch (status) {
@@ -57,7 +55,7 @@ export default function SponsorshipsClient({
   initialSponsorships,
   summary,
 }: {
-  initialSponsorships: Sponsorship[];
+  initialSponsorships: SponsorshipListItem[];
   summary: SponsorshipSummary;
 }) {
   const router = useRouter();
@@ -114,19 +112,27 @@ export default function SponsorshipsClient({
           </h1>
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-border-visible pb-2">
             <div className="flex gap-3 md:gap-6 overflow-x-auto pb-1 md:pb-0">
-              {TABS.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                    activeTab === tab
-                      ? "text-text-display"
-                      : "text-text-disabled hover:text-text-secondary"
-                  }`}
-                >
-                  {t(TAB_FILTER_KEY[tab])}
-                </button>
-              ))}
+              {TABS.map((tab) => {
+                const tabKeyMap: Record<TabKey, string> = {
+                  All: "sponsorships.all",
+                  Active: "sponsorships.activeFilter",
+                  Pending: "sponsorships.pendingFilter",
+                  Archived: "sponsorships.archivedFilter",
+                };
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
+                      activeTab === tab
+                        ? "text-text-display"
+                        : "text-text-disabled hover:text-text-secondary"
+                    }`}
+                  >
+                    {t(tabKeyMap[tab])}
+                  </button>
+                );
+              })}
             </div>
             <button
               onClick={handleOpenNew}
@@ -241,11 +247,17 @@ export default function SponsorshipsClient({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 border-t border-border-visible pt-3">
+                  <div className="grid grid-cols-3 gap-3 border-t border-border-visible pt-3">
                     <div>
                       <div className="ui-page-kicker">{t("sponsorships.due")}</div>
                       <div className="text-xs font-mono text-text-display">
                         {formatDate(s.dueDate)}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="ui-page-kicker">{t("sponsorships.projects")}</div>
+                      <div className="text-xs font-mono text-text-display">
+                        {s._count?.projects ?? 0}
                       </div>
                     </div>
                     <div className="text-right">
@@ -273,6 +285,9 @@ export default function SponsorshipsClient({
                   </th>
                   <th className="ui-table-head p-4">
                     {t("sponsorships.dueDate")}
+                  </th>
+                  <th className="ui-table-head p-4 text-right">
+                    {t("sponsorships.projects")}
                   </th>
                   <th className="ui-table-head p-4 text-right">
                     {t("sponsorships.value")}
@@ -304,6 +319,9 @@ export default function SponsorshipsClient({
                     </td>
                     <td className="p-4 ui-table-cell-muted">
                       {formatDate(s.dueDate)}
+                    </td>
+                    <td className="p-4 text-sm font-mono text-text-display text-right">
+                      {s._count?.projects ?? 0}
                     </td>
                     <td className="p-4 text-sm font-mono text-success text-right">
                       ${s.budget.toLocaleString()}

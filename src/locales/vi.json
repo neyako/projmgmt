@@ -14,7 +14,12 @@
     "all": "TẤT CẢ",
     "none": "KHÔNG CÓ",
     "unassigned": "Chưa giao",
-    "saveChanges": "LƯU THAY ĐỔI"
+    "saveChanges": "LƯU THAY ĐỔI",
+    "saving_lower": "Đang lưu...",
+    "required": "Bắt buộc",
+    "optional": "Tùy chọn",
+    "and": "và",
+    "or": "hoặc"
   },
   "nav": {
     "pipeline": "QUY TRÌNH",
@@ -94,10 +99,21 @@
     "ADMIN": "Quản trị",
     "MEMBER": "Thành viên"
   },
+  "contentType": {
+    "Organic": "Tự nhiên",
+    "Sponsored": "Tài trợ",
+    "Product_Seeding": "Gửi sản phẩm"
+  },
   "format": {
     "Short_Form": "Video ngắn",
     "Long_Form": "Video dài",
     "Static": "Hình ảnh"
+  },
+  "platform": {
+    "TikTok": "TikTok",
+    "YT_Shorts": "YT Shorts",
+    "YouTube": "YouTube",
+    "Facebook": "Facebook"
   },
   "settings": {
     "title": "Cài Đặt Hệ Thống",
@@ -133,7 +149,8 @@
     "passwordPlaceholder": "••••••••",
     "invalidCredentials": "THÔNG_TIN_KHÔNG_HỢP_LỆ",
     "verifying": "ĐANG XÁC THỰC...",
-    "login": "ĐĂNG NHẬP"
+    "login": "ĐĂNG NHẬP",
+    "languageSelect": "NGÔN NGỮ"
   },
   "setup": {
     "header": "[ PROJMGMT // GIAO_THỨC_KHỞI_TẠO ]",
@@ -163,6 +180,7 @@
     "hashtagsPlaceholder": "đánh giá thiết bị",
     "hashtagsHint": "Cách nhau bằng khoảng trắng. `#` được thêm tự động khi sao chép.",
     "titleRequired": "Tiêu đề video cuối là bắt buộc.",
+    "published": "Đã đăng",
     "publishedToast": "Đã đăng \"{title}\".",
     "abTitles": "Tiêu đề A/B",
     "thumbnails": "Ảnh thu nhỏ",
@@ -208,8 +226,10 @@
     "createLogin": "TẠO ĐĂNG NHẬP",
     "delete": "XÓA",
     "cancel": "HỦY",
+    "done": "HOÀN TẤT",
     "save": "LƯU",
     "saving": "ĐANG LƯU...",
+    "saved": "ĐÃ LƯU",
     "role": "Vai trò",
     "failedSave": "Lưu thất bại.",
     "failedDelete": "Xóa thất bại.",
@@ -241,8 +261,7 @@
     "updated": "Đã cập nhật tài trợ.",
     "created": "Đã tạo tài trợ.",
     "confirmDelete": "Xóa tài trợ này?",
-    "deleted": "Đã xóa tài trợ.",
-    "failed": "Lưu thất bại."
+    "deleted": "Đã xóa tài trợ."
   },
   "statsModal": {
     "title": "Nhập Số Liệu Thủ Công",
@@ -253,6 +272,7 @@
     "comments": "Bình luận",
     "negativeError": "Số liệu phải là số không âm.",
     "updated": "Đã cập nhật số liệu.",
+    "save": "LƯU",
     "cancel": "[ HỦY ]",
     "saveStats": "[ LƯU SỐ LIỆU ]",
     "saving": "ĐANG LƯU..."
@@ -261,6 +281,8 @@
     "title": "Lưu Trữ",
     "published": "[ ĐÃ ĐĂNG ]",
     "scrapped": "[ ĐÃ BỎ ]",
+    "noPublished": "Không Có Dự Án Đã Đăng",
+    "noScrapped": "Không Có Dự Án Đã Bỏ",
     "project": "dự án",
     "projects": "dự án",
     "views": "Lượt xem",
@@ -268,7 +290,6 @@
     "comments": "Bình luận",
     "updateStats": "[ CẬP NHẬT SỐ LIỆU ]",
     "restore": "KHÔI PHỤC VỀ QUY TRÌNH",
-    "restoreShort": "Khôi phục về Quy trình",
     "restored": "Đã khôi phục dự án về Ý tưởng.",
     "videoTitle": "Tiêu Đề Video",
     "status": "Trạng thái",
@@ -277,7 +298,8 @@
     "action": "Hành Động",
     "noFoundFor": "Không Tìm Thấy Dự Án {tab}",
     "tabPublished": "Đã Đăng",
-    "tabScrapped": "Đã Bỏ"
+    "tabScrapped": "Đã Bỏ",
+    "restoreShort": "Khôi phục về Quy trình"
   },
   "team": {
     "title": "Danh Sách",
@@ -309,6 +331,10 @@
     "closedThisMonth": "Đóng Tháng Này",
     "nonCancelled": "Hợp Đồng Chưa Hủy",
     "monthlyRevenue": "Doanh Thu Tháng",
+    "noAll": "Không Có Tài Trợ",
+    "noActive": "Không Có Tài Trợ Đang Chạy",
+    "noPending": "Không Có Tài Trợ Đang Chờ",
+    "noArchived": "Không Có Tài Trợ Lưu Trữ",
     "newSponsorship": "TÀI TRỢ MỚI",
     "due": "Hạn",
     "value": "Giá Trị",
@@ -316,6 +342,7 @@
     "statusCol": "Trạng thái",
     "contact": "Liên hệ",
     "dueDate": "Hạn chót",
+    "projects": "Dự án",
     "tabAll": "Tất cả",
     "tabActive": "Đang chạy",
     "tabPending": "Đang chờ",
@@ -351,6 +378,7 @@
     "noFbId": "Không có dự án đã đăng nào có FACEBOOK ID.",
     "noTtId": "Không có dự án đã đăng nào có TIKTOK ID.",
     "noYtId": "Không có dự án đã đăng nào có YOUTUBE ID.",
+    "synced": "Đã đồng bộ",
     "syncedToast": "Đã đồng bộ {updated}/{total} video {label}.",
     "crossPlatform": "Lượt Xem Đa Nền Tảng",
     "noSnapshots": "Chưa có dữ liệu — đồng bộ để bắt đầu theo dõi.",
@@ -386,5 +414,88 @@
   "ui": {
     "copied": "[ ĐÃ SAO CHÉP! ]",
     "copy": "[ SAO CHÉP ]"
+  },
+  "projectModal": {
+    "details": "CHI TIẾT",
+    "scripting": "KỊCH BẢN",
+    "filming": "QUAY PHIM",
+    "editing": "DỰNG PHIM",
+    "review": "DUYỆT",
+    "title": "Tiêu đề",
+    "titlePlaceholder": "Tiêu đề dự án",
+    "contentType": "Loại nội dung",
+    "format": "Định dạng",
+    "platforms": "Nền tảng",
+    "publishDate": "Ngày đăng",
+    "dueDate": "Hạn chót",
+    "scriptingDue": "Hạn kịch bản",
+    "filmingDue": "Hạn quay",
+    "editingDue": "Hạn dựng",
+    "creator": "Người tạo",
+    "talent": "Nhân vật",
+    "cameraman": "Quay phim",
+    "editor": "Dựng phim",
+    "aRollAssignee": "Người phụ trách A-Roll",
+    "bRollAssignee": "Người phụ trách B-Roll",
+    "editingAssignee": "Người phụ trách dựng",
+    "briefingNotes": "Ghi chú bàn giao",
+    "briefingNotesPlaceholder": "Bản brief, yêu cầu, sản phẩm bàn giao...",
+    "briefingRequired": "Cần ghi chú bàn giao cho nội dung tài trợ.",
+    "script": "Kịch bản",
+    "scriptPlaceholder": "Hook, nội dung, CTA...",
+    "shotList": "Danh sách cảnh quay",
+    "addShot": "Thêm cảnh",
+    "addShotPlaceholder": "Mô tả cảnh quay mới...",
+    "storagePath": "Đường dẫn lưu trữ",
+    "folderName": "Tên thư mục",
+    "reviewLink": "Link duyệt",
+    "productLinks": "Link sản phẩm",
+    "productLinksPlaceholder": "https://...",
+    "save": "LƯU",
+    "saving": "ĐANG LƯU...",
+    "delete": "XÓA",
+    "cancel": "HỦY",
+    "newProject": "DỰ ÁN MỚI",
+    "editProject": "SỬA DỰ ÁN",
+    "close": "[ X ]",
+    "saved": "Đã lưu dự án.",
+    "deleted": "Đã xóa dự án.",
+    "confirmDelete": "Xóa dự án này?",
+    "titleRequired": "Tiêu đề là bắt buộc.",
+    "platformsRequired": "Chọn ít nhất một nền tảng.",
+    "publishDateRequired": "Ngày đăng là bắt buộc.",
+    "shotComplete": "Đánh dấu hoàn thành",
+    "shotIncomplete": "Đánh dấu chưa hoàn thành",
+    "deleteShot": "Xóa cảnh quay",
+    "addBRollShot": "Thêm cảnh B-Roll",
+    "addARollShot": "Thêm cảnh A-Roll",
+    "aRollComplete": "A-Roll hoàn thành",
+    "bRollComplete": "B-Roll hoàn thành",
+    "moveTo": "Chuyển sang",
+    "moveStage": "CHUYỂN GIAI ĐOẠN",
+    "publish": "[ ĐĂNG ]",
+    "publishConfirm": "Đánh dấu là đã đăng?",
+    "rejected": "Đã từ chối dự án.",
+    "approved": "Đã duyệt dự án.",
+    "moveSuccess": "Đã chuyển dự án.",
+    "moveFailed": "Chuyển dự án thất bại.",
+    "updateFailed": "Cập nhật thất bại.",
+    "fileError": "Lỗi tệp.",
+    "fields": {
+      "title": "Tiêu đề",
+      "contentType": "Loại nội dung",
+      "format": "Định dạng",
+      "publishDate": "Ngày đăng"
+    }
+  },
+  "pipeline": {
+    "title": "Quy Trình",
+    "filterAll": "TẤT CẢ",
+    "filterShortForm": "VIDEO NGẮN",
+    "filterLongForm": "VIDEO DÀI",
+    "filterStatic": "HÌNH ẢNH",
+    "filterOrganic": "TỰ NHIÊN",
+    "filterSponsored": "TÀI TRỢ",
+    "filterProductSeeding": "GỬI SẢN PHẨM"
   }
 }

@@ -14,7 +14,12 @@
     "all": "ALL",
     "none": "NONE",
     "unassigned": "Unassigned",
-    "saveChanges": "SAVE CHANGES"
+    "saveChanges": "SAVE CHANGES",
+    "saving_lower": "Saving...",
+    "required": "Required",
+    "optional": "Optional",
+    "and": "and",
+    "or": "or"
   },
   "nav": {
     "pipeline": "PIPELINE",
@@ -94,10 +99,21 @@
     "ADMIN": "Admin",
     "MEMBER": "Member"
   },
+  "contentType": {
+    "Organic": "Organic",
+    "Sponsored": "Sponsored",
+    "Product_Seeding": "Product Seeding"
+  },
   "format": {
     "Short_Form": "Short Form",
     "Long_Form": "Long Form",
     "Static": "Static"
+  },
+  "platform": {
+    "TikTok": "TikTok",
+    "YT_Shorts": "YT Shorts",
+    "YouTube": "YouTube",
+    "Facebook": "Facebook"
   },
   "settings": {
     "title": "System Settings",
@@ -133,7 +149,8 @@
     "passwordPlaceholder": "••••••••",
     "invalidCredentials": "INVALID_CREDENTIALS",
     "verifying": "VERIFYING...",
-    "login": "LOGIN"
+    "login": "LOGIN",
+    "languageSelect": "LANGUAGE"
   },
   "setup": {
     "header": "[ PROJMGMT // INITIALIZATION_PROTOCOL ]",
@@ -163,6 +180,7 @@
     "hashtagsPlaceholder": "tech review setup",
     "hashtagsHint": "Space separated. `#` prepended automatically on copy.",
     "titleRequired": "Final video title is required.",
+    "published": "Published",
     "publishedToast": "Published \"{title}\".",
     "abTitles": "A/B Titles",
     "thumbnails": "Thumbnails",
@@ -208,8 +226,10 @@
     "createLogin": "CREATE LOGIN",
     "delete": "DELETE",
     "cancel": "CANCEL",
+    "done": "DONE",
     "save": "SAVE",
     "saving": "SAVING...",
+    "saved": "SAVED",
     "role": "Role",
     "failedSave": "Failed to save.",
     "failedDelete": "Failed to delete.",
@@ -241,8 +261,7 @@
     "updated": "Sponsorship updated.",
     "created": "Sponsorship created.",
     "confirmDelete": "Delete this sponsorship?",
-    "deleted": "Sponsorship deleted.",
-    "failed": "Failed to save."
+    "deleted": "Sponsorship deleted."
   },
   "statsModal": {
     "title": "Manual Analytics Entry",
@@ -253,6 +272,7 @@
     "comments": "Comments",
     "negativeError": "Stats must be non-negative numbers.",
     "updated": "Stats updated.",
+    "save": "SAVE",
     "cancel": "[ CANCEL ]",
     "saveStats": "[ SAVE STATS ]",
     "saving": "SAVING..."
@@ -261,6 +281,8 @@
     "title": "Archive",
     "published": "[ PUBLISHED ]",
     "scrapped": "[ SCRAPPED ]",
+    "noPublished": "No Published Projects Found",
+    "noScrapped": "No Scrapped Projects Found",
     "project": "project",
     "projects": "projects",
     "views": "Views",
@@ -268,7 +290,6 @@
     "comments": "Comments",
     "updateStats": "[ UPDATE STATS ]",
     "restore": "RESTORE TO PIPELINE",
-    "restoreShort": "Restore to Pipeline",
     "restored": "Project restored to Ideation.",
     "videoTitle": "Video Title",
     "status": "Status",
@@ -277,7 +298,8 @@
     "action": "Action",
     "noFoundFor": "No {tab} Projects Found",
     "tabPublished": "Published",
-    "tabScrapped": "Scrapped"
+    "tabScrapped": "Scrapped",
+    "restoreShort": "Restore to Pipeline"
   },
   "team": {
     "title": "Roster",
@@ -309,6 +331,10 @@
     "closedThisMonth": "Closed This Month",
     "nonCancelled": "Non-Cancelled Deals",
     "monthlyRevenue": "Monthly Revenue",
+    "noAll": "No All Sponsorships Found",
+    "noActive": "No Active Sponsorships Found",
+    "noPending": "No Pending Sponsorships Found",
+    "noArchived": "No Archived Sponsorships Found",
     "newSponsorship": "NEW SPONSORSHIP",
     "due": "Due",
     "value": "Value",
@@ -316,6 +342,7 @@
     "statusCol": "Status",
     "contact": "Contact",
     "dueDate": "Due Date",
+    "projects": "Projects",
     "tabAll": "All",
     "tabActive": "Active",
     "tabPending": "Pending",
@@ -351,6 +378,7 @@
     "noFbId": "No published projects have a FACEBOOK ID.",
     "noTtId": "No published projects have a TIKTOK ID.",
     "noYtId": "No published projects have a YOUTUBE ID.",
+    "synced": "Synced",
     "syncedToast": "Synced {updated}/{total} {label} video{plural}.",
     "crossPlatform": "Cross-Platform Views",
     "noSnapshots": "No snapshots yet — sync to start tracking.",
@@ -386,5 +414,88 @@
   "ui": {
     "copied": "[ COPIED! ]",
     "copy": "[ COPY ]"
+  },
+  "projectModal": {
+    "details": "DETAILS",
+    "scripting": "SCRIPTING",
+    "filming": "FILMING",
+    "editing": "EDITING",
+    "review": "REVIEW",
+    "title": "Title",
+    "titlePlaceholder": "Project title",
+    "contentType": "Content Type",
+    "format": "Format",
+    "platforms": "Platforms",
+    "publishDate": "Publish Date",
+    "dueDate": "Due Date",
+    "scriptingDue": "Scripting Due",
+    "filmingDue": "Filming Due",
+    "editingDue": "Editing Due",
+    "creator": "Creator",
+    "talent": "Talent",
+    "cameraman": "Cameraman",
+    "editor": "Editor",
+    "aRollAssignee": "A-Roll Assignee",
+    "bRollAssignee": "B-Roll Assignee",
+    "editingAssignee": "Editing Assignee",
+    "briefingNotes": "Briefing Notes",
+    "briefingNotesPlaceholder": "Sponsor brief, requirements, deliverables...",
+    "briefingRequired": "Briefing notes required for sponsored content.",
+    "script": "Script",
+    "scriptPlaceholder": "Hook, body, CTA...",
+    "shotList": "Shot List",
+    "addShot": "Add shot",
+    "addShotPlaceholder": "New shot description...",
+    "storagePath": "Storage Path",
+    "folderName": "Folder Name",
+    "reviewLink": "Review Link",
+    "productLinks": "Product Links",
+    "productLinksPlaceholder": "https://...",
+    "save": "SAVE",
+    "saving": "SAVING...",
+    "delete": "DELETE",
+    "cancel": "CANCEL",
+    "newProject": "NEW PROJECT",
+    "editProject": "EDIT PROJECT",
+    "close": "[ X ]",
+    "saved": "Project saved.",
+    "deleted": "Project deleted.",
+    "confirmDelete": "Delete this project?",
+    "titleRequired": "Title is required.",
+    "platformsRequired": "Select at least one platform.",
+    "publishDateRequired": "Publish date is required.",
+    "shotComplete": "Mark complete",
+    "shotIncomplete": "Mark incomplete",
+    "deleteShot": "Delete shot",
+    "addBRollShot": "Add B-Roll shot",
+    "addARollShot": "Add A-Roll shot",
+    "aRollComplete": "A-Roll complete",
+    "bRollComplete": "B-Roll complete",
+    "moveTo": "Move to",
+    "moveStage": "MOVE STAGE",
+    "publish": "[ PUBLISH ]",
+    "publishConfirm": "Mark as published?",
+    "rejected": "Project rejected.",
+    "approved": "Project approved.",
+    "moveSuccess": "Project moved.",
+    "moveFailed": "Failed to move project.",
+    "updateFailed": "Failed to update.",
+    "fileError": "File error.",
+    "fields": {
+      "title": "Title",
+      "contentType": "Content Type",
+      "format": "Format",
+      "publishDate": "Publish Date"
+    }
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "filterAll": "ALL",
+    "filterShortForm": "SHORT FORM",
+    "filterLongForm": "LONG FORM",
+    "filterStatic": "STATIC",
+    "filterOrganic": "ORGANIC",
+    "filterSponsored": "SPONSORED",
+    "filterProductSeeding": "PRODUCT SEEDING"
   }
 }

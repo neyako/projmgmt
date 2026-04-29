@@ -73,7 +73,7 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
         onRefresh();
         onClose();
       } else {
-        showToast(result.error || t("sponsorshipModal.failed"), "error");
+        showToast(result.error || t("projectModal.updateFailed"), "error");
       }
     });
   }
@@ -87,7 +87,7 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
         onRefresh();
         onClose();
       } else {
-        showToast(result.error || t("sponsorshipModal.failed"), "error");
+        showToast(result.error || t("projectModal.updateFailed"), "error");
       }
     });
   }

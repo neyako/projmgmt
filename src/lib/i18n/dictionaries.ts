@@ -13,6 +13,16 @@ export function getDictionary(locale: Locale): Dictionary {
   return dictionaries[locale] ?? dictionaries.en;
 }
 
+export type DotPath<T, P extends string = ""> = T extends string
+  ? P
+  : T extends Record<string, unknown>
+    ? {
+        [K in keyof T & string]: DotPath<T[K], P extends "" ? K : `${P}.${K}`>;
+      }[keyof T & string]
+    : never;
+
+export type TKey = DotPath<Dictionary>;
+
 export function lookup(dict: Dictionary, key: string): string {
   const parts = key.split(".");
   let cur: unknown = dict;

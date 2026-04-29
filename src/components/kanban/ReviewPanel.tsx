@@ -53,6 +53,8 @@ export default function ReviewPanel({
       id: project.id,
       status: "Editing",
       reviewFeedback: trimmed,
+      reviewLink: null,
+      draftVersion: project.draftVersion + 1,
     });
     startTransition(async () => {
       const result = await submitReview(project.id, "reject", trimmed);
@@ -61,6 +63,8 @@ export default function ReviewPanel({
           id: project.id,
           status: "Review",
           reviewFeedback: project.reviewFeedback ?? null,
+          reviewLink: project.reviewLink ?? null,
+          draftVersion: project.draftVersion,
         });
         showToast(result.error, "error");
         return;

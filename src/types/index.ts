@@ -44,6 +44,7 @@ export type ProjectCardData = Pick<
   | "storagePath"
   | "folderName"
   | "reviewLink"
+  | "draftVersion"
   | "briefingNotes"
   | "script"
   | "reviewFeedback"
@@ -87,6 +88,18 @@ export type ProjectCardData = Pick<
   youtubeId?: string | null;
   metaId?: string | null;
   tiktokId?: string | null;
+
+  // Sponsorship linkage
+  sponsorshipId?: string | null;
+  sponsorship?: {
+    id: string;
+    brandName: string;
+    contactEmail?: string | null;
+    budget?: number;
+    status: string;
+    dueDate?: Date | string | null;
+    notes?: string | null;
+  } | null;
 };
 
 // Shot item shape for JSON fields
@@ -103,6 +116,8 @@ export interface CreateProjectPayload {
   format: string;
   platformsTargeted: string[];
   briefingNotes?: string;
+  productLinks?: string;
+  sponsorshipId?: string;
   creatorId: string;
 }
 
@@ -116,6 +131,7 @@ export interface UpdateProjectPayload {
   format?: string;
   status?: string;
   briefingNotes?: string;
+  sponsorshipId?: string;
   platformsTargeted?: string;
   storagePath?: string;
   reviewLink?: string;
