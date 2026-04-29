@@ -28,6 +28,7 @@ import {
 import { getSponsorshipDeals } from "@/actions/sponsorships";
 import { updateProjectScript } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n/client";
 import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
@@ -399,6 +400,7 @@ function MarkdownLine({
   const ref = useRef<HTMLDivElement>(null);
   const wasActiveRef = useRef(false);
   const meta = getLineMeta(text);
+  const t = useT();
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -572,7 +574,7 @@ function MarkdownLine({
       ref={ref}
       role="textbox"
       id={idx === 0 ? "project-script" : undefined}
-      aria-label={idx === 0 ? "Script & Notes Markdown editor" : undefined}
+      aria-label={idx === 0 ? t("projectModal.scriptNotesEditor") : undefined}
       data-line-idx={idx}
       contentEditable={active}
       suppressContentEditableWarning
@@ -855,7 +857,11 @@ function formatDealDate(d?: Date | string | null): string {
 
 function formatDealMoney(value?: number | null): string {
   if (!value) return "—";
-  return `$${value.toLocaleString("en-US")}`;
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export default function ProjectDetailsModal({
@@ -865,6 +871,7 @@ export default function ProjectDetailsModal({
   onProjectUpdate,
 }: ProjectDetailsModalProps) {
   const { showToast } = useToast();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<ProjectUser[]>([]);
   const [sponsorshipDeals, setSponsorshipDeals] = useState<SponsorshipDealOption[]>([]);
@@ -1207,7 +1214,7 @@ export default function ProjectDetailsModal({
 
       setReviewLink(result.link);
       onProjectUpdate?.({ id: project.id, reviewLink: result.link, draftVersion: result.version });
-      showToast("Draft review link detected.", "success");
+      showToast(t("projectModal.draftReviewDetected"), "success");
     } finally {
       setIsScanningDraft(false);
     }
@@ -1230,7 +1237,7 @@ export default function ProjectDetailsModal({
         folderName: nextFolderName || null,
       });
       setIsEditingRaw(!nextFolderName);
-      showToast("NAS folder updated.", "success");
+      showToast(t("projectModal.nasFolderUpdated"), "success");
     });
   }
 
@@ -1256,7 +1263,7 @@ export default function ProjectDetailsModal({
         metaId: nextMeta || null,
         tiktokId: nextTiktok || null,
       });
-      showToast("Project details updated.", "success");
+      showToast(t("projectModal.detailsUpdated"), "success");
     });
   }
 
@@ -1402,11 +1409,11 @@ export default function ProjectDetailsModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
-      showToast("Project title is required.", "error");
+      showToast(t("projectModal.titleRequired"), "error");
       return;
     }
     if (contentType === "Sponsored" && !sponsorshipId) {
-      showToast("Select a sponsorship deal.", "error");
+      showToast(t("projectModal.selectSponsorshipDealError"), "error");
       return;
     }
     startTransition(async () => {
@@ -1420,7 +1427,7 @@ export default function ProjectDetailsModal({
         sponsorshipId: contentType === "Sponsored" ? sponsorshipId : undefined,
       });
       if (result.success) {
-        showToast("Project created.", "success");
+        showToast(t("projectModal.created"), "success");
         onCreated();
       } else {
         showToast(result.error, "error");
@@ -1430,7 +1437,7 @@ export default function ProjectDetailsModal({
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text);
-    showToast("Copied to clipboard.", "success");
+    showToast(t("projectModal.copiedToClipboard"), "success");
   }
 
   // Compute completion %
@@ -1445,14 +1452,14 @@ export default function ProjectDetailsModal({
   const osBadge = detectedOS === "mac" ? "[  ]" : detectedOS === "win" ? "[ ⊞ ]" : "[ ? ]";
   const scriptStatusLabel =
     scriptSaveStatus === "dirty"
-      ? "[ AUTOSAVE QUEUED ]"
+      ? t("projectModal.autosaveQueued")
       : scriptSaveStatus === "saving"
-        ? "[ AUTOSAVING... ]"
+        ? t("projectModal.autosaving")
         : scriptSaveStatus === "error"
-          ? "[ AUTOSAVE FAILED ]"
+          ? t("projectModal.autosaveFailed")
           : scriptSaveStatus === "saved"
-            ? "[ SAVED ]"
-            : "[ AUTOSAVE ]";
+            ? t("projectModal.savedBracket")
+            : t("projectModal.autosave");
   const selectedSponsorship =
     sponsorshipDeals.find((deal) => deal.id === sponsorshipId) ?? null;
   const linkedSponsorship = isEditing ? project.sponsorship ?? null : null;
@@ -1503,7 +1510,7 @@ export default function ProjectDetailsModal({
               className="text-xl md:text-2xl font-bold text-text-display bg-transparent outline-none uppercase w-full placeholder:text-text-disabled"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="PROJECT TITLE"
+              placeholder={t("projectModal.projectTitlePlaceholder")}
               readOnly={isEditing}
             />
           </div>
@@ -1514,7 +1521,7 @@ export default function ProjectDetailsModal({
             </button>
             {isEditing && (
               <div className="text-right">
-                <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block">Completion</span>
+                <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block">{t("projectModal.completion")}</span>
                 <div className="text-3xl font-mono text-text-display tracking-widest">{completionPct}%</div>
               </div>
             )}
@@ -1532,33 +1539,33 @@ export default function ProjectDetailsModal({
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 {/* Content Type */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Content Type</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.contentType")}</label>
                   <div className="flex gap-2 flex-wrap">
                     {CONTENT_TYPES.map((ct) => (
                       <button key={ct} type="button" onClick={() => handleContentTypeSelect(ct)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
                         contentType === ct ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
-                      )}>{ct.replace("_", " ")}</button>
+                      )}>{t(`contentType.${ct}`)}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* Format */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Format</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.format")}</label>
                   <div className="flex gap-2 flex-wrap">
                     {FORMATS.map((f) => (
                       <button key={f} type="button" onClick={() => setFormat(f)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
                         format === f ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
-                      )}>{f.replace("_", " ")}</button>
+                      )}>{t(`format.${f}`)}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* Platforms */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Platforms</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.platforms")}</label>
                   <div className="flex gap-2 flex-wrap">
                     {PLATFORMS.map((p) => (
                       <button key={p} type="button" onClick={() => togglePlatform(p)} className={cn(
@@ -1574,7 +1581,7 @@ export default function ProjectDetailsModal({
                   <div className="flex flex-col gap-4">
                     <div>
                       <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                        Sponsorship Deal<span className="text-accent ml-1">*</span>
+                        {t("projectModal.sponsorshipDeal")}<span className="text-accent ml-1">*</span>
                       </label>
                       <div className="relative">
                         <select
@@ -1583,11 +1590,11 @@ export default function ProjectDetailsModal({
                           className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 pr-6 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer color-scheme-dark"
                         >
                           <option value="" className="bg-surface text-text-primary">
-                            {sponsorshipDeals.length > 0 ? "SELECT SPONSORSHIP DEAL" : "NO ACTIVE DEALS FOUND"}
+                            {sponsorshipDeals.length > 0 ? t("projectModal.selectSponsorshipDeal") : t("projectModal.noActiveDeals")}
                           </option>
                           {sponsorshipDeals.map((deal) => (
                             <option key={deal.id} value={deal.id} className="bg-surface text-text-primary">
-                              {deal.brandName} / {deal.status} / {formatDealMoney(deal.budget)}
+                              {deal.brandName} / {t(`sponsorshipModal.${deal.status.toLowerCase()}`)} / {formatDealMoney(deal.budget)}
                             </option>
                           ))}
                         </select>
@@ -1602,20 +1609,20 @@ export default function ProjectDetailsModal({
                             {selectedSponsorship.brandName}
                           </span>
                           <span className="text-text-secondary uppercase tracking-widest">
-                            {selectedSponsorship.status}
+                            {t(`sponsorshipModal.${selectedSponsorship.status.toLowerCase()}`)}
                           </span>
                         </div>
                         <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] uppercase tracking-widest">
                           <div>
-                            <div className="text-text-disabled">Budget</div>
+                            <div className="text-text-disabled">{t("projectModal.budget")}</div>
                             <div className="mt-1 text-success">{formatDealMoney(selectedSponsorship.budget)}</div>
                           </div>
                           <div>
-                            <div className="text-text-disabled">Due</div>
+                            <div className="text-text-disabled">{t("projectModal.due")}</div>
                             <div className="mt-1 text-text-display">{formatDealDate(selectedSponsorship.dueDate)}</div>
                           </div>
                           <div>
-                            <div className="text-text-disabled">Contact</div>
+                            <div className="text-text-disabled">{t("projectModal.contact")}</div>
                             <div className="mt-1 text-text-display break-all">
                               {selectedSponsorship.contactEmail || "—"}
                             </div>
@@ -1631,24 +1638,24 @@ export default function ProjectDetailsModal({
 
                     <div>
                       <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                        Briefing Snapshot
+                        {t("projectModal.briefingSnapshot")}
                       </label>
                       <textarea
                         value={briefingNotes}
                         onChange={(e) => setBriefingNotes(e.target.value)}
-                        placeholder="Deal notes are copied here when selected. Add production specifics if needed..."
+                        placeholder={t("projectModal.briefingSnapshotPlaceholder")}
                         className="w-full ui-textarea p-3 text-sm min-h-[100px] resize-y"
                       />
                     </div>
 
                     <div>
                       <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                        Product / Tracking Links
+                        {t("projectModal.productTrackingLinks")}
                       </label>
                       <textarea
                         value={productLinks}
                         onChange={(e) => setProductLinks(e.target.value)}
-                        placeholder="Product page, affiliate links, tracking URLs..."
+                        placeholder={t("projectModal.productTrackingPlaceholder")}
                         className="w-full ui-textarea p-3 text-sm min-h-[80px] resize-y"
                       />
                     </div>
@@ -1658,13 +1665,13 @@ export default function ProjectDetailsModal({
                 {/* Submit */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-border-visible">
                   <button type="button" onClick={onClose} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:border-outline-variant transition-colors">
-                    CANCEL
+                    {t("projectModal.cancel")}
                   </button>
                   <button type="submit" disabled={isPending} className={cn(
                     "px-6 py-1.5 text-[10px] font-mono uppercase tracking-widest bg-text-display text-text-inverse hover:opacity-80 transition-colors",
                     isPending && "opacity-50 cursor-wait"
                   )}>
-                    {isPending ? "CREATING..." : "CREATE PROJECT"}
+                    {isPending ? t("projectModal.creating") : t("projectModal.createProject")}
                   </button>
                 </div>
               </form>
@@ -1685,11 +1692,11 @@ export default function ProjectDetailsModal({
                     <div className="border border-border-visible bg-surface p-4 flex flex-col gap-4">
                       <div className="flex justify-between items-start">
                         <h3 className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                          Export Assets
+                          {t("projectModal.exportAssets")}
                         </h3>
                         <div className="text-right">
                           <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block">
-                            Scheduled
+                            {t("projectModal.scheduled")}
                           </span>
                           <span className="text-sm font-mono text-text-display tracking-widest">
                             {formatPublishDate(project.publishedAt ?? project.publishDate)}
@@ -1853,14 +1860,14 @@ export default function ProjectDetailsModal({
                 {/* ── Rejection Feedback Alert ── */}
                 {project.reviewFeedback && (
                   <div className="bg-accent-subtle border border-accent/40 p-4 mb-6 rounded-sm">
-                    <h3 className="text-xs font-bold text-accent uppercase font-mono">REVISION REQUIRED</h3>
+                    <h3 className="text-xs font-bold text-accent uppercase font-mono">{t("projectModal.revisionRequired")}</h3>
                     <p className="text-sm text-accent/80 mt-2 whitespace-pre-wrap">{project.reviewFeedback}</p>
                   </div>
                 )}
 
                 {/* ── Asset Management ── */}
                 <div className="hidden md:block">
-                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Asset Management</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.assetManagement")}</label>
 
                   {/* Raw Storage Path */}
                   <div className="bg-surface border border-border-visible flex min-h-10 items-stretch mb-2">
@@ -1878,7 +1885,7 @@ export default function ProjectDetailsModal({
                             saveRawFolderName();
                           }
                         }}
-                        placeholder="Enter NAS folder name and press Enter..."
+                        placeholder={t("projectModal.folderNameEnterPlaceholder")}
                         className="flex-1 min-w-0 bg-transparent text-xs font-mono text-text-primary px-3 py-2.5 outline-none placeholder:text-text-disabled"
                         autoFocus
                       />
@@ -1891,7 +1898,7 @@ export default function ProjectDetailsModal({
                           "text-xs font-mono truncate",
                           rawPath ? "text-text-primary" : "text-text-disabled"
                         )}>
-                          {rawPath || "Set Folder Name to generate path..."}
+                          {rawPath || t("projectModal.folderNameGeneratePlaceholder")}
                         </span>
                       </div>
                     )}
@@ -1940,7 +1947,7 @@ export default function ProjectDetailsModal({
                         disabled={isScanningDraft}
                         className="text-[10px] font-mono uppercase tracking-widest text-success hover:text-text-display hover:bg-hover-surface px-3 py-2.5 border-l border-border-visible transition-colors shrink-0 whitespace-nowrap disabled:cursor-wait disabled:opacity-50"
                       >
-                        {isScanningDraft ? "[ SCANNING... ]" : `[ SCAN FOR DRAFT ${project.draftVersion} ]`}
+                        {isScanningDraft ? t("projectModal.scanning") : t("projectModal.scanForDraft", { version: project.draftVersion })}
                       </button>
                     )}
                     {reviewLink && (
@@ -1962,7 +1969,7 @@ export default function ProjectDetailsModal({
                 {project.contentType === "Sponsored" && (linkedSponsorship || briefingContext) && (
                   <div>
                     <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
-                      Sponsorship Context
+                      {t("projectModal.sponsorshipContext")}
                     </label>
                     {linkedSponsorship && (
                       <div className="mb-3 border border-border-visible bg-surface p-3 font-mono text-xs">
@@ -1971,20 +1978,20 @@ export default function ProjectDetailsModal({
                             {linkedSponsorship.brandName}
                           </span>
                           <span className="text-text-secondary uppercase tracking-widest">
-                            {linkedSponsorship.status}
+                            {t(`sponsorshipModal.${linkedSponsorship.status.toLowerCase()}`)}
                           </span>
                         </div>
                         <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] uppercase tracking-widest">
                           <div>
-                            <div className="text-text-disabled">Budget</div>
+                            <div className="text-text-disabled">{t("projectModal.budget")}</div>
                             <div className="mt-1 text-success">{formatDealMoney(linkedSponsorship.budget)}</div>
                           </div>
                           <div>
-                            <div className="text-text-disabled">Due</div>
+                            <div className="text-text-disabled">{t("projectModal.due")}</div>
                             <div className="mt-1 text-text-display">{formatDealDate(linkedSponsorship.dueDate)}</div>
                           </div>
                           <div>
-                            <div className="text-text-disabled">Contact</div>
+                            <div className="text-text-disabled">{t("projectModal.contact")}</div>
                             <div className="mt-1 text-text-display break-all">
                               {linkedSponsorship.contactEmail || "—"}
                             </div>
@@ -2002,7 +2009,7 @@ export default function ProjectDetailsModal({
 
                 {/* ── Task Progress — Shot Lists ── */}
                 <div>
-                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">Task Progress</label>
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.taskProgress")}</label>
                   <div className="grid grid-cols-2 gap-6">
 
                     {/* A-ROLL */}
@@ -2025,12 +2032,12 @@ export default function ProjectDetailsModal({
                             onDelete={(id) => deleteShot("a", id)}
                           />
                         )) : (
-                          <span className="text-[10px] font-mono text-text-disabled italic px-2">No shots defined</span>
+                          <span className="text-[10px] font-mono text-text-disabled italic px-2">{t("projectModal.noShotsDefined")}</span>
                         )}
                       </div>
                       <input
                         type="text"
-                        placeholder="+ Add shot..."
+                        placeholder={t("projectModal.addShotPlaceholderShort")}
                         value={aRollDraft}
                         onChange={(e) => setARollDraft(e.target.value)}
                         onKeyDown={(e) => {
@@ -2063,12 +2070,12 @@ export default function ProjectDetailsModal({
                             onDelete={(id) => deleteShot("b", id)}
                           />
                         )) : (
-                          <span className="text-[10px] font-mono text-text-disabled italic px-2">No shots defined</span>
+                          <span className="text-[10px] font-mono text-text-disabled italic px-2">{t("projectModal.noShotsDefined")}</span>
                         )}
                       </div>
                       <input
                         type="text"
-                        placeholder="+ Add shot..."
+                        placeholder={t("projectModal.addShotPlaceholderShort")}
                         value={bRollDraft}
                         onChange={(e) => setBRollDraft(e.target.value)}
                         onKeyDown={(e) => {
@@ -2087,7 +2094,7 @@ export default function ProjectDetailsModal({
                 <div className="pt-1">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <span className="text-[10px] font-mono tracking-widest text-text-secondary uppercase">
-                      Script & Notes
+                      {t("projectModal.scriptNotes")}
                     </span>
                     <span
                       className={cn(
@@ -2119,7 +2126,7 @@ export default function ProjectDetailsModal({
               {/* Created By */}
               <div className="mb-6">
                 <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                  Created By
+                  {t("projectModal.createdBy")}
                 </label>
                 <span className="text-xs font-bold text-text-display uppercase tracking-wider block truncate">
                   {isEditing && project.creator ? project.creator.name : "—"}
@@ -2130,7 +2137,7 @@ export default function ProjectDetailsModal({
               {isEditing && project.contentType === "Sponsored" && (
                 <div className="mb-6">
                   <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                    Client / Brand
+                    {t("projectModal.clientBrand")}
                   </label>
                   <input
                     type="text"
@@ -2149,13 +2156,13 @@ export default function ProjectDetailsModal({
               {/* Scope Deadlines */}
               <div className="mb-6">
                 <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                  Scope Deadlines
+                  {t("projectModal.scopeDeadlines")}
                 </label>
                 {isEditing ? (
                   <div className="flex flex-col gap-4">
                     <div>
                       <div className="text-[10px] font-mono text-text-disabled uppercase tracking-widest mb-1">
-                        Scripting
+                        {t("stageDisplay.Scripting")}
                       </div>
                       <input
                         type="date"
@@ -2172,7 +2179,7 @@ export default function ProjectDetailsModal({
                     </div>
                     <div>
                       <div className="text-[10px] font-mono text-text-disabled uppercase tracking-widest mb-1">
-                        Filming
+                        {t("stageDisplay.Filming")}
                       </div>
                       <input
                         type="date"
@@ -2189,7 +2196,7 @@ export default function ProjectDetailsModal({
                     </div>
                     <div>
                       <div className="text-[10px] font-mono text-text-disabled uppercase tracking-widest mb-1">
-                        Editing
+                        {t("stageDisplay.Editing")}
                       </div>
                       <input
                         type="date"
@@ -2207,7 +2214,7 @@ export default function ProjectDetailsModal({
                   </div>
                 ) : (
                   <span className="text-xs font-bold text-text-display uppercase tracking-wider block">
-                    Not set
+                    {t("projectModal.notSet")}
                   </span>
                 )}
               </div>
@@ -2215,7 +2222,7 @@ export default function ProjectDetailsModal({
               {/* Lead Editor */}
               <div className="mb-6 relative">
                 <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                  Lead Editor
+                  {t("projectModal.leadEditor")}
                 </label>
                 {isEditing ? (
                   <>
@@ -2228,7 +2235,7 @@ export default function ProjectDetailsModal({
                       }}
                       className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
                     >
-                      <option value="" className="bg-surface">Unassigned</option>
+                      <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
                           <option key={u.id} value={u.id} className="bg-surface">
                             {u.name}
@@ -2239,7 +2246,7 @@ export default function ProjectDetailsModal({
                   </>
                 ) : (
                   <span className="text-xs font-bold text-text-disabled uppercase tracking-wider block">
-                    Auto-assigned
+                    {t("projectModal.autoAssigned")}
                   </span>
                 )}
               </div>
@@ -2247,7 +2254,7 @@ export default function ProjectDetailsModal({
               {/* Cameraman */}
               <div className="mb-6 relative">
                 <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                  Cameraman
+                  {t("projectModal.cameraman")}
                 </label>
                 {isEditing ? (
                   <>
@@ -2260,7 +2267,7 @@ export default function ProjectDetailsModal({
                       }}
                       className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
                     >
-                      <option value="" className="bg-surface">Unassigned</option>
+                      <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
                           <option key={u.id} value={u.id} className="bg-surface">
                             {u.name}
@@ -2277,7 +2284,7 @@ export default function ProjectDetailsModal({
               {/* A-Roll Talent */}
               <div className="mb-6 relative">
                 <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                  A-Roll Talent
+                  {t("projectModal.aRollTalent")}
                 </label>
                 {isEditing ? (
                   <>
@@ -2290,7 +2297,7 @@ export default function ProjectDetailsModal({
                       }}
                       className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
                     >
-                      <option value="" className="bg-surface">Unassigned</option>
+                      <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
                           <option key={u.id} value={u.id} className="bg-surface">
                             {u.name}
@@ -2308,11 +2315,11 @@ export default function ProjectDetailsModal({
             {/* ── Divider ── */}
             <div className="border-t border-border-visible my-4" />
 
-            {/* ── Product / Affiliate Links (Ideation planning) ── */}
+            {/* ── {t("projectModal.productAffiliateLinks")} (Ideation planning) ── */}
             {isEditing && (
               <div className="mb-6">
                 <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-2">
-                  Product / Affiliate Links
+                  {t("projectModal.productAffiliateLinks")}
                 </label>
                 <textarea
                   value={productLinks}
@@ -2333,7 +2340,7 @@ export default function ProjectDetailsModal({
 
             {/* ── Platforms ── */}
             <div>
-              <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-3">Platforms</label>
+              <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-3">{t("projectModal.platforms")}</label>
               <div className="flex flex-wrap gap-2">
                 {PLATFORMS.map((p) => (
                   <button
@@ -2360,7 +2367,7 @@ export default function ProjectDetailsModal({
             {/* ── Status Timeline ── */}
             {isEditing && (
               <div>
-                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-3">Pipeline Stage</label>
+                <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-3">{t("projectModal.pipelineStage")}</label>
                 <div className="flex flex-col gap-1">
                   {["Ideation", "Scripting", "Filming", "Editing", "Review", "Published"].map((stage) => {
                     const stageIndex = ["Ideation", "Scripting", "Filming", "Editing", "Review", "Published"].indexOf(stage);
@@ -2387,7 +2394,7 @@ export default function ProjectDetailsModal({
                           "text-[10px] font-mono uppercase tracking-widest transition-colors",
                           isCurrent ? "text-text-display" : isPast ? "text-text-secondary group-hover:text-text-display" : "text-text-disabled group-hover:text-text-display"
                         )}>
-                          {stage}
+                          {t(`stage.${stage}`)}
                         </span>
                         {isCurrent && (
                           <span className="text-[10px] font-mono text-text-secondary ml-auto">←</span>

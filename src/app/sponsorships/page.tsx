@@ -47,7 +47,8 @@ export default async function SponsorshipsPage({
 
     const monthDate = new Date(currentYear, monthIndex, 1);
     const label = monthDate
-      .toLocaleDateString("en-US", { month: "short" })
+      .toLocaleDateString("vi-VN", { month: "short" })
+      .replace(/^Thg\s*/i, "THG ")
       .toUpperCase();
 
     return {

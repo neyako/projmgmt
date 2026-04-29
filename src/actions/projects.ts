@@ -75,7 +75,13 @@ function formatSponsoredDealContext(
     `Client: ${sponsorship.brandName}`,
     sponsorship.contactEmail ? `Contact: ${sponsorship.contactEmail}` : null,
     `Deal Status: ${sponsorship.status}`,
-    sponsorship.budget > 0 ? `Budget: $${sponsorship.budget.toLocaleString("en-US")}` : null,
+    sponsorship.budget > 0
+      ? `Budget: ${new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+          maximumFractionDigits: 0,
+        }).format(sponsorship.budget)}`
+      : null,
     sponsorship.dueDate ? `Due: ${toDateInputValue(sponsorship.dueDate)}` : null,
   ].filter(Boolean);
 

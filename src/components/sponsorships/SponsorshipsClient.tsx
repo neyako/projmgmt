@@ -48,7 +48,11 @@ function formatDate(d?: Date | string | null) {
 }
 
 function formatMoney(value: number) {
-  return `$${value.toLocaleString("en-US")}`;
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export default function SponsorshipsClient({
@@ -263,7 +267,7 @@ export default function SponsorshipsClient({
                     <div className="text-right">
                       <div className="ui-page-kicker">{t("sponsorships.value")}</div>
                       <div className="text-xs font-mono text-success">
-                        ${s.budget.toLocaleString()}
+                        {formatMoney(s.budget)}
                       </div>
                     </div>
                   </div>
@@ -324,7 +328,7 @@ export default function SponsorshipsClient({
                       {s._count?.projects ?? 0}
                     </td>
                     <td className="p-4 text-sm font-mono text-success text-right">
-                      ${s.budget.toLocaleString()}
+                      {formatMoney(s.budget)}
                     </td>
                   </tr>
                 ))}
