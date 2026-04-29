@@ -4,10 +4,20 @@ import { useState, useTransition, useEffect } from "react";
 import { createSponsorship, updateSponsorship, deleteSponsorship } from "@/actions/sponsorships";
 import { useToast } from "@/components/ui/Toast";
 import type { Sponsorship } from "@prisma/client";
-import { useT } from "@/lib/i18n/client";
+import {
+  SUPPORTED_CURRENCIES,
+  convertCurrencyAmount,
+  formatCurrencyAmount,
+  normalizeCurrency,
+  type CurrencyCode,
+  type CurrencyRateSnapshot,
+} from "@/lib/currency";
+import { useLocale, useT } from "@/lib/i18n/client";
 
 interface SponsorshipModalProps {
   sponsorship: Sponsorship | null;
+  preferredCurrency: CurrencyCode;
+  rateSnapshot: CurrencyRateSnapshot;
   onClose: () => void;
   onRefresh: () => void;
 }
@@ -22,9 +32,17 @@ function toDateInputValue(d?: Date | null): string {
   return `${year}-${month}-${day}`;
 }
 
-export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: SponsorshipModalProps) {
+export default function SponsorshipModal({
+  sponsorship,
+  preferredCurrency,
+  rateSnapshot,
+  onClose,
+  onRefresh,
+}: SponsorshipModalProps) {
   const { showToast } = useToast();
   const t = useT();
+  const locale = useLocale();
+  const moneyLocale = locale === "vi" ? "vi-VN" : "en-US";
   const [isPending, startTransition] = useTransition();
 
   const isEditing = !!sponsorship;
@@ -32,9 +50,21 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
   const [brandName, setBrandName] = useState(sponsorship?.brandName || "");
   const [contactEmail, setContactEmail] = useState(sponsorship?.contactEmail || "");
   const [budget, setBudget] = useState(sponsorship?.budget?.toString() || "");
+  const [currency, setCurrency] = useState<CurrencyCode>(
+    normalizeCurrency(sponsorship?.currency)
+  );
   const [status, setStatus] = useState(sponsorship?.status || "Active");
   const [dueDate, setDueDate] = useState(toDateInputValue(sponsorship?.dueDate));
   const [notes, setNotes] = useState(sponsorship?.notes || "");
+
+  const parsedBudget = parseInt(budget, 10) || 0;
+  const convertedPreview = convertCurrencyAmount(
+    parsedBudget,
+    currency,
+    preferredCurrency,
+    rateSnapshot.rates
+  );
+  const shouldShowPreview = parsedBudget > 0 && currency !== preferredCurrency;
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -55,7 +85,8 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
       const data = {
         brandName: brandName.trim(),
         contactEmail: contactEmail.trim() || undefined,
-        budget: parseInt(budget, 10) || 0,
+        budget: parsedBudget,
+        currency,
         status,
         dueDate: dueDate || null,
         notes: notes.trim() || undefined,
@@ -130,16 +161,32 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.budget")}</label>
                 <input
                   type="number"
+                  min="0"
+                  step="1"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
                   className="w-full ui-input p-2 w-full"
                   placeholder={t("sponsorshipModal.budgetPlaceholder")}
                 />
+              </div>
+              <div>
+                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.currency")}</label>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(normalizeCurrency(e.target.value))}
+                  className="w-full ui-input p-2 w-full appearance-none color-scheme-dark"
+                >
+                  {SUPPORTED_CURRENCIES.map((item) => (
+                    <option key={item.code} value={item.code}>
+                      {item.code} / {item.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.status")}</label>
@@ -165,6 +212,22 @@ export default function SponsorshipModal({ sponsorship, onClose, onRefresh }: Sp
                 />
               </div>
             </div>
+
+            {shouldShowPreview && (
+              <div className="border border-border-visible bg-input-surface p-3 font-mono text-xs">
+                <div className="text-[10px] uppercase tracking-widest text-text-secondary">
+                  {t("sponsorshipModal.preferredPreview")}
+                </div>
+                <div className="mt-2 text-success">
+                  {convertedPreview !== null
+                    ? formatCurrencyAmount(convertedPreview, preferredCurrency, moneyLocale)
+                    : t("sponsorships.rateUnavailable")}
+                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-widest text-text-secondary">
+                  {formatCurrencyAmount(parsedBudget, currency, moneyLocale)} {"->"} {preferredCurrency}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.notes")}</label>

@@ -1,20 +1,22 @@
 import { getServerSession } from "next-auth";
 import Shell from "@/components/layout/Shell";
 import { authOptions } from "@/lib/auth";
+import { normalizeCurrency } from "@/lib/currency";
 import { prisma } from "@/lib/prisma";
 import { getT } from "@/lib/i18n/server";
 import AvatarUploadForm from "./AvatarUploadForm";
 import ChangePasswordForm from "./ChangePasswordForm";
 import LanguageForm from "./LanguageForm";
+import CurrencyPreferenceForm from "./CurrencyPreferenceForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions);
   const user = session?.user?.id
-    ? await prisma.user.findUnique({
+      ? await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { name: true, email: true, avatarUrl: true },
+        select: { name: true, email: true, avatarUrl: true, preferredCurrency: true },
       })
     : null;
   const t = await getT();
@@ -66,7 +68,12 @@ export default async function SettingsPage() {
 
           <section className="border-t border-border-visible pt-8 w-full">
             <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">{t("settings.preferences")}</h3>
-            <LanguageForm />
+            <div className="flex flex-col gap-8">
+              <LanguageForm />
+              <CurrencyPreferenceForm
+                currentCurrency={normalizeCurrency(user?.preferredCurrency)}
+              />
+            </div>
           </section>
 
           <section className="border-t border-border-visible pt-8 w-full">

@@ -10,7 +10,8 @@ import { parsePlatforms } from "@/lib/utils";
 import FilmingSplitCard from "./FilmingSplitCard";
 import ReviewPanel from "./ReviewPanel";
 import CardMenu from "./CardMenu";
-import { useT } from "@/lib/i18n/client";
+import { useLocale, useT } from "@/lib/i18n/client";
+import { toIntlLocale, type Locale } from "@/lib/i18n/locales";
 
 interface KanbanCardProps {
   project: ProjectCardData;
@@ -21,12 +22,12 @@ interface KanbanCardProps {
   onRequestPublish?: (project: ProjectCardData) => void;
 }
 
-function formatScopeDeadline(date?: Date | string | null) {
+function formatScopeDeadline(date: Date | string | null | undefined, locale: Locale) {
   if (!date) return "";
   const parsed = typeof date === "string" ? new Date(date) : date;
   if (Number.isNaN(parsed.getTime())) return "";
   return parsed
-    .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+    .toLocaleDateString(toIntlLocale(locale), { month: "short", day: "2-digit" })
     .toUpperCase();
 }
 
@@ -58,6 +59,7 @@ export default function KanbanCard({
     isDragging,
   } = useSortable({ id: project.id });
   const t = useT();
+  const locale = useLocale();
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -178,7 +180,7 @@ export default function KanbanCard({
             {t(scopeDeadline.labelKey)}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-widest whitespace-nowrap text-text-display">
-            {formatScopeDeadline(scopeDeadline.date)}
+            {formatScopeDeadline(scopeDeadline.date, locale)}
           </span>
         </div>
       )}

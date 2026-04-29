@@ -11,7 +11,8 @@ import { updateProjectShotlist } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
 import CardMenu from "./CardMenu";
 import type { ProjectCardData, ShotItem } from "@/types";
-import { useT } from "@/lib/i18n/client";
+import { useLocale, useT } from "@/lib/i18n/client";
+import { toIntlLocale, type Locale } from "@/lib/i18n/locales";
 
 interface FilmingSplitCardProps {
   project: ProjectCardData;
@@ -33,12 +34,12 @@ function calcPercent(shots: ShotItem[]): number {
   return Math.round((done / shots.length) * 100);
 }
 
-function formatScopeDeadline(date?: Date | string | null) {
+function formatScopeDeadline(date: Date | string | null | undefined, locale: Locale) {
   if (!date) return "";
   const parsed = typeof date === "string" ? new Date(date) : date;
   if (Number.isNaN(parsed.getTime())) return "";
   return parsed
-    .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+    .toLocaleDateString(toIntlLocale(locale), { month: "short", day: "2-digit" })
     .toUpperCase();
 }
 
@@ -50,6 +51,7 @@ export default function FilmingSplitCard({
   const [, startTransition] = useTransition();
   const { showToast } = useToast();
   const t = useT();
+  const locale = useLocale();
 
   const platforms = parsePlatforms(project.platformsTargeted);
   const assignmentValues: Array<
@@ -97,7 +99,7 @@ export default function FilmingSplitCard({
   const aRollDone = aRollShots.filter((s) => s.isCompleted).length;
   const bRollDone = bRollShots.filter((s) => s.isCompleted).length;
   const filmingDeadline = project.filmingDueDate
-    ? formatScopeDeadline(project.filmingDueDate)
+    ? formatScopeDeadline(project.filmingDueDate, locale)
     : "";
 
   function getInitials(name: string) {

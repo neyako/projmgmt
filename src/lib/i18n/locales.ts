@@ -5,3 +5,7 @@ export const DEFAULT_LOCALE: Locale = "en";
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
 }
+
+export function toIntlLocale(locale: Locale): string {
+  return locale === "vi" ? "vi-VN" : "en-US";
+}

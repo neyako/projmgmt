@@ -28,8 +28,10 @@ import {
 import { getSponsorshipDeals } from "@/actions/sponsorships";
 import { updateProjectScript } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
-import { useT } from "@/lib/i18n/client";
+import { useLocale, useT } from "@/lib/i18n/client";
+import { toIntlLocale, type Locale } from "@/lib/i18n/locales";
 import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
+import { formatCurrencyAmount } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
@@ -782,12 +784,12 @@ function MarkdownLiveEditor({
   );
 }
 
-function formatPublishDate(d?: Date | string | null): string {
+function formatPublishDate(d: Date | string | null | undefined, locale: Locale): string {
   if (!d) return "Unscheduled";
   const dt = typeof d === "string" ? new Date(d) : d;
   if (Number.isNaN(dt.getTime())) return "Unscheduled";
   return dt
-    .toLocaleDateString("en-US", {
+    .toLocaleDateString(toIntlLocale(locale), {
       year: "numeric",
       month: "short",
       day: "2-digit",
@@ -846,22 +848,18 @@ function todayInputValue(): string {
   return toDateInputValue(new Date());
 }
 
-function formatDealDate(d?: Date | string | null): string {
+function formatDealDate(d: Date | string | null | undefined, locale: Locale): string {
   if (!d) return "—";
   const dt = typeof d === "string" ? new Date(d) : d;
   if (Number.isNaN(dt.getTime())) return "—";
   return dt
-    .toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" })
+    .toLocaleDateString(toIntlLocale(locale), { year: "numeric", month: "short", day: "2-digit" })
     .toUpperCase();
 }
 
-function formatDealMoney(value?: number | null): string {
+function formatDealMoney(value?: number | null, currency?: string | null): string {
   if (!value) return "—";
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatCurrencyAmount(value, currency || "VND");
 }
 
 export default function ProjectDetailsModal({
@@ -872,6 +870,7 @@ export default function ProjectDetailsModal({
 }: ProjectDetailsModalProps) {
   const { showToast } = useToast();
   const t = useT();
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<ProjectUser[]>([]);
   const [sponsorshipDeals, setSponsorshipDeals] = useState<SponsorshipDealOption[]>([]);
@@ -1594,7 +1593,10 @@ export default function ProjectDetailsModal({
                           </option>
                           {sponsorshipDeals.map((deal) => (
                             <option key={deal.id} value={deal.id} className="bg-surface text-text-primary">
-                              {deal.brandName} / {t(`sponsorshipModal.${deal.status.toLowerCase()}`)} / {formatDealMoney(deal.budget)}
+                              {deal.brandName} / {t(`sponsorshipModal.${deal.status.toLowerCase()}`)} / {formatDealMoney(deal.budget, deal.currency)}
+                              {deal.currency !== deal.preferredCurrency && deal.budgetPreferred !== null
+                                ? ` -> ${formatDealMoney(deal.budgetPreferred, deal.preferredCurrency)}`
+                                : ""}
                             </option>
                           ))}
                         </select>
@@ -1615,11 +1617,22 @@ export default function ProjectDetailsModal({
                         <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] uppercase tracking-widest">
                           <div>
                             <div className="text-text-disabled">{t("projectModal.budget")}</div>
-                            <div className="mt-1 text-success">{formatDealMoney(selectedSponsorship.budget)}</div>
+                            <div className="mt-1 text-success">
+                              {formatDealMoney(selectedSponsorship.budget, selectedSponsorship.currency)}
+                            </div>
+                            {selectedSponsorship.currency !== selectedSponsorship.preferredCurrency &&
+                              selectedSponsorship.budgetPreferred !== null && (
+                                <div className="mt-1 text-text-secondary">
+                                  {formatDealMoney(
+                                    selectedSponsorship.budgetPreferred,
+                                    selectedSponsorship.preferredCurrency
+                                  )}
+                                </div>
+                              )}
                           </div>
                           <div>
                             <div className="text-text-disabled">{t("projectModal.due")}</div>
-                            <div className="mt-1 text-text-display">{formatDealDate(selectedSponsorship.dueDate)}</div>
+                            <div className="mt-1 text-text-display">{formatDealDate(selectedSponsorship.dueDate, locale)}</div>
                           </div>
                           <div>
                             <div className="text-text-disabled">{t("projectModal.contact")}</div>
@@ -1699,7 +1712,7 @@ export default function ProjectDetailsModal({
                             {t("projectModal.scheduled")}
                           </span>
                           <span className="text-sm font-mono text-text-display tracking-widest">
-                            {formatPublishDate(project.publishedAt ?? project.publishDate)}
+                            {formatPublishDate(project.publishedAt ?? project.publishDate, locale)}
                           </span>
                         </div>
                       </div>
@@ -1984,11 +1997,13 @@ export default function ProjectDetailsModal({
                         <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] uppercase tracking-widest">
                           <div>
                             <div className="text-text-disabled">{t("projectModal.budget")}</div>
-                            <div className="mt-1 text-success">{formatDealMoney(linkedSponsorship.budget)}</div>
+                            <div className="mt-1 text-success">
+                              {formatDealMoney(linkedSponsorship.budget, linkedSponsorship.currency)}
+                            </div>
                           </div>
                           <div>
                             <div className="text-text-disabled">{t("projectModal.due")}</div>
-                            <div className="mt-1 text-text-display">{formatDealDate(linkedSponsorship.dueDate)}</div>
+                            <div className="mt-1 text-text-display">{formatDealDate(linkedSponsorship.dueDate, locale)}</div>
                           </div>
                           <div>
                             <div className="text-text-disabled">{t("projectModal.contact")}</div>

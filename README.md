@@ -5,7 +5,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)
 
-Self-hosted production management for a small video team: pipeline tracking, filming shotlists, review loops, sponsorships, archive, analytics, and NAS-aware asset paths in a strict terminal-inspired UI.
+Self-hosted production management for a small video team: pipeline tracking, filming shotlists, review loops, multi-currency sponsorships, archive, analytics, and NAS-aware asset paths in a strict terminal-inspired UI.
 
 ![Pipeline Kanban board](design/screenshots/kanban_pipeline.png)
 
@@ -13,17 +13,18 @@ Self-hosted production management for a small video team: pipeline tracking, fil
 
 ## Overview
 
-projmgmt replaces generic project management tools with a focused workflow for high-bandwidth content teams. It is built around local storage paths, Nextcloud review links, split A-Roll/B-Roll filming checklists, and platform-specific performance tracking.
+projmgmt replaces generic project management tools with a focused workflow for high-bandwidth content teams. It is built around local storage paths, Nextcloud-backed review loops, split A-Roll/B-Roll filming checklists, sponsor-deal context with currency conversion, and platform-specific performance tracking.
 
 Core areas:
 
 - **Pipeline** — drag-and-drop Kanban board across `Ideation`, `Scripting`, `Filming`, `Editing`, `Review`.
+- **Nextcloud asset automation** — project folders are provisioned through WebDAV, expected drafts are scanned by version, and completed folders can be moved into the archive path.
 - **Publishing checklist** — moving to `Published` opens a final metadata modal before the card leaves the board.
 - **Archive** — published and scrapped projects live outside the active pipeline.
 - **Analytics** — YouTube, Meta, and TikTok metrics are synced and displayed as per-platform totals.
-- **Sponsorships** — brand-deal CRM tied to the production workflow.
+- **Sponsorships** — brand-deal CRM tied to Sponsored project creation, briefing context, project counts, and per-deal source currencies converted to each user's preferred currency.
 - **Team** — user roster and role management.
-- **Settings** — avatar upload, password change, 2FA.
+- **Settings** — avatar upload, password change, language, preferred currency, 2FA.
 
 ### Screens
 
@@ -64,14 +65,20 @@ Core areas:
 
 ## Workflow Rules
 
+- Creating a project attempts to provision a matching folder in `NEXTCLOUD_BASE_PATH`.
+- Sponsored projects must be linked to an `Active` or `Pending` sponsorship deal; the deal context is copied into the project briefing snapshot.
+- Sponsorship deal budgets preserve their source currency. Sponsorship summaries and rows convert those values back to the signed-in user's preferred currency, with source amounts shown when they differ.
 - `Filming -> Editing` requires all parsed `aRollShots` and `bRollShots` to be complete.
 - `Editing -> Review` requires a Nextcloud review link.
-- Review rejection returns the project to `Editing` and stores feedback on the card.
-- Published projects move out of `/pipeline` and into `/archive`.
+- The Asset Management scanner looks for the current expected filename prefix: `draft {draftVersion} - {project folder name}`. The match is case-insensitive and may include any file extension.
+- When a draft is detected, the review link is stored on the project and the scanner button hides until the current link is cleared by rejection.
+- Review rejection returns the project to `Editing`, stores feedback on the card, clears `reviewLink`, and increments `draftVersion` so the next scan looks for the next draft.
+- Published projects move out of `/pipeline` and into `/archive`; when Nextcloud archive settings are present, the project folder is moved from the working base path to `NEXTCLOUD_ARCHIVE_PATH/<year>`.
 - Archive and Analytics totals are computed from platform-specific columns:
   - `youtubeViews`, `metaViews`, `tiktokViews`
   - `youtubeLikes`, `metaLikes`, `tiktokLikes`
   - `youtubeComments`, `metaComments`, `tiktokComments`
+- Pipeline card month labels follow the active language. Vietnamese users see Vietnamese month labels in deadline strips and related project modal dates.
 
 ### Roles
 
@@ -140,9 +147,13 @@ TIKTOK_RAPIDAPI_KEY=""
 NEXTCLOUD_URL=""
 NEXTCLOUD_USER=""
 NEXTCLOUD_PASSWORD=""
-NEXTCLOUD_BASE_PATH="/Studio_Projects"
-NEXTCLOUD_ARCHIVE_PATH="/Done"
+NEXTCLOUD_BASE_PATH="/Media/Source/Studio/Working"
+NEXTCLOUD_ARCHIVE_PATH="/Media/Source/Studio/Done"
 ```
+
+Nextcloud paths are WebDAV paths relative to the authenticated user's files root. `NEXTCLOUD_BASE_PATH` is where active project folders are created and scanned. `NEXTCLOUD_ARCHIVE_PATH` is optional for draft scanning but required for automatic folder moves on approval/publish.
+
+Currency conversion uses the no-key [ExchangeRate-API Open Access](https://www.exchangerate-api.com/docs/free) endpoint. Rates are cached in SQLite, warmed on server start, refreshed daily by cron, and discreetly attributed in the Sponsorships page.
 
 #### 4. Initialize SQLite
 
@@ -274,8 +285,8 @@ Main local paths:
 - `src/app/` — App Router pages, layouts, API routes, global CSS, and app-level actions.
 - `src/actions/` — primary Server Actions for database mutations.
 - `src/components/` — layout, Kanban, modal, table, analytics, sponsorship, team, UI components.
-- `src/lib/` — auth, roles, Prisma client, constants, helpers.
-- `src/services/` — cron and external analytics service helpers.
+- `src/lib/` — auth, roles, Prisma client, constants, currency conversion helpers, Nextcloud WebDAV service, helpers.
+- `src/services/` — cron, currency-rate refresh scheduling, and external analytics service helpers.
 - `src/types/` — shared types layered on Prisma models.
 - `src/utils/nasPaths.ts` — OS-aware SMB path generation.
 - `prisma/schema.prisma` — SQLite schema.
@@ -305,6 +316,18 @@ Several fields are JSON strings in SQLite and must be parsed/stringified by the 
 - `thumbnails`
 
 `folderName` is the source of truth for local media location. RAW paths are generated from `NEXT_PUBLIC_NAS_IP`, `NEXT_PUBLIC_NAS_SHARE`, and `NEXT_PUBLIC_NAS_ROOT_DIR`; do not hardcode SMB roots in components.
+
+Nextcloud draft review links are internal file links generated from WebDAV `fileid` metadata. Editors should name review files as `draft 1 - project folder name.ext`, `draft 2 - project folder name.ext`, and so on. The scanner uses `Project.draftVersion` and only accepts the currently expected number.
+
+Sponsored projects use `Project.sponsorshipId` to link back to a `Sponsorship` row. The Sponsorships page shows linked project counts, while the project modal displays the selected brand, status, source budget/currency, due date, contact, and briefing snapshot.
+
+Multi-currency sponsorship support uses:
+
+- `User.preferredCurrency` — preferred display currency for sponsorship totals.
+- `Sponsorship.budget` and `Sponsorship.currency` — original deal amount and source currency.
+- `CurrencyRate` — cached exchange-rate pairs generated from the USD-based upstream response.
+
+Do not store converted sponsorship display values back onto sponsorship rows. Convert at read/render time with the helpers in `src/lib/currency.ts` and `src/lib/currencyRates.ts`.
 
 ## License
 

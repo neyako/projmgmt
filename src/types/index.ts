@@ -96,6 +96,7 @@ export type ProjectCardData = Pick<
     brandName: string;
     contactEmail?: string | null;
     budget?: number;
+    currency?: string | null;
     status: string;
     dueDate?: Date | string | null;
     notes?: string | null;

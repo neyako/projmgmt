@@ -1,11 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import {
+  convertCurrencyAmount,
+  normalizeCurrency,
+} from "@/lib/currency";
+import { ensureFreshCurrencyRates } from "@/lib/currencyRates";
 import { prisma } from "@/lib/prisma";
+import { getPreferredCurrencyForUser } from "@/lib/userPreferences";
 
 type ActionResult<T = unknown> = { success: true; data: T } | { success: false; error: string };
 
 export async function getSponsorshipDeals() {
+  const session = await getServerSession(authOptions);
+  const preferredCurrency = await getPreferredCurrencyForUser(session?.user?.id);
+  const rateSnapshot = await ensureFreshCurrencyRates();
   const deals = await prisma.sponsorship.findMany({
     where: {
       status: { in: ["Active", "Pending"] },
@@ -15,6 +26,7 @@ export async function getSponsorshipDeals() {
       brandName: true,
       contactEmail: true,
       budget: true,
+      currency: true,
       status: true,
       dueDate: true,
       notes: true,
@@ -24,6 +36,14 @@ export async function getSponsorshipDeals() {
 
   return deals.map((deal) => ({
     ...deal,
+    currency: normalizeCurrency(deal.currency),
+    preferredCurrency,
+    budgetPreferred: convertCurrencyAmount(
+      deal.budget,
+      deal.currency,
+      preferredCurrency,
+      rateSnapshot.rates
+    ),
     dueDate: deal.dueDate ? deal.dueDate.toISOString() : null,
   }));
 }
@@ -32,6 +52,7 @@ export async function createSponsorship(data: {
   brandName: string;
   contactEmail?: string;
   budget: number;
+  currency?: string;
   status: string;
   dueDate?: string | null;
   notes?: string;
@@ -42,12 +63,14 @@ export async function createSponsorship(data: {
         brandName: data.brandName,
         contactEmail: data.contactEmail || null,
         budget: data.budget,
+        currency: normalizeCurrency(data.currency),
         status: data.status,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         notes: data.notes || null,
       },
     });
     revalidatePath("/sponsorships");
+    revalidatePath("/pipeline");
     return { success: true, data: sponsorship };
   } catch (err) {
     console.error("[createSponsorship]", err);
@@ -59,6 +82,7 @@ export async function updateSponsorship(id: string, data: {
   brandName?: string;
   contactEmail?: string;
   budget?: number;
+  currency?: string;
   status?: string;
   dueDate?: string | null;
   notes?: string;
@@ -70,12 +94,15 @@ export async function updateSponsorship(id: string, data: {
         ...(data.brandName !== undefined && { brandName: data.brandName }),
         ...(data.contactEmail !== undefined && { contactEmail: data.contactEmail || null }),
         ...(data.budget !== undefined && { budget: data.budget }),
+        ...(data.currency !== undefined && { currency: normalizeCurrency(data.currency) }),
         ...(data.status !== undefined && { status: data.status }),
         ...(data.dueDate !== undefined && { dueDate: data.dueDate ? new Date(data.dueDate) : null }),
         ...(data.notes !== undefined && { notes: data.notes || null }),
       },
     });
     revalidatePath("/sponsorships");
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
     return { success: true, data: sponsorship };
   } catch (err) {
     console.error("[updateSponsorship]", err);
@@ -87,6 +114,8 @@ export async function deleteSponsorship(id: string): Promise<ActionResult> {
   try {
     await prisma.sponsorship.delete({ where: { id } });
     revalidatePath("/sponsorships");
+    revalidatePath("/pipeline");
+    revalidatePath("/archive");
     return { success: true, data: null };
   } catch (err) {
     console.error("[deleteSponsorship]", err);

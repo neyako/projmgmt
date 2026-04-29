@@ -32,6 +32,7 @@ export default async function PipelinePage({
           brandName: true,
           contactEmail: true,
           budget: true,
+          currency: true,
           status: true,
           dueDate: true,
           notes: true,

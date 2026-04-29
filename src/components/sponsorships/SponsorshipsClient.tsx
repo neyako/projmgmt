@@ -4,10 +4,16 @@ import { useState, useEffect, useMemo } from "react";
 import type { Sponsorship } from "@prisma/client";
 import SponsorshipModal from "@/components/modals/SponsorshipModal";
 import { useRouter } from "next/navigation";
-import { useT } from "@/lib/i18n/client";
+import {
+  formatCurrencyAmount,
+  type CurrencyCode,
+  type CurrencyRateSnapshot,
+} from "@/lib/currency";
+import { useLocale, useT } from "@/lib/i18n/client";
 
 type TabKey = "All" | "Active" | "Pending" | "Archived";
 type SponsorshipListItem = Sponsorship & {
+  budgetPreferred: number | null;
   _count?: {
     projects: number;
   };
@@ -18,6 +24,7 @@ export type SponsorshipSummary = {
   pendingTotal: number;
   currentMonthTotal: number;
   currentMonthLabel: string;
+  missingRateCount: number;
   monthlyTotals: { key: string; label: string; total: number }[];
 };
 
@@ -47,23 +54,36 @@ function formatDate(d?: Date | string | null) {
     .toUpperCase();
 }
 
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(value);
+function formatRateDate(d?: string | null) {
+  if (!d) return "—";
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return "—";
+  return dt
+    .toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    .toUpperCase();
 }
 
 export default function SponsorshipsClient({
   initialSponsorships,
+  preferredCurrency,
+  rateSnapshot,
   summary,
 }: {
   initialSponsorships: SponsorshipListItem[];
+  preferredCurrency: CurrencyCode;
+  rateSnapshot: CurrencyRateSnapshot;
   summary: SponsorshipSummary;
 }) {
   const router = useRouter();
   const t = useT();
+  const locale = useLocale();
+  const moneyLocale = locale === "vi" ? "vi-VN" : "en-US";
   const [sponsorships, setSponsorships] = useState(initialSponsorships);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,6 +127,31 @@ export default function SponsorshipsClient({
     router.refresh();
   }
 
+  function formatMoney(value: number, currency: string = preferredCurrency) {
+    return formatCurrencyAmount(value, currency, moneyLocale);
+  }
+
+  function renderDealValue(sponsorship: SponsorshipListItem, align: "right" | "left" = "right") {
+    const sourceCurrency = sponsorship.currency || preferredCurrency;
+    const hasConversion = sponsorship.budgetPreferred !== null;
+    const isConverted = sourceCurrency !== preferredCurrency;
+
+    return (
+      <div className={align === "right" ? "text-right" : "text-left"}>
+        <div className="text-xs font-mono text-success break-words">
+          {hasConversion
+            ? formatMoney(sponsorship.budgetPreferred ?? 0)
+            : t("sponsorships.rateUnavailable")}
+        </div>
+        {isConverted && (
+          <div className="mt-1 text-[10px] font-mono uppercase tracking-widest text-text-secondary break-words">
+            {t("sponsorships.source")}: {formatMoney(sponsorship.budget, sourceCurrency)}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="h-full w-full overflow-auto p-lg">
@@ -146,8 +191,29 @@ export default function SponsorshipsClient({
               {t("sponsorships.newSponsorship")}
             </button>
           </div>
-          <div className="ui-page-meta mt-2">
-            {filtered.length} {filtered.length === 1 ? t("sponsorships.deal") : t("sponsorships.deals")}
+          <div className="ui-page-meta mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>
+              {filtered.length} {filtered.length === 1 ? t("sponsorships.deal") : t("sponsorships.deals")}
+            </span>
+            <span>
+              {t("sponsorships.preferredCurrency")}: {preferredCurrency}
+            </span>
+            <span>
+              {t("sponsorships.ratesUpdated")}: {formatRateDate(rateSnapshot.fetchedAt)}
+            </span>
+            <a
+              href={rateSnapshot.providerUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-text-secondary hover:text-text-display transition-colors"
+            >
+              {t("sponsorships.rateProvider")}
+            </a>
+            {summary.missingRateCount > 0 && (
+              <span className="text-warning">
+                {t("sponsorships.rateMissing", { count: summary.missingRateCount })}
+              </span>
+            )}
           </div>
         </div>
 
@@ -266,9 +332,7 @@ export default function SponsorshipsClient({
                     </div>
                     <div className="text-right">
                       <div className="ui-page-kicker">{t("sponsorships.value")}</div>
-                      <div className="text-xs font-mono text-success">
-                        {formatMoney(s.budget)}
-                      </div>
+                      {renderDealValue(s)}
                     </div>
                   </div>
                 </button>
@@ -328,7 +392,7 @@ export default function SponsorshipsClient({
                       {s._count?.projects ?? 0}
                     </td>
                     <td className="p-4 text-sm font-mono text-success text-right">
-                      {formatMoney(s.budget)}
+                      {renderDealValue(s)}
                     </td>
                   </tr>
                 ))}
@@ -341,6 +405,8 @@ export default function SponsorshipsClient({
       {isModalOpen && (
         <SponsorshipModal
           sponsorship={selectedSponsorship}
+          preferredCurrency={preferredCurrency}
+          rateSnapshot={rateSnapshot}
           onClose={() => setIsModalOpen(false)}
           onRefresh={handleRefresh}
         />

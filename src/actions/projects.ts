@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { VALID_TRANSITIONS, type KanbanStage } from "@/lib/constants";
+import { formatCurrencyAmount, normalizeCurrency } from "@/lib/currency";
 import {
   archiveNextcloudFolder,
   generateDraftReviewLink,
@@ -71,16 +72,13 @@ function formatSponsoredDealContext(
   sponsorship: Sponsorship,
   projectBriefing?: string
 ) {
+  const currency = normalizeCurrency(sponsorship.currency);
   const header = [
     `Client: ${sponsorship.brandName}`,
     sponsorship.contactEmail ? `Contact: ${sponsorship.contactEmail}` : null,
     `Deal Status: ${sponsorship.status}`,
     sponsorship.budget > 0
-      ? `Budget: ${new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-          maximumFractionDigits: 0,
-        }).format(sponsorship.budget)}`
+      ? `Budget: ${formatCurrencyAmount(sponsorship.budget, currency)}`
       : null,
     sponsorship.dueDate ? `Due: ${toDateInputValue(sponsorship.dueDate)}` : null,
   ].filter(Boolean);

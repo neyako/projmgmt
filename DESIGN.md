@@ -174,6 +174,7 @@ Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves
 - Title: `text-style-subheading text-text-primary font-[family-name:var(--font-heading)]`. Card menu (`CardMenu`) sits to the right.
 - Tags: `Tag` component (`text-[9px] uppercase border border-border-visible px-2 py-[2px]`).
 - Rejection feedback (Editing + `reviewFeedback`): card border becomes `border-accent/30`; injects `mt-3 p-2 bg-accent-subtle border-l-2 border-accent` block with `REVISION NOTES` label and `line-clamp-3` body.
+- Deadline strips (Scripting / Filming / Editing due dates): compact `border border-border-visible bg-input-surface px-2 py-1.5`, label on the left, date on the right. Month names must use the active app locale (`APR 29` in English, `29 THG 4` in Vietnamese).
 - Footer: `mt-sm pt-sm border-t border-border` divider with 6-char project ID `#XXXXXX` in `text-style-caption text-text-secondary`, plus the assignee stack on the right.
 
 **Assignee Stack** — [KanbanCard.tsx:46-205](src/components/kanban/KanbanCard.tsx:46)
@@ -201,6 +202,10 @@ Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves
 - Inputs use the underlined `Input` component or `.ui-input` / `.ui-select` / `.ui-textarea` for bordered controls.
 - Buttons use bracket notation for outline actions (`[ APPROVE ]`, `[ UPLOAD AVATAR ]`) or `Button` with `variant="primary"` / `.ui-button-primary` for high-contrast fills.
 - Asset Management RAW row: single attached strip (`bg-input-surface border border-border-visible`) with left RAW label, center editable/view state, right utility actions. View state shows OS badge (`[  ]` / `[ ⊞ ]`) and generated NAS path. Edit state is inline text with Enter-to-save.
+- Asset Management Nextcloud row: review link input stays underlined and compact. When no link exists, the scanner appears as a terminal command button labeled `[ SCAN FOR DRAFT {version} ]`; while running it becomes `[ SCANNING... ]`. Once a link is detected, hide the scanner and show only the stored link/open affordance until rejection clears the link.
+- Sponsored create mode adds a required Sponsorship Deal select above the briefing fields. The selected deal preview is a sharp bordered context block with brand, status, source budget, preferred-currency equivalent when applicable, due date, contact, and notes. Keep this block informational and dense; do not turn it into a decorative marketing card.
+- Sponsored project edit mode shows Sponsorship Context in the left modal column and the linked Client / Brand in the metadata sidebar. Preserve uppercase labels, mono metadata, and semantic status/value colors.
+- Sponsorship create/edit modal uses a source currency select directly beside Budget. When the selected source currency differs from the user's preferred currency, show a compact bordered preferred-currency preview below the control row.
 - Interactive metadata sidebar: platform chips and pipeline-stage list support click-to-update with hover transitions and disabled pending states. Terminal typography preserved.
 
 **Destructive Actions**
@@ -228,6 +233,8 @@ Prefer the semantic class set ([globals.css:426-454](src/app/globals.css:426)) o
 
 **Tab Filters**: huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive `text-gray-600` (consider migrating to `text-text-disabled`); active `text-text-display` wrapped `[ ACTIVE ]`. Header actions (e.g. `NEW SPONSORSHIP`) align right in the bottom-bordered tab row.
 
+**Sponsorship Deal Rows**: table and mobile cards include a compact linked project count. Render the count as plain mono data, not a badge; the row is still primarily about brand, status, contact, due date, and deal value. Deal value renders in the current user's preferred currency, with the source amount underneath when it differs. The header metadata includes preferred currency, last rate refresh, a discreet provider attribution link, and any missing-rate warning in `text-warning`.
+
 **Archive Metric Cells**: Views/Likes/Comments render grand totals from platform columns (`youtube* + meta* + tiktok*`) and display with locale separators (`toLocaleString()`).
 
 **Analytics Performer Rows**: platform chips (`YT`, `IG`, `TT`) and per-platform metric strings render only for selected/synced platforms. Format badges (`Short Form`, `Long Form`) sit inline with the title using tiny bordered uppercase tokens.
@@ -236,6 +243,7 @@ Prefer the semantic class set ([globals.css:426-454](src/app/globals.css:426)) o
 - **Layout**: `max-w-[48rem]` centered. Categories separated by `border-t border-border-visible pt-8`.
 - **Inputs**: transparent under-bordered `border-0 border-b border-border-visible`.
 - **Avatar Upload Form** ([AvatarUploadForm.tsx](src/app/settings/AvatarUploadForm.tsx)): preview chip is `w-20 h-20 border border-border-visible bg-surface` (sharp). Action button uses bracket notation `[ UPLOAD AVATAR ]`. Files land in `/public/uploads/avatars/*`; the directory is git-tracked via `.gitkeep` and uploads are gitignored.
+- **Currency Preference Form** ([CurrencyPreferenceForm.tsx](src/app/settings/CurrencyPreferenceForm.tsx)): lives under Preferences beside Language. Use `.ui-select`, mono uppercase labels, and save-on-select behavior with toast feedback.
 - **Save Action**: bottom-anchored, right-aligned, sharp `bg-text-display text-text-inverse` (or `Button variant="primary"`).
 
 ---

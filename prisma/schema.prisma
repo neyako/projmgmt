@@ -19,6 +19,7 @@ model User {
   twoFactorEnabled Boolean  @default(false)
   twoFactorSecret  String?
   language         String   @default("en") // "en" | "vi"
+  preferredCurrency String  @default("VND")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -160,6 +161,7 @@ model Sponsorship {
   brandName     String
   contactEmail  String?
   budget        Int      @default(0)
+  currency      String   @default("VND")
   status        String   @default("Active") // Active | Completed | Cancelled
   dueDate       DateTime?
   notes         String?
@@ -168,6 +170,21 @@ model Sponsorship {
 
   projects      Project[]
 }
+
+model CurrencyRate {
+  id             String   @id @default(cuid())
+  baseCurrency   String
+  targetCurrency String
+  rate           Float
+  provider       String   @default("ExchangeRate-API Open Access")
+  fetchedAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([baseCurrency, targetCurrency])
+  @@index([fetchedAt])
+}
+
 model Analytics {
   id        String   @id @default(cuid())
   platform  String   // YouTube | TikTok | Instagram | Meta
