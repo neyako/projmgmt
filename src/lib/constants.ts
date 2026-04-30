@@ -49,6 +49,23 @@ export const PLATFORMS = [
 
 export type Platform = (typeof PLATFORMS)[number];
 
+export const SHORT_FORM_PLATFORMS = [
+  "Facebook",
+  "YT_Shorts",
+  "TikTok",
+] as const satisfies readonly Platform[];
+
+export const LONG_FORM_PLATFORMS = [
+  "Facebook",
+  "YouTube",
+] as const satisfies readonly Platform[];
+
+export function getPlatformsForFormat(format: string): readonly Platform[] {
+  if (format === "Short_Form") return SHORT_FORM_PLATFORMS;
+  if (format === "Long_Form") return LONG_FORM_PLATFORMS;
+  return PLATFORMS;
+}
+
 // ─── COLUMN TRANSITION RULES ────────────────────────────
 export const VALID_TRANSITIONS: Record<KanbanStage, KanbanStage[]> = {
   Ideation: ["Scripting", "Filming"],

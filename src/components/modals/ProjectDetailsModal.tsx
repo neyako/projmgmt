@@ -26,12 +26,17 @@ import {
   scanForDraft,
 } from "@/actions/projects";
 import { getSponsorshipDeals } from "@/actions/sponsorships";
-import { getNasConfig } from "@/actions/settings";
+import { getNasConfig, getProjectFormSettings } from "@/actions/settings";
 import { updateProjectScript } from "@/app/actions";
 import { useToast } from "@/components/ui/Toast";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { toIntlLocale, type Locale } from "@/lib/i18n/locales";
-import { CONTENT_TYPES, FORMATS, PLATFORMS } from "@/lib/constants";
+import { FORMATS, getPlatformsForFormat } from "@/lib/constants";
+import {
+  DEFAULT_CONTENT_TYPE_OPTIONS,
+  getContentTypeLabel,
+  type ContentTypeOption,
+} from "@/lib/appSettingsConfig";
 import { formatCurrencyAmount } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
@@ -875,6 +880,9 @@ export default function ProjectDetailsModal({
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<ProjectUser[]>([]);
   const [sponsorshipDeals, setSponsorshipDeals] = useState<SponsorshipDealOption[]>([]);
+  const [contentTypeOptions, setContentTypeOptions] = useState<ContentTypeOption[]>(
+    DEFAULT_CONTENT_TYPE_OPTIONS
+  );
 
   const isEditing = !!project;
 
@@ -927,6 +935,10 @@ export default function ProjectDetailsModal({
   const [isEditingRaw, setIsEditingRaw] = useState(!project?.folderName);
   const [tempFolderName, setTempFolderName] = useState(project?.folderName || "");
   const [isSavingIds, startSaveIds] = useTransition();
+  const visiblePlatforms = useMemo(
+    () => Array.from(getPlatformsForFormat(format)),
+    [format]
+  );
 
   useEffect(() => {
     getUsers().then(setUsers);
@@ -939,6 +951,11 @@ export default function ProjectDetailsModal({
       .then(setNasConfig)
       .catch((error) => {
         console.error("[ProjectDetailsModal:getNasConfig]", error);
+      });
+    getProjectFormSettings()
+      .then((settings) => setContentTypeOptions(settings.contentTypes))
+      .catch((error) => {
+        console.error("[ProjectDetailsModal:getProjectFormSettings]", error);
       });
   }, []);
 
@@ -1029,6 +1046,12 @@ export default function ProjectDetailsModal({
   }, [project]);
 
   useEffect(() => {
+    if (project) return;
+    if (contentTypeOptions.some((option) => option.value === contentType)) return;
+    setContentType(contentTypeOptions[0]?.value ?? "Organic");
+  }, [contentType, contentTypeOptions, project]);
+
+  useEffect(() => {
     if (!project) return;
 
     if (scriptSaveTimerRef.current) {
@@ -1074,6 +1097,12 @@ export default function ProjectDetailsModal({
     setPlatforms((prev) =>
       prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
     );
+  }
+
+  function handleFormatSelect(nextFormat: string) {
+    setFormat(nextFormat);
+    const allowed = new Set<string>(getPlatformsForFormat(nextFormat));
+    setPlatforms((prev) => prev.filter((platform) => allowed.has(platform)));
   }
 
   function handleContentTypeSelect(nextContentType: string) {
@@ -1490,7 +1519,7 @@ export default function ProjectDetailsModal({
       <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-5xl ui-panel flex flex-col md:max-h-[90vh]">
+      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-5xl ui-panel flex flex-col md:max-h-[90vh] motion-panel-in">
 
         {/* ─── HEADER ─── */}
         <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
@@ -1505,7 +1534,7 @@ export default function ProjectDetailsModal({
                   {project.status}
                 </span>
                 <span className="border border-border-visible text-text-secondary px-2 py-1 text-[10px] font-mono uppercase">
-                  {project.contentType.replace("_", " ")}
+                  {getContentTypeLabel(contentTypeOptions, project.contentType, locale)}
                 </span>
                 <span className="border border-border-visible text-text-secondary px-2 py-1 text-[10px] font-mono uppercase">
                   {project.format.replace("_", " ")}
@@ -1547,11 +1576,11 @@ export default function ProjectDetailsModal({
                 <div>
                   <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.contentType")}</label>
                   <div className="flex gap-2 flex-wrap">
-                    {CONTENT_TYPES.map((ct) => (
-                      <button key={ct} type="button" onClick={() => handleContentTypeSelect(ct)} className={cn(
+                    {contentTypeOptions.map((ct) => (
+                      <button key={ct.value} type="button" onClick={() => handleContentTypeSelect(ct.value)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-                        contentType === ct ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
-                      )}>{t(`contentType.${ct}`)}</button>
+                        contentType === ct.value ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
+                      )}>{getContentTypeLabel(contentTypeOptions, ct.value, locale)}</button>
                     ))}
                   </div>
                 </div>
@@ -1561,7 +1590,7 @@ export default function ProjectDetailsModal({
                   <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.format")}</label>
                   <div className="flex gap-2 flex-wrap">
                     {FORMATS.map((f) => (
-                      <button key={f} type="button" onClick={() => setFormat(f)} className={cn(
+                      <button key={f} type="button" onClick={() => handleFormatSelect(f)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
                         format === f ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
                       )}>{t(`format.${f}`)}</button>
@@ -1573,7 +1602,7 @@ export default function ProjectDetailsModal({
                 <div>
                   <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("projectModal.platforms")}</label>
                   <div className="flex gap-2 flex-wrap">
-                    {PLATFORMS.map((p) => (
+                    {visiblePlatforms.map((p) => (
                       <button key={p} type="button" onClick={() => togglePlatform(p)} className={cn(
                         "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
                         platforms.includes(p) ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
@@ -2364,7 +2393,7 @@ export default function ProjectDetailsModal({
             <div>
               <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest block mb-3">{t("projectModal.platforms")}</label>
               <div className="flex flex-wrap gap-2">
-                {PLATFORMS.map((p) => (
+                {visiblePlatforms.map((p) => (
                   <button
                     key={p}
                     type="button"

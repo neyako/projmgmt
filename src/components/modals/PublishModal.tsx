@@ -108,7 +108,7 @@ export default function PublishModal({
         onClick={() => !isPending && onClose()}
       />
 
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[48rem] ui-panel flex flex-col md:max-h-[90vh]">
+      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[48rem] ui-panel flex flex-col md:max-h-[90vh] motion-panel-in">
 
         <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
           <div className="flex-1 min-w-0">

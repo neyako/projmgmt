@@ -10,6 +10,7 @@ import {
   type CurrencyRateSnapshot,
 } from "@/lib/currency";
 import { useLocale, useT } from "@/lib/i18n/client";
+import { toIntlLocale, type Locale } from "@/lib/i18n/locales";
 
 type TabKey = "All" | "Active" | "Pending" | "Archived";
 type SponsorshipListItem = Sponsorship & {
@@ -45,21 +46,21 @@ function statusDotColor(status: string): string {
   }
 }
 
-function formatDate(d?: Date | string | null) {
+function formatDate(d: Date | string | null | undefined, locale: Locale) {
   if (!d) return "—";
   const dt = typeof d === "string" ? new Date(d) : d;
   if (Number.isNaN(dt.getTime())) return "—";
   return dt
-    .toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" })
+    .toLocaleDateString(toIntlLocale(locale), { year: "numeric", month: "short", day: "2-digit" })
     .toUpperCase();
 }
 
-function formatRateDate(d?: string | null) {
+function formatRateDate(d: string | null | undefined, locale: Locale) {
   if (!d) return "—";
   const dt = new Date(d);
   if (Number.isNaN(dt.getTime())) return "—";
   return dt
-    .toLocaleString("en-US", {
+    .toLocaleString(toIntlLocale(locale), {
       year: "numeric",
       month: "short",
       day: "2-digit",
@@ -199,7 +200,7 @@ export default function SponsorshipsClient({
               {t("sponsorships.preferredCurrency")}: {preferredCurrency}
             </span>
             <span>
-              {t("sponsorships.ratesUpdated")}: {formatRateDate(rateSnapshot.fetchedAt)}
+              {t("sponsorships.ratesUpdated")}: {formatRateDate(rateSnapshot.fetchedAt, locale)}
             </span>
             <a
               href={rateSnapshot.providerUrl}
@@ -267,7 +268,7 @@ export default function SponsorshipsClient({
                 {summary.monthlyTotals.map((month) => (
                   <div
                     key={month.key}
-                    className="border border-border-visible bg-input-surface p-3 min-w-0"
+                    className="border border-border-visible bg-surface-raised p-3 min-w-0"
                   >
                     <div className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
                       {month.label}
@@ -321,7 +322,7 @@ export default function SponsorshipsClient({
                     <div>
                       <div className="ui-page-kicker">{t("sponsorships.due")}</div>
                       <div className="text-xs font-mono text-text-display">
-                        {formatDate(s.dueDate)}
+                        {formatDate(s.dueDate, locale)}
                       </div>
                     </div>
                     <div className="text-center">
@@ -339,65 +340,67 @@ export default function SponsorshipsClient({
               ))}
             </div>
 
-            <table className="hidden md:table w-full text-left border-collapse">
-              <thead>
-                <tr>
-                  <th className="ui-table-head p-4">
-                    {t("sponsorships.brand")}
-                  </th>
-                  <th className="ui-table-head p-4">
-                    {t("sponsorships.statusCol")}
-                  </th>
-                  <th className="ui-table-head p-4">
-                    {t("sponsorships.contact")}
-                  </th>
-                  <th className="ui-table-head p-4">
-                    {t("sponsorships.dueDate")}
-                  </th>
-                  <th className="ui-table-head p-4 text-right">
-                    {t("sponsorships.projects")}
-                  </th>
-                  <th className="ui-table-head p-4 text-right">
-                    {t("sponsorships.value")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((s) => (
-                  <tr
-                    key={s.id}
-                    onClick={() => handleOpenEdit(s.id)}
-                    className="ui-table-row cursor-pointer"
-                  >
-                    <td className="p-4 ui-table-cell font-bold">
-                      {s.brandName}
-                    </td>
-                    <td className="p-4 ui-table-cell">
-                      <span className="inline-flex items-center gap-2">
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${statusDotColor(s.status)}`}
-                        />
-                        <span className="uppercase tracking-widest text-[10px]">
-                          {t(`sponsorshipModal.${s.status.toLowerCase()}`)}
-                        </span>
-                      </span>
-                    </td>
-                    <td className="p-4 ui-table-cell-muted">
-                      {s.contactEmail || "—"}
-                    </td>
-                    <td className="p-4 ui-table-cell-muted">
-                      {formatDate(s.dueDate)}
-                    </td>
-                    <td className="p-4 text-sm font-mono text-text-display text-right">
-                      {s._count?.projects ?? 0}
-                    </td>
-                    <td className="p-4 text-sm font-mono text-success text-right">
-                      {renderDealValue(s)}
-                    </td>
+            <div className="hidden md:block bg-surface-raised border border-border-visible overflow-x-auto">
+              <table className="w-full text-left border-collapse bg-surface-raised">
+                <thead>
+                  <tr>
+                    <th className="ui-table-head p-4">
+                      {t("sponsorships.brand")}
+                    </th>
+                    <th className="ui-table-head p-4">
+                      {t("sponsorships.statusCol")}
+                    </th>
+                    <th className="ui-table-head p-4">
+                      {t("sponsorships.contact")}
+                    </th>
+                    <th className="ui-table-head p-4">
+                      {t("sponsorships.dueDate")}
+                    </th>
+                    <th className="ui-table-head p-4 text-right">
+                      {t("sponsorships.projects")}
+                    </th>
+                    <th className="ui-table-head p-4 text-right">
+                      {t("sponsorships.value")}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filtered.map((s) => (
+                    <tr
+                      key={s.id}
+                      onClick={() => handleOpenEdit(s.id)}
+                      className="ui-table-row cursor-pointer"
+                    >
+                      <td className="p-4 ui-table-cell font-bold">
+                        {s.brandName}
+                      </td>
+                      <td className="p-4 ui-table-cell">
+                        <span className="inline-flex items-center gap-2">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${statusDotColor(s.status)}`}
+                          />
+                          <span className="uppercase tracking-widest text-[10px]">
+                            {t(`sponsorshipModal.${s.status.toLowerCase()}`)}
+                          </span>
+                        </span>
+                      </td>
+                      <td className="p-4 ui-table-cell-muted">
+                        {s.contactEmail || "—"}
+                      </td>
+                      <td className="p-4 ui-table-cell-muted">
+                        {formatDate(s.dueDate, locale)}
+                      </td>
+                      <td className="p-4 text-sm font-mono text-text-display text-right">
+                        {s._count?.projects ?? 0}
+                      </td>
+                      <td className="p-4 text-sm font-mono text-success text-right">
+                        {renderDealValue(s)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>

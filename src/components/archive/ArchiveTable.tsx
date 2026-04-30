@@ -223,105 +223,107 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
               })}
             </div>
 
-            <table className="hidden md:table w-full text-left border-collapse">
-              <thead>
-                <tr>
-                  <th className="ui-table-head p-4">
-                    {t("archive.videoTitle")}
-                  </th>
-                  <th className="ui-table-head p-4">
-                    {t("archive.status")}
-                  </th>
-                  <th className="ui-table-head p-4">
-                    {activeTab === "Published" ? t("archive.publishDate") : t("archive.lastUpdated")}
-                  </th>
-                  <th className="ui-table-head p-4 text-right">
-                    {t("archive.views")}
-                  </th>
-                  <th className="ui-table-head p-4 text-right">
-                    {t("archive.likes")}
-                  </th>
-                  <th className="ui-table-head p-4 text-right">
-                    {t("archive.comments")}
-                  </th>
-                  <th className="ui-table-head p-4 text-right">
-                    {t("archive.action")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeData.map((project) => {
-                  const totalViews =
-                    (project.youtubeViews || 0) +
-                    (project.metaViews || 0) +
-                    (project.tiktokViews || 0);
-                  const totalLikes =
-                    (project.youtubeLikes || 0) +
-                    (project.metaLikes || 0) +
-                    (project.tiktokLikes || 0);
-                  const totalComments =
-                    (project.youtubeComments || 0) +
-                    (project.metaComments || 0) +
-                    (project.tiktokComments || 0);
+            <div className="hidden md:block bg-surface-raised border border-border-visible overflow-x-auto">
+              <table className="w-full text-left border-collapse bg-surface-raised">
+                <thead>
+                  <tr>
+                    <th className="ui-table-head p-4">
+                      {t("archive.videoTitle")}
+                    </th>
+                    <th className="ui-table-head p-4">
+                      {t("archive.status")}
+                    </th>
+                    <th className="ui-table-head p-4">
+                      {activeTab === "Published" ? t("archive.publishDate") : t("archive.lastUpdated")}
+                    </th>
+                    <th className="ui-table-head p-4 text-right">
+                      {t("archive.views")}
+                    </th>
+                    <th className="ui-table-head p-4 text-right">
+                      {t("archive.likes")}
+                    </th>
+                    <th className="ui-table-head p-4 text-right">
+                      {t("archive.comments")}
+                    </th>
+                    <th className="ui-table-head p-4 text-right">
+                      {t("archive.action")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeData.map((project) => {
+                    const totalViews =
+                      (project.youtubeViews || 0) +
+                      (project.metaViews || 0) +
+                      (project.tiktokViews || 0);
+                    const totalLikes =
+                      (project.youtubeLikes || 0) +
+                      (project.metaLikes || 0) +
+                      (project.tiktokLikes || 0);
+                    const totalComments =
+                      (project.youtubeComments || 0) +
+                      (project.metaComments || 0) +
+                      (project.tiktokComments || 0);
 
-                  return (
-                    <tr
-                      key={project.id}
-                      onClick={() => setSelectedId(project.id)}
-                      className="ui-table-row cursor-pointer"
-                    >
-                      <td className="p-4 ui-table-cell">{project.title}</td>
-                      <td className="p-4 ui-table-cell">
-                        <span className="inline-flex items-center gap-2">
-                          <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
-                          <span className="uppercase tracking-widest text-[10px]">
-                            {t(`stageDisplay.${project.status}`)}
+                    return (
+                      <tr
+                        key={project.id}
+                        onClick={() => setSelectedId(project.id)}
+                        className="ui-table-row cursor-pointer"
+                      >
+                        <td className="p-4 ui-table-cell">{project.title}</td>
+                        <td className="p-4 ui-table-cell">
+                          <span className="inline-flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${activeTab === "Published" ? "bg-success" : "bg-text-disabled"}`} />
+                            <span className="uppercase tracking-widest text-[10px]">
+                              {t(`stageDisplay.${project.status}`)}
+                            </span>
                           </span>
-                        </span>
-                      </td>
-                      <td className="p-4 ui-table-cell">
-                        {formatDate(activeTab === "Published" ? project.publishDate : project.updatedAt)}
-                      </td>
-                      <td className="p-4 ui-table-cell text-right">
-                        {totalViews.toLocaleString()}
-                      </td>
-                      <td className="p-4 ui-table-cell text-right">
-                        {totalLikes.toLocaleString()}
-                      </td>
-                      <td className="p-4 ui-table-cell text-right">
-                        {totalComments.toLocaleString()}
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex gap-2 justify-end">
-                          {activeTab === "Published" && (
+                        </td>
+                        <td className="p-4 ui-table-cell">
+                          {formatDate(activeTab === "Published" ? project.publishDate : project.updatedAt)}
+                        </td>
+                        <td className="p-4 ui-table-cell text-right">
+                          {totalViews.toLocaleString()}
+                        </td>
+                        <td className="p-4 ui-table-cell text-right">
+                          {totalLikes.toLocaleString()}
+                        </td>
+                        <td className="p-4 ui-table-cell text-right">
+                          {totalComments.toLocaleString()}
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex gap-2 justify-end">
+                            {activeTab === "Published" && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setStatsTargetId(project.id);
+                                }}
+                                disabled={isPending}
+                                className="ui-button-outline px-3 py-1 disabled:opacity-50"
+                              >
+                                {t("archive.updateStats")}
+                              </button>
+                            )}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setStatsTargetId(project.id);
+                                handleRestore(project.id);
                               }}
                               disabled={isPending}
                               className="ui-button-outline px-3 py-1 disabled:opacity-50"
                             >
-                              {t("archive.updateStats")}
+                              {t("archive.restoreShort")}
                             </button>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRestore(project.id);
-                            }}
-                            disabled={isPending}
-                            className="ui-button-outline px-3 py-1 disabled:opacity-50"
-                          >
-                            {t("archive.restoreShort")}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>

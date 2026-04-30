@@ -56,7 +56,7 @@ export default function KanbanBoardWrapper({
 
   if (!isMounted) {
     return (
-      <div className="h-full md:w-max md:min-w-full p-md md:p-lg overflow-x-auto md:overflow-visible">
+      <div className="h-full w-full min-w-0 p-md md:p-lg overflow-x-auto overflow-y-hidden">
         <div className="flex gap-md md:gap-lg h-full md:min-w-max pb-lg snap-x snap-mandatory md:snap-none">
           {(["Ideation", "Scripting", "Filming", "Editing", "Review"] as const).map((stage) => (
             <div key={stage} className="w-[85vw] max-w-[320px] md:w-[280px] lg:w-[320px] flex flex-col flex-shrink-0 h-full snap-center">
@@ -127,7 +127,7 @@ export default function KanbanBoardWrapper({
   return (
     <>
       {/* Scrollable board area */}
-      <div className="h-full md:w-max md:min-w-full p-md md:p-lg overflow-x-auto md:overflow-visible">
+      <div className="h-full w-full min-w-0 p-md md:p-lg overflow-x-auto overflow-y-hidden">
         <KanbanBoard
           projects={projects}
           setProjects={setProjects}

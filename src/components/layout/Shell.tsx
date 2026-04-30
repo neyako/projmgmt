@@ -11,12 +11,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 min-w-0 h-full flex flex-col md:ml-56 lg:ml-64">
           <Suspense
             fallback={
-              <div className="hidden md:block shrink-0 h-16 w-full border-b border-border bg-background" />
+              <div className="hidden md:block fixed top-0 right-0 left-56 lg:left-64 h-16 border-b border-border bg-background z-40" />
             }
           >
             <TopBar />
           </Suspense>
-          <main className="flex-1 min-w-0 w-full h-full overflow-y-auto pt-14 md:pt-0">
+          <main className="flex-1 min-h-0 min-w-0 w-full overflow-visible pt-14 md:pt-16">
             {children}
           </main>
         </div>

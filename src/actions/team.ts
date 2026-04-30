@@ -3,8 +3,13 @@
 import bcrypt from "bcrypt";
 import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { Prisma } from "@prisma/client";
+import {
+  getConfiguredPublicAppUrl,
+  getPublicAppUrlFromHeaders,
+} from "@/lib/appSettings";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { USER_ROLES, type UserRole } from "@/lib/roles";
@@ -105,9 +110,22 @@ function toTeamUser(user: TeamUserWithPasswordHash): TeamUser {
   };
 }
 
+async function resolveLoginUrl() {
+  const configuredUrl = await getConfiguredPublicAppUrl();
+  if (configuredUrl) {
+    return new URL("/login", configuredUrl).toString();
+  }
+
+  const requestHeaders = await headers();
+  const requestUrl = getPublicAppUrlFromHeaders(requestHeaders);
+  const fallbackUrl = requestUrl || process.env.NEXTAUTH_URL || "http://localhost:3000";
+  return new URL("/login", fallbackUrl).toString();
+}
+
 function buildCredentialHandoff(
   user: TeamUser,
-  temporaryPassword: string
+  temporaryPassword: string,
+  loginUrl: string
 ): CredentialHandoff {
   const emailSubject = "Your projmgmt login";
   const username = user.username || "";
@@ -118,7 +136,7 @@ function buildCredentialHandoff(
     "",
     `Username: ${username}`,
     `Temporary password: ${temporaryPassword}`,
-    "Login URL: /login",
+    `Login URL: ${loginUrl}`,
     "",
     "Please change this password after signing in.",
   ].join("\n");
@@ -127,6 +145,7 @@ function buildCredentialHandoff(
     email: user.email,
     username,
     temporaryPassword,
+    loginUrl,
     emailSubject,
     emailBody,
     emailDeliveryStatus: "pending_integration",
@@ -186,13 +205,14 @@ export async function createUser(data: {
       select: teamUserSelect,
     });
     const teamUser = toTeamUser(user);
+    const loginUrl = await resolveLoginUrl();
 
     revalidatePath("/team");
     return {
       success: true,
       data: {
         user: teamUser,
-        credentials: buildCredentialHandoff(teamUser, temporaryPassword),
+        credentials: buildCredentialHandoff(teamUser, temporaryPassword, loginUrl),
       },
     };
   } catch (err) {
@@ -277,13 +297,14 @@ export async function resetUserCredentials(
       select: teamUserSelect,
     });
     const teamUser = toTeamUser(updated);
+    const loginUrl = await resolveLoginUrl();
 
     revalidatePath("/team");
     return {
       success: true,
       data: {
         user: teamUser,
-        credentials: buildCredentialHandoff(teamUser, temporaryPassword),
+        credentials: buildCredentialHandoff(teamUser, temporaryPassword, loginUrl),
       },
     };
   } catch (err) {

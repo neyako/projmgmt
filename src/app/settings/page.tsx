@@ -1,9 +1,11 @@
 import { getServerSession } from "next-auth";
 import Shell from "@/components/layout/Shell";
 import { authOptions } from "@/lib/auth";
+import { getApplicationSettings } from "@/lib/appSettings";
 import { normalizeCurrency } from "@/lib/currency";
 import { prisma } from "@/lib/prisma";
 import { getT } from "@/lib/i18n/server";
+import ApplicationSettingsForm from "./ApplicationSettingsForm";
 import AvatarUploadForm from "./AvatarUploadForm";
 import ChangePasswordForm from "./ChangePasswordForm";
 import LanguageForm from "./LanguageForm";
@@ -20,6 +22,8 @@ export default async function SettingsPage() {
       })
     : null;
   const t = await getT();
+  const isAdmin = session?.user?.role === "ADMIN";
+  const appSettings = isAdmin ? await getApplicationSettings() : null;
 
   return (
     <Shell>
@@ -75,6 +79,13 @@ export default async function SettingsPage() {
               />
             </div>
           </section>
+
+          {isAdmin && appSettings && (
+            <section className="border-t border-border-visible pt-8 w-full">
+              <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">{t("settings.application")}</h3>
+              <ApplicationSettingsForm initialSettings={appSettings} />
+            </section>
+          )}
 
           <section className="border-t border-border-visible pt-8 w-full">
             <h3 className="text-sm font-bold text-text-display uppercase tracking-widest mb-6">{t("settings.security")}</h3>

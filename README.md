@@ -196,6 +196,27 @@ NEXTCLOUD_ARCHIVE_PATH="/Done"
 
 Currency conversion uses the no-key [ExchangeRate-API Open Access](https://www.exchangerate-api.com/docs/free) endpoint. Rates are cached in SQLite, warmed on server start, refreshed daily by cron, and attributed on the Sponsorships page.
 
+### Reverse Proxy / Public Domain
+
+For self-hosting behind a reverse proxy, set `NEXTAUTH_URL` to your public origin and then set the same value in the app:
+
+1. Sign in as an `ADMIN`.
+2. Open `/settings`.
+3. In `APPLICATION`, set `PUBLIC APP URL`, for example `https://studio.example.com`.
+
+This public URL is used for login redirects and team member email drafts. If it is blank, projmgmt falls back to proxy headers first, then `NEXTAUTH_URL`, then `http://localhost:3000`.
+
+Your proxy should forward host and scheme headers:
+
+```nginx
+proxy_set_header Host $host;
+proxy_set_header X-Forwarded-Host $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+```
+
+Content types are also admin-configurable from `/settings -> APPLICATION`. Labels are stored in English and Vietnamese; keep the value `Sponsored` if you want that type to keep requiring a linked sponsorship deal.
+
 ## Workflow Contract
 
 ```mermaid

@@ -118,7 +118,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
         `Email: ${credentialHandoff.email}`,
         `Username: ${credentialHandoff.username}`,
         `Temporary password: ${credentialHandoff.temporaryPassword}`,
-        "Login URL: /login",
+        `Login URL: ${credentialHandoff.loginUrl}`,
       ].join("\n")
     : "";
 
@@ -126,7 +126,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
     <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
 
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-modal-shell p-4 md:p-6 flex flex-col md:max-h-[90vh]">
+      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-panel p-4 md:p-6 flex flex-col md:max-h-[90vh] motion-panel-in">
         <div className="flex justify-between items-start pb-6 border-b border-border-visible shrink-0">
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? t("teamModal.edit") : t("teamModal.new")}

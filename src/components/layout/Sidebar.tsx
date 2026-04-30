@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { LogOut, Menu, Moon, Settings, Sun, X } from "lucide-react";
@@ -24,11 +24,13 @@ function getVisibleNavItems(role: string | undefined) {
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const visibleNavItems = getVisibleNavItems(session?.user?.role);
   const isDarkMode = theme === "dark";
+  const currentSearch = searchParams.get("q") || "";
   const t = useT();
 
   useEffect(() => {
@@ -51,6 +53,18 @@ export default function Sidebar() {
   function handleNewProjectClick() {
     router.push("/pipeline?new=1");
     setIsOpen(false);
+  }
+
+  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+    if (val) {
+      params.set("q", val);
+    } else {
+      params.delete("q");
+    }
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
   }
 
   async function handleSignOut() {
@@ -102,6 +116,18 @@ export default function Sidebar() {
 
       <header className="flex md:hidden fixed top-0 inset-x-0 h-14 z-[90] items-center justify-between border-b border-border bg-background px-4 pointer-events-auto">
         <Wordmark as="h1" size="sm" weight={700} cursorBlink />
+        <div className="hidden sm:flex md:hidden flex-1 max-w-[18rem] mx-4 items-center border-b border-border-visible px-2 py-1 gap-2">
+          <span className="material-symbols-outlined text-[16px] text-text-secondary">
+            search
+          </span>
+          <input
+            type="text"
+            value={currentSearch}
+            onChange={handleSearchChange}
+            placeholder={t("nav.searchProjects")}
+            className="bg-transparent border-none text-text-display font-mono text-xs focus:outline-none placeholder:text-text-disabled w-full p-0"
+          />
+        </div>
         <button
           type="button"
           onClick={() => setIsOpen(true)}
@@ -115,7 +141,7 @@ export default function Sidebar() {
       </header>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[90] md:hidden bg-background flex flex-col">
+        <div className="fixed inset-0 z-[90] md:hidden bg-background flex flex-col motion-panel-in">
           <div className="flex items-center justify-between h-14 shrink-0 border-b border-border-visible px-4">
             <span className="text-style-label text-text-display tracking-widest">
               {t("nav.menu")}

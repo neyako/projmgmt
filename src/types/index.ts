@@ -15,6 +15,7 @@ export type CredentialHandoff = {
   email: string;
   username: string;
   temporaryPassword: string;
+  loginUrl: string;
   emailSubject: string;
   emailBody: string;
   emailDeliveryStatus: "pending_integration";

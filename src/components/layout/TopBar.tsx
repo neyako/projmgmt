@@ -67,9 +67,9 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="hidden md:flex shrink-0 items-center justify-between px-6 h-16 w-full border-b border-border bg-background z-40">
+      <header className="hidden md:flex fixed top-0 right-0 left-56 lg:left-64 items-center justify-between px-6 h-16 border-b border-border bg-background z-40">
         <div className="flex items-center gap-md">
-          <div className="hidden lg:flex items-center border-b border-border-visible px-2 py-1 gap-2">
+          <div className="hidden md:flex items-center border-b border-border-visible px-2 py-1 gap-2">
             <span className="material-symbols-outlined text-[16px] text-text-secondary">
               search
             </span>
@@ -78,7 +78,7 @@ export default function TopBar() {
               value={currentSearch}
               onChange={handleSearchChange}
               placeholder={t("nav.searchProjects")}
-              className="bg-transparent border-none text-text-display font-mono text-xs focus:outline-none placeholder:text-text-disabled w-48 p-0"
+              className="bg-transparent border-none text-text-display font-mono text-xs focus:outline-none placeholder:text-text-disabled w-32 lg:w-48 p-0"
             />
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function TopBar() {
             </button>
 
             {isMenuOpen ? (
-              <div className="ui-user-dropdown absolute right-0 top-full mt-2 z-50 w-56 border border-border-visible text-xs font-mono">
+              <div className="ui-user-dropdown absolute right-0 top-full mt-2 z-50 w-56 border border-border-visible text-xs font-mono motion-panel-in">
                 <div className="px-4 py-3 border-b border-border-visible">
                   <div className="ui-user-dropdown-heading font-bold tracking-widest truncate whitespace-nowrap">
                     {session?.user?.username || session?.user?.name || t("nav.guest")}

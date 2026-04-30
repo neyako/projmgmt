@@ -142,7 +142,22 @@
     "passwordUpdated": "Đã cập nhật mật khẩu.",
     "currentPassword": "MẬT KHẨU HIỆN TẠI",
     "newPassword": "MẬT KHẨU MỚI",
-    "confirmNewPassword": "XÁC NHẬN MẬT KHẨU MỚI"
+    "confirmNewPassword": "XÁC NHẬN MẬT KHẨU MỚI",
+    "application": "ỨNG DỤNG",
+    "publicUrl": "URL CÔNG KHAI",
+    "publicUrlDescription": "Dùng cho chuyển hướng đăng nhập, reverse proxy và bản nháp email cho thành viên.",
+    "publicUrlPlaceholder": "https://studio.example.com",
+    "contentTypes": "LOẠI NỘI DUNG",
+    "contentTypesDescription": "Nhãn hiển thị theo ngôn ngữ hiện tại. Giữ giá trị `Sponsored` để liên kết hợp đồng tài trợ.",
+    "contentTypeValue": "GIÁ TRỊ",
+    "contentTypeEnglish": "NHÃN EN",
+    "contentTypeVietnamese": "NHÃN VI",
+    "addContentType": "[ THÊM LOẠI ]",
+    "removeContentType": "[ XÓA ]",
+    "saveApplication": "LƯU ỨNG DỤNG",
+    "savingApplication": "ĐANG LƯU...",
+    "appSettingsSaved": "Đã cập nhật cài đặt ứng dụng.",
+    "appSettingsFailed": "Cập nhật cài đặt ứng dụng thất bại."
   },
   "login": {
     "header": "XÁC_THỰC_HỆ_THỐNG",

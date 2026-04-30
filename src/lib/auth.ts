@@ -1,12 +1,17 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { getConfiguredPublicAppUrl } from "@/lib/appSettings";
 import { prisma } from "@/lib/prisma";
 import { type UserRole } from "@/lib/roles";
 import bcrypt from "bcrypt";
 
 function normalizeRole(value: string | null | undefined): UserRole {
   return value === "ADMIN" || value === "MANAGER" ? value : "MEMBER";
+}
+
+function sameOriginOrNextAuthBase(url: URL, publicBase: URL, nextAuthBase: string) {
+  return url.origin === publicBase.origin || url.origin === new URL(nextAuthBase).origin;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -51,6 +56,28 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      const configuredUrl = await getConfiguredPublicAppUrl();
+      const publicBase = new URL(configuredUrl || baseUrl);
+
+      if (url.startsWith("/")) {
+        return new URL(url, publicBase).toString();
+      }
+
+      try {
+        const parsedUrl = new URL(url);
+        if (sameOriginOrNextAuthBase(parsedUrl, publicBase, baseUrl)) {
+          return new URL(
+            `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`,
+            publicBase
+          ).toString();
+        }
+      } catch {
+        return publicBase.toString();
+      }
+
+      return publicBase.toString();
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;

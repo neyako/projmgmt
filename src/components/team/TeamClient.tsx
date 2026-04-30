@@ -93,34 +93,36 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
               ))}
             </div>
 
-            <table className="hidden md:table w-full text-left border-collapse">
-              <thead>
-                <tr>
-                  <th className="ui-table-head p-4">{t("team.name")}</th>
-                  <th className="ui-table-head p-4">{t("team.role")}</th>
-                  <th className="ui-table-head p-4">{t("team.email")}</th>
-                  <th className="ui-table-head p-4">{t("team.loginColumn")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr
-                    key={u.id}
-                    onClick={() => handleOpenEdit(u.id)}
-                    className="ui-table-row cursor-pointer"
-                  >
-                    <td className="p-4 ui-table-cell font-bold">{u.name}</td>
-                    <td className="p-4 ui-table-cell">{t(`role.${u.role}`)}</td>
-                    <td className="p-4 ui-table-cell-muted">{u.email}</td>
-                    <td className="p-4 ui-table-cell">
-                      <span className={u.hasLogin ? "text-success" : "text-warning"}>
-                        {u.hasLogin ? u.username : t("team.noCred")}
-                      </span>
-                    </td>
+            <div className="hidden md:block bg-surface-raised border border-border-visible overflow-x-auto">
+              <table className="w-full text-left border-collapse bg-surface-raised">
+                <thead>
+                  <tr>
+                    <th className="ui-table-head p-4">{t("team.name")}</th>
+                    <th className="ui-table-head p-4">{t("team.role")}</th>
+                    <th className="ui-table-head p-4">{t("team.email")}</th>
+                    <th className="ui-table-head p-4">{t("team.loginColumn")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr
+                      key={u.id}
+                      onClick={() => handleOpenEdit(u.id)}
+                      className="ui-table-row cursor-pointer"
+                    >
+                      <td className="p-4 ui-table-cell font-bold">{u.name}</td>
+                      <td className="p-4 ui-table-cell">{t(`role.${u.role}`)}</td>
+                      <td className="p-4 ui-table-cell-muted">{u.email}</td>
+                      <td className="p-4 ui-table-cell">
+                        <span className={u.hasLogin ? "text-success" : "text-warning"}>
+                          {u.hasLogin ? u.username : t("team.noCred")}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>

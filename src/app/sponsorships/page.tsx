@@ -3,6 +3,8 @@ import SponsorshipsClient from "@/components/sponsorships/SponsorshipsClient";
 import { authOptions } from "@/lib/auth";
 import { convertCurrencyAmount, normalizeCurrency } from "@/lib/currency";
 import { ensureFreshCurrencyRates } from "@/lib/currencyRates";
+import { getLocale } from "@/lib/i18n/server";
+import { toIntlLocale } from "@/lib/i18n/locales";
 import { prisma } from "@/lib/prisma";
 import { getPreferredCurrencyForUser } from "@/lib/userPreferences";
 import { getServerSession } from "next-auth";
@@ -17,6 +19,7 @@ export default async function SponsorshipsPage({
   const params = await searchParams;
   const q = params?.q?.trim();
   const session = await getServerSession(authOptions);
+  const locale = await getLocale();
   const preferredCurrency = await getPreferredCurrencyForUser(session?.user?.id);
   const rateSnapshot = await ensureFreshCurrencyRates();
 
@@ -70,7 +73,7 @@ export default async function SponsorshipsPage({
 
     const monthDate = new Date(currentYear, monthIndex, 1);
     const label = monthDate
-      .toLocaleDateString("vi-VN", { month: "short" })
+      .toLocaleDateString(toIntlLocale(locale), { month: "short" })
       .replace(/^Thg\s*/i, "THG ")
       .toUpperCase();
 

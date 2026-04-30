@@ -502,6 +502,30 @@ body {
   }
 }
 
+@keyframes terminalPageIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes terminalPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.motion-page-in {
+  animation: terminalPageIn var(--duration-fast) var(--ease-mechanical) both;
+}
+
+.motion-panel-in {
+  animation: terminalPanelIn var(--duration-normal) var(--ease-mechanical) both;
+}
+
 /* ─── BRAND LOGO CURSOR ──────────────────────────────── */
 @keyframes logoCursorBlink {
   0%, 49% { opacity: 1; }
@@ -514,6 +538,11 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .motion-page-in,
+  .motion-panel-in {
+    animation: none;
+  }
+
   .logo-cursor-blink {
     animation: none;
   }

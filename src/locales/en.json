@@ -142,7 +142,22 @@
     "passwordUpdated": "Password updated.",
     "currentPassword": "CURRENT PASSWORD",
     "newPassword": "NEW PASSWORD",
-    "confirmNewPassword": "CONFIRM NEW PASSWORD"
+    "confirmNewPassword": "CONFIRM NEW PASSWORD",
+    "application": "APPLICATION",
+    "publicUrl": "PUBLIC APP URL",
+    "publicUrlDescription": "Used for login redirects, reverse proxy deployments, and team email drafts.",
+    "publicUrlPlaceholder": "https://studio.example.com",
+    "contentTypes": "CONTENT TYPES",
+    "contentTypesDescription": "Labels show in the active language. Keep value `Sponsored` for sponsorship deal linking.",
+    "contentTypeValue": "VALUE",
+    "contentTypeEnglish": "EN LABEL",
+    "contentTypeVietnamese": "VI LABEL",
+    "addContentType": "[ ADD TYPE ]",
+    "removeContentType": "[ REMOVE ]",
+    "saveApplication": "SAVE APPLICATION",
+    "savingApplication": "SAVING...",
+    "appSettingsSaved": "Application settings updated.",
+    "appSettingsFailed": "Failed to update application settings."
   },
   "login": {
     "header": "SYS_AUTH",
