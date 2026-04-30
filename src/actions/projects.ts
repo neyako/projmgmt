@@ -153,10 +153,6 @@ export async function createProject(formData: {
       },
     });
 
-    void provisionNextcloudFolder(project.title).catch((error) => {
-      console.error("[createProject:provisionNextcloudFolder]", error);
-    });
-
     revalidatePath("/pipeline");
     revalidatePath("/sponsorships");
     return { success: true, data: project };
@@ -1129,16 +1125,26 @@ export async function updatePlatformIds(
     return trimmed.length > 0 ? trimmed : null;
   };
 
+  const nextYoutubeId = ids.youtubeId === undefined ? undefined : clean(ids.youtubeId);
+  const nextMetaId = ids.metaId === undefined ? undefined : clean(ids.metaId);
+  const nextTiktokId = ids.tiktokId === undefined ? undefined : clean(ids.tiktokId);
+  const nextFolderName = ids.folderName === undefined ? undefined : clean(ids.folderName);
+
   try {
     const updated = await prisma.project.update({
       where: { id: projectId },
       data: {
-        ...(ids.youtubeId !== undefined && { youtubeId: clean(ids.youtubeId) }),
-        ...(ids.metaId !== undefined && { metaId: clean(ids.metaId) }),
-        ...(ids.tiktokId !== undefined && { tiktokId: clean(ids.tiktokId) }),
-        ...(ids.folderName !== undefined && { folderName: clean(ids.folderName) }),
+        ...(nextYoutubeId !== undefined && { youtubeId: nextYoutubeId }),
+        ...(nextMetaId !== undefined && { metaId: nextMetaId }),
+        ...(nextTiktokId !== undefined && { tiktokId: nextTiktokId }),
+        ...(nextFolderName !== undefined && { folderName: nextFolderName }),
       },
     });
+
+    if (nextFolderName) {
+      await provisionNextcloudFolder(nextFolderName);
+    }
+
     revalidatePath("/archive");
     revalidatePath("/analytics");
     revalidatePath("/pipeline");

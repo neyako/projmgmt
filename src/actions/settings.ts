@@ -43,7 +43,7 @@ async function requireAdmin(): Promise<{ ok: true } | { ok: false; error: string
 }
 
 export async function saveApplicationSettings(
-  settings: ApplicationSettings
+  settings: Pick<ApplicationSettings, "publicUrl" | "contentTypes">
 ): Promise<{ ok: boolean; error?: string; settings?: ApplicationSettings }> {
   const auth = await requireAdmin();
   if (!auth.ok) return { ok: false, error: auth.error };

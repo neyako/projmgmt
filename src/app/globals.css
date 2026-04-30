@@ -80,10 +80,10 @@
   --font-display: "Doto", "JetBrains Mono", monospace;
   --font-heading: "Space Grotesk", "DM Sans", system-ui, sans-serif;
   --font-body: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  --font-label: "JetBrains Mono", "SF Mono", "Space Mono", monospace;
-  --font-caption: "JetBrains Mono", "SF Mono", "Space Mono", monospace;
-  --font-logo: "Space Mono", "JetBrains Mono", "SF Mono", ui-monospace, monospace;
-  --font-mono: "JetBrains Mono", "SF Mono", "Space Mono", ui-monospace, monospace;
+  --font-label: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  --font-caption: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  --font-logo: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
   --font-sans: "Space Grotesk", "DM Sans", system-ui, sans-serif;
 
   /* Typography - Font Sizes */

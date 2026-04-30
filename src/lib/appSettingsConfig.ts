@@ -8,6 +8,7 @@ export type ContentTypeOption = {
 
 export type ApplicationSettings = {
   publicUrl: string;
+  workspaceId: string;
   contentTypes: ContentTypeOption[];
 };
 
@@ -19,8 +20,27 @@ export const DEFAULT_CONTENT_TYPE_OPTIONS: ContentTypeOption[] = [
 
 export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettings = {
   publicUrl: "",
+  workspaceId: "LOCAL_STUDIO",
   contentTypes: DEFAULT_CONTENT_TYPE_OPTIONS,
 };
+
+export function normalizeWorkspaceId(value: string | null | undefined): string {
+  return (value || "")
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/[^A-Za-z0-9_-]/g, "")
+    .slice(0, 40);
+}
+
+export function formatWorkspaceDisplayName(value: string | null | undefined): string {
+  return (
+    normalizeWorkspaceId(value)
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim() ||
+    DEFAULT_APPLICATION_SETTINGS.workspaceId.replace(/[_-]+/g, " ")
+  );
+}
 
 export function normalizeContentTypeValue(value: string): string {
   return value

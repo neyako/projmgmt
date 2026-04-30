@@ -2,6 +2,7 @@
 
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import { saveWorkspaceId } from "@/lib/appSettings";
 
 export type InitializeStudioResult =
   | { success: true }
@@ -33,6 +34,8 @@ export async function initializeStudio(formData: FormData): Promise<InitializeSt
 
   const passwordHash = await bcrypt.hash(password, 10);
   const email = `${username}@local`;
+
+  await saveWorkspaceId(workspaceName);
 
   await prisma.user.create({
     data: {

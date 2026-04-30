@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import {
   DEFAULT_APPLICATION_SETTINGS,
+  normalizeWorkspaceId,
   normalizeContentTypeOptions,
   type ApplicationSettings,
   type ContentTypeOption,
@@ -8,6 +9,7 @@ import {
 
 const PUBLIC_URL_KEY = "publicUrl";
 const CONTENT_TYPES_KEY = "contentTypes";
+const WORKSPACE_ID_KEY = "workspaceId";
 
 type HeaderReader = {
   get(name: string): string | null;
@@ -76,15 +78,21 @@ function parseContentTypes(value?: string | null): ContentTypeOption[] {
   }
 }
 
+function getDefaultWorkspaceId(): string {
+  return normalizeWorkspaceId(process.env.WORKSPACE_ID) || DEFAULT_APPLICATION_SETTINGS.workspaceId;
+}
+
 export async function getApplicationSettings(): Promise<ApplicationSettings> {
   try {
     const rows = await prisma.appSetting.findMany({
-      where: { key: { in: [PUBLIC_URL_KEY, CONTENT_TYPES_KEY] } },
+      where: { key: { in: [PUBLIC_URL_KEY, CONTENT_TYPES_KEY, WORKSPACE_ID_KEY] } },
     });
     const values = new Map(rows.map((row) => [row.key, row.value]));
 
     return {
       publicUrl: values.get(PUBLIC_URL_KEY) ?? DEFAULT_APPLICATION_SETTINGS.publicUrl,
+      workspaceId:
+        normalizeWorkspaceId(values.get(WORKSPACE_ID_KEY)) || getDefaultWorkspaceId(),
       contentTypes: parseContentTypes(values.get(CONTENT_TYPES_KEY)),
     };
   } catch (error) {
@@ -100,7 +108,39 @@ export async function getConfiguredPublicAppUrl(): Promise<string | null> {
   return settings.publicUrl || null;
 }
 
-export async function saveApplicationSettings(input: ApplicationSettings) {
+export async function getWorkspaceId(): Promise<string> {
+  const settings = await getApplicationSettings();
+  return settings.workspaceId;
+}
+
+export async function saveWorkspaceId(input: string) {
+  const workspaceId = normalizeWorkspaceId(input) || getDefaultWorkspaceId();
+
+  try {
+    await prisma.appSetting.upsert({
+      where: { key: WORKSPACE_ID_KEY },
+      update: { value: workspaceId },
+      create: { key: WORKSPACE_ID_KEY, value: workspaceId },
+    });
+  } catch (error) {
+    if (isMissingSettingsTable(error)) {
+      await ensureAppSettingsTable();
+      await prisma.appSetting.upsert({
+        where: { key: WORKSPACE_ID_KEY },
+        update: { value: workspaceId },
+        create: { key: WORKSPACE_ID_KEY, value: workspaceId },
+      });
+      return workspaceId;
+    }
+    throw error;
+  }
+
+  return workspaceId;
+}
+
+export async function saveApplicationSettings(
+  input: Pick<ApplicationSettings, "publicUrl" | "contentTypes">
+) {
   const publicUrl = normalizePublicAppUrl(input.publicUrl);
   if (!publicUrl.ok) {
     return { success: false as const, error: publicUrl.error };
@@ -113,6 +153,7 @@ export async function saveApplicationSettings(input: ApplicationSettings) {
 
   const settings: ApplicationSettings = {
     publicUrl: publicUrl.value,
+    workspaceId: (await getApplicationSettings()).workspaceId,
     contentTypes,
   };
 

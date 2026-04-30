@@ -87,7 +87,7 @@ Maximum 3 font families per screen. Precision over personality.
 **Families**
 - **Display**: `Doto` (dot-matrix variable font for hero metrics and major numbers).
 - **Heading / Body**: `Space Grotesk` (Light 300, Regular 400, Medium 500, Bold 700).
-- **Labels / Data**: `Space Mono` (Regular 400, Bold 700).
+- **Labels / Data**: `JetBrains Mono` (Regular 400, Medium 500, Bold 700). Use for mono UI labels, IDs, metrics, and compact Vietnamese/English data.
 
 **Type Scale**
 
@@ -100,8 +100,8 @@ Maximum 3 font families per screen. Precision over personality.
 | **Subheading** | 18px | 1.3 | 0 | Space Grotesk 400 |
 | **Body** | 16px | 1.5 | 0 | Space Grotesk 400 |
 | **Body SM** | 14px | 1.5 | +0.01em | Space Grotesk 400 |
-| **Caption** | 12px | 1.4 | +0.04em | Space Mono 400 |
-| **Label** | 11px | 1.2 | +0.08em | Space Mono 700 (ALL CAPS) |
+| **Caption** | 12px | 1.4 | +0.04em | JetBrains Mono 400 |
+| **Label** | 11px | 1.2 | +0.08em | JetBrains Mono 700 (ALL CAPS) |
 
 **Helper Classes** ([globals.css:198-267](src/app/globals.css:198))
 
@@ -145,6 +145,7 @@ Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves
 **Sidebar** — [Sidebar.tsx](src/components/layout/Sidebar.tsx)
 - Fixed `w-64` (256px), `bg-background border-r border-border`, `z-50`.
 - Logo: `font-[family-name:var(--font-label)] text-[44px] font-black text-text-display tracking-tight`, renders `projmgmt`. Sits inside `mb-xl px-3` block.
+- Workspace identity: compact bordered readout directly under the logo. Label uses `WORKSPACE_ID` copy, value uses `font-mono uppercase tracking-widest text-text-display`, and truncates with `title` for long IDs. Mobile header shows the same value under the wordmark.
 - Nav items: `text-style-label tracking-widest`, 18px Material Symbol leading icon (`icon-fill` when active), `px-3 py-2`, `gap-4` icon-to-label.
 - Active state: `text-text-display border border-border-visible bg-surface-raised`. Inactive: `text-text-disabled hover:text-text-display hover:bg-surface-raised`, `border border-transparent`.
 - Role-based filtering: members see a reduced nav (see §8).

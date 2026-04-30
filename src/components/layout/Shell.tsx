@@ -1,13 +1,16 @@
 import { Suspense } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
+import { getWorkspaceId } from "@/lib/appSettings";
 import { ToastProvider } from "@/components/ui/Toast";
 
-export default function Shell({ children }: { children: React.ReactNode }) {
+export default async function Shell({ children }: { children: React.ReactNode }) {
+  const workspaceId = await getWorkspaceId();
+
   return (
     <ToastProvider>
       <div className="flex h-[100dvh] w-full bg-background overflow-hidden text-text-primary">
-        <Sidebar />
+        <Sidebar workspaceId={workspaceId} />
         <div className="flex-1 min-w-0 h-full flex flex-col md:ml-56 lg:ml-64">
           <Suspense
             fallback={

@@ -21,7 +21,7 @@ function getVisibleNavItems(role: string | undefined) {
   return NAV_ITEMS.filter((item) => !memberHiddenRoutes.has(item.href));
 }
 
-export default function Sidebar() {
+export default function Sidebar({ workspaceId }: { workspaceId: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,6 +83,17 @@ export default function Sidebar() {
             cursorBlink
             className="lg:text-[32px]"
           />
+          <div className="mt-3 border border-border-visible bg-input-surface px-2 py-1.5 min-w-0">
+            <div className="text-[8px] font-mono uppercase tracking-widest text-text-disabled">
+              {t("setup.workspaceId")}
+            </div>
+            <div
+              className="mt-1 text-[10px] font-mono uppercase tracking-widest text-text-display truncate"
+              title={workspaceId}
+            >
+              {workspaceId}
+            </div>
+          </div>
         </div>
 
         <div className="flex-1 flex flex-col gap-sm">
@@ -115,7 +126,15 @@ export default function Sidebar() {
       </nav>
 
       <header className="flex md:hidden fixed top-0 inset-x-0 h-14 z-[90] items-center justify-between border-b border-border bg-background px-4 pointer-events-auto">
-        <Wordmark as="h1" size="sm" weight={700} cursorBlink />
+        <div className="min-w-0">
+          <Wordmark as="h1" size="sm" weight={700} cursorBlink />
+          <div
+            className="mt-0.5 max-w-[9rem] truncate text-[8px] font-mono uppercase tracking-widest text-text-secondary"
+            title={workspaceId}
+          >
+            {workspaceId}
+          </div>
+        </div>
         <div className="hidden sm:flex md:hidden flex-1 max-w-[18rem] mx-4 items-center border-b border-border-visible px-2 py-1 gap-2">
           <span className="material-symbols-outlined text-[16px] text-text-secondary">
             search
@@ -143,9 +162,17 @@ export default function Sidebar() {
       {isOpen && (
         <div className="fixed inset-0 z-[90] md:hidden bg-background flex flex-col motion-panel-in">
           <div className="flex items-center justify-between h-14 shrink-0 border-b border-border-visible px-4">
-            <span className="text-style-label text-text-display tracking-widest">
-              {t("nav.menu")}
-            </span>
+            <div className="min-w-0">
+              <span className="text-style-label text-text-display tracking-widest">
+                {t("nav.menu")}
+              </span>
+              <div
+                className="mt-0.5 max-w-[12rem] truncate text-[8px] font-mono uppercase tracking-widest text-text-secondary"
+                title={workspaceId}
+              >
+                {workspaceId}
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
