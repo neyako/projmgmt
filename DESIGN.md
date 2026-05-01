@@ -147,19 +147,19 @@ Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves
 - Logo: `font-[family-name:var(--font-label)] text-[44px] font-black text-text-display tracking-tight`, renders `projmgmt`. Sits inside `mb-xl px-3` block.
 - Workspace identity: compact bordered readout directly under the logo. Label uses `WORKSPACE_ID` copy, value uses `font-mono uppercase tracking-widest text-text-display`, and truncates with `title` for long IDs. Mobile header shows the same value under the wordmark.
 - Nav items: `text-style-label tracking-widest`, 18px Material Symbol leading icon (`icon-fill` when active), `px-3 py-2`, `gap-4` icon-to-label.
-- Active state: `text-text-display border border-border-visible bg-surface-raised`. Inactive: `text-text-disabled hover:text-text-display hover:bg-surface-raised`, `border border-transparent`.
+- Active state: `text-text-display border border-border-visible bg-surface-raised`. Inactive: `text-text-disabled hover:text-text-inverse hover:bg-text-display hover:border-text-display`, `border border-transparent`.
 - Role-based filtering: members see a reduced nav (see §8).
 
 **Top Bar** — [TopBar.tsx](src/components/layout/TopBar.tsx)
 - `h-16 px-6 flex items-center justify-between`, `bg-background border-b border-border`, `z-40`.
 - Search: underlined `border-b border-border-visible px-2 py-1`, leading 16px `search` Material Symbol, `font-mono text-xs` input. Updates `?q=` via router.
-- Primary action **NEW PROJECT**: sharp (`bg-text-display text-text-inverse text-[10px] font-mono tracking-widest uppercase px-6 py-2 hover:opacity-80`). The pill shape from earlier specs is reserved for the auth login button — TopBar is sharp.
-- Avatar button: `w-8 h-8 bg-surface border border-border` (sharp). Renders `session.user.avatarUrl` via `next/image` `unoptimized`, falls back to `person` Material Symbol.
+- Primary action **NEW PROJECT**: sharp (`bg-text-display text-text-inverse text-[10px] font-mono tracking-widest uppercase px-6 py-2 hover:bg-background hover:text-text-display hover:border-text-display`). The pill shape from earlier specs is reserved for the auth login button — TopBar is sharp.
+- Avatar button: `w-8 h-8 bg-surface border border-border` (sharp), with instant inverted hover. Renders `session.user.avatarUrl` via `next/image` `unoptimized`, falls back to `person` Material Symbol.
 
 **User Dropdown** — [TopBar.tsx:115-159](src/components/layout/TopBar.tsx:115)
 - Wrapper: `.ui-user-dropdown` + `border border-border-visible w-56 text-xs font-mono`.
 - Heading row: `.ui-user-dropdown-heading` with `font-bold tracking-widest`.
-- Action rows use `.ui-user-dropdown-row` (hover → `text-text-display` + `hover-surface`):
+- Action rows use `.ui-user-dropdown-row` (hover -> `bg-text-display` + `text-text-inverse`):
   - `Settings` (lucide) + `SETTINGS` linking to `/settings`.
   - Theme toggle: `Sun` (light active) / `Moon` (dark active) lucide icon + bracket toggle on the right showing the **target** mode (`[LIGHT]` while in dark, `[DARK]` while in light).
   - `LogOut` + `LOG OUT` calling `signOut({ callbackUrl: "/login" })`.
@@ -207,7 +207,7 @@ Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves
 - Sponsored create mode adds a required Sponsorship Deal select above the briefing fields. The selected deal preview is a sharp bordered context block with brand, status, source budget, preferred-currency equivalent when applicable, due date, contact, and notes. Keep this block informational and dense; do not turn it into a decorative marketing card.
 - Sponsored project edit mode shows Sponsorship Context in the left modal column and the linked Client / Brand in the metadata sidebar. Preserve uppercase labels, mono metadata, and semantic status/value colors.
 - Sponsorship create/edit modal uses a source currency select directly beside Budget. When the selected source currency differs from the user's preferred currency, show a compact bordered preferred-currency preview below the control row.
-- Interactive metadata sidebar: platform chips and pipeline-stage list support click-to-update with hover transitions and disabled pending states. Terminal typography preserved.
+- Interactive metadata sidebar: platform chips and pipeline-stage list support click-to-update with instant inverted hover states and disabled pending states. Terminal typography preserved.
 
 **Destructive Actions**
 - Always map to `.ui-button-danger` (`text-accent border-accent/40 hover:bg-accent-subtle`). Never raw `red-500` palette colors.
@@ -257,10 +257,12 @@ Prefer the semantic class set ([globals.css:426-454](src/app/globals.css:426)) o
 
 ## 5. Animation & Motion
 
-- **Durations**: 150ms micro-interactions, 200ms standard transitions, 300ms section transitions.
-- **Easing**: `cubic-bezier(0.25, 0.1, 0.25, 1)` (subtle ease-out, no bounce). Exposed as `--ease-mechanical`.
-- **Toast slide-in**: `slideIn 200ms ease-out` keyframe ([globals.css:483-492](src/app/globals.css:483)) — 16px translate-X, opacity 0 → 1.
-- **Style**: mechanical and precise. Hover changes brightness and border color; never scale, never drop shadow. Transparency and opacity are preferred over sliding movement.
+- **Hover timing**: 0ms. Main interactive controls invert instantly with semantic tokens.
+- **Timed motion**: only terminal effects may take time, and they must use `steps(...)`, never smooth easing.
+- **Keyframes**: `blink` for cursors, `crtFlicker` for monitor presence, and `terminalBoot` for short stepped reveals.
+- **Toast / modal / panel entry**: use the stepped terminal boot sequence, not slides or smooth fades.
+- **List-page boot**: Archive, Analytics, Sponsorships, and Team repeated rows, cards, metric panels, and empty states use `animate-terminal-boot` with a short inline stagger. Keep the effect on data surfaces, not navigation chrome or tiny labels.
+- **Style**: mechanical, frame-limited, and precise. Never use bounce, spring, scale hover, drop shadow, or animated layout properties.
 
 ---
 
@@ -285,7 +287,7 @@ Reference for `.ui-*` classes ([globals.css:269-471](src/app/globals.css:269)). 
 | `.ui-bar-track` / `.ui-bar-fill` | Progress segments |
 | `.ui-user-dropdown` | Header user-menu wrapper |
 | `.ui-user-dropdown-heading` | Username heading row |
-| `.ui-user-dropdown-row` | Action row (hover swaps to text-display + hover-surface) |
+| `.ui-user-dropdown-row` | Action row (hover swaps to text-inverse + text-display fill) |
 | `.ui-user-dropdown-toggle` | Right-side bracket label inside a row |
 | `.ui-page-kicker` | 10px Mono uppercase pre-title kicker |
 | `.ui-page-title` | Page H1 (uppercase, tracked) |
@@ -325,5 +327,5 @@ Single-line summaries for `src/components/ui/*`. Reach for these before rebuildi
 - **ProgressBar** — flex segments with `gap-[2px]`, default `h-[4px]`. Uses `.ui-bar-track` / `.ui-bar-fill`. ([ProgressBar.tsx](src/components/ui/ProgressBar.tsx))
 - **StatusDot** — `w-1.5 h-1.5 rounded-full`, status-color token. ([StatusDot.tsx](src/components/ui/StatusDot.tsx))
 - **Tag** — `text-[9px] uppercase`, bordered, optional `color` / `borderColor` / `bgColor` props. Disabled state = strike-through + 40% opacity. ([Tag.tsx](src/components/ui/Tag.tsx))
-- **Toast** — bottom-right `fixed bottom-xl right-xl z-[9999]`, types `error | success | warning` → `SYS_ERROR | SYS_OK | SYS_WARN` labels with matching accent border, leading Material Symbol, 4-second auto-dismiss, `slideIn 200ms ease-out` entry. Use via `useToast().showToast(message, type)`. ([Toast.tsx](src/components/ui/Toast.tsx))
+- **Toast** — bottom-right `fixed bottom-xl right-xl z-[9999]`, types `error | success | warning` -> `SYS_ERROR | SYS_OK | SYS_WARN` labels with matching accent border, leading Material Symbol, 4-second auto-dismiss, stepped `terminalBoot` entry. Use via `useToast().showToast(message, type)`. ([Toast.tsx](src/components/ui/Toast.tsx))
 - **CopyBlock** — copy-to-clipboard wrapper. ([CopyBlock.tsx](src/components/ui/CopyBlock.tsx))

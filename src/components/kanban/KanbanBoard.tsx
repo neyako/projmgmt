@@ -268,7 +268,7 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
       onDragCancel={handleDragCancel}
     >
       <div className="flex gap-md md:gap-lg h-full md:min-w-max pb-lg snap-x snap-mandatory md:snap-none">
-        {KANBAN_STAGES.filter((s) => s !== "Published").map((stage) => (
+        {KANBAN_STAGES.filter((s) => s !== "Published").map((stage, stageIndex) => (
           <KanbanColumn
             key={stage}
             id={stage}
@@ -277,10 +277,11 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
             isFilming={stage === "Filming"}
             onAddClick={onNewProjectClick}
           >
-            {(columns[stage] ?? []).map((project) => (
+            {(columns[stage] ?? []).map((project, cardIndex) => (
               <KanbanCard
                 key={project.id}
                 project={project}
+                bootDelayMs={stageIndex * 35 + cardIndex * 70}
                 onProjectUpdate={handleProjectUpdate}
                 onRemove={handleProjectRemove}
                 onClick={handleCardClick}

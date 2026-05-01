@@ -52,7 +52,7 @@ export default function KanbanColumn({
         </div>
         <button
           onClick={onAddClick}
-          className="text-text-secondary hover:text-text-primary transition-colors"
+          className="text-text-secondary hover:bg-text-display hover:text-text-inverse"
           aria-label={`${t("kanban.addProjectTo")} ${title}`}
         >
           <span className="material-symbols-outlined text-[16px]">add</span>
@@ -64,13 +64,13 @@ export default function KanbanColumn({
         <div
           ref={setNodeRef}
           className={cn(
-            "flex flex-col gap-md overflow-y-auto pr-2 flex-1 pb-xl transition-colors",
+            "flex flex-col gap-md overflow-y-auto pr-2 flex-1 pb-xl",
             isOver && "bg-surface-raised/20"
           )}
         >
           {count === 0 ? (
             <div
-              className="border border-dashed border-border-visible h-32 flex flex-col items-center justify-center text-text-disabled gap-2 cursor-pointer hover:border-text-secondary hover:text-text-secondary transition-colors"
+              className="border border-dashed border-border-visible h-32 flex flex-col items-center justify-center text-text-disabled gap-2 cursor-pointer hover:bg-text-display hover:text-text-inverse hover:border-text-display"
               onClick={onAddClick}
             >
               <span className="material-symbols-outlined text-[24px]">

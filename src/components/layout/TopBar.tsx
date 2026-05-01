@@ -86,7 +86,7 @@ export default function TopBar() {
         <div className="flex items-center gap-md">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="h-8 box-border bg-text-display text-text-inverse text-[9px] font-mono tracking-widest uppercase px-4 hover:opacity-80 transition-opacity flex items-center justify-center gap-2 leading-none"
+            className="h-8 box-border border border-text-display bg-text-display text-text-inverse text-[9px] font-mono tracking-widest uppercase px-4 hover:bg-background hover:text-text-display flex items-center justify-center gap-2 leading-none"
           >
             <Plus className="w-3 h-3 shrink-0" strokeWidth={1.25} />
             {t("nav.newProjectShort")}
@@ -95,7 +95,7 @@ export default function TopBar() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={handleToggleMenu}
-              className="w-8 h-8 bg-surface border border-border flex items-center justify-center hover:bg-surface-raised transition-colors overflow-hidden"
+              className="w-8 h-8 bg-surface border border-border flex items-center justify-center hover:bg-text-display hover:text-text-inverse hover:border-text-display overflow-hidden"
               aria-label={t("nav.openUserMenu")}
               aria-expanded={isMenuOpen}
             >
@@ -109,7 +109,7 @@ export default function TopBar() {
                   unoptimized
                 />
               ) : (
-                <span className="material-symbols-outlined text-[16px] text-text-secondary">
+                <span className="material-symbols-outlined text-[16px] text-current">
                   person
                 </span>
               )}
@@ -127,7 +127,7 @@ export default function TopBar() {
                   <Link
                     href="/settings"
                     onClick={() => setIsMenuOpen(false)}
-                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors whitespace-nowrap tracking-widest"
+                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left whitespace-nowrap tracking-widest"
                   >
                     <Settings className="w-4 h-4" />
                     <span>{t("nav.settings")}</span>
@@ -136,13 +136,13 @@ export default function TopBar() {
                   <button
                     type="button"
                     onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                    className="ui-user-dropdown-row group flex items-center justify-between w-full px-4 py-3 text-left transition-colors whitespace-nowrap cursor-pointer tracking-widest"
+                    className="ui-user-dropdown-row group flex items-center justify-between w-full px-4 py-3 text-left whitespace-nowrap cursor-pointer tracking-widest"
                   >
                     <div className="flex items-center gap-3">
                       {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
                       <span>{isDarkMode ? t("nav.darkMode") : t("nav.lightMode")}</span>
                     </div>
-                    <span className="ui-user-dropdown-toggle transition-colors">
+                    <span className="ui-user-dropdown-toggle">
                       {isDarkMode ? t("nav.lightTag") : t("nav.darkTag")}
                     </span>
                   </button>
@@ -152,7 +152,7 @@ export default function TopBar() {
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors whitespace-nowrap tracking-widest"
+                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left whitespace-nowrap tracking-widest"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>{t("nav.logout")}</span>

@@ -64,7 +64,7 @@ export default function KanbanBoardWrapper({
                 <span className="text-style-label text-text-primary">{t(`stage.${stage}`)}</span>
                 <span className="text-style-label text-text-secondary">[ — ]</span>
               </div>
-              <div className="flex-1 animate-pulse bg-surface-raised/10" />
+              <div className="flex-1 animate-crt-flicker bg-surface-raised/10" />
             </div>
           ))}
         </div>

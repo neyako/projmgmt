@@ -20,6 +20,7 @@ interface KanbanCardProps {
   onRemove?: (id: string) => void;
   onClick?: (project: ProjectCardData) => void;
   onRequestPublish?: (project: ProjectCardData) => void;
+  bootDelayMs?: number;
 }
 
 function formatScopeDeadline(date: Date | string | null | undefined, locale: Locale) {
@@ -49,6 +50,7 @@ export default function KanbanCard({
   onRemove,
   onClick,
   onRequestPublish,
+  bootDelayMs,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -61,10 +63,14 @@ export default function KanbanCard({
   const t = useT();
   const locale = useLocale();
 
+  const steppedTransition = transition?.replace(/ease(?:-[a-z]+)*/g, "steps(2, end)");
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: steppedTransition,
   };
+  const bootStyle = !isDragOverlay && bootDelayMs !== undefined
+    ? { animationDelay: `${bootDelayMs}ms` }
+    : undefined;
 
   const platforms = parsePlatforms(project.platformsTargeted);
   const scopeDeadline = getScopeDeadline(project);
@@ -133,11 +139,13 @@ export default function KanbanCard({
         onClick={!isDragOverlay ? handleClick : undefined}
         className={cn(isDragging && "opacity-30")}
       >
-        <FilmingSplitCard
-          project={project}
-          onProjectUpdate={onProjectUpdate}
-          onRemove={onRemove}
-        />
+        <div className={cn(!isDragOverlay && "animate-terminal-boot")} style={bootStyle}>
+          <FilmingSplitCard
+            project={project}
+            onProjectUpdate={onProjectUpdate}
+            onRemove={onRemove}
+          />
+        </div>
       </div>
     );
   }
@@ -149,14 +157,18 @@ export default function KanbanCard({
       style={!isDragOverlay ? style : undefined}
       {...(!isDragOverlay ? { ...attributes, ...listeners } : {})}
       onClick={!isDragOverlay ? handleClick : undefined}
-      className={cn(
-        "bg-surface border p-md flex flex-col gap-sm hover:border-border-visible transition-colors cursor-pointer group",
-        project.status === "Editing" && project.reviewFeedback
-          ? "border-accent/30"
-          : "border-border",
-        isDragging && "opacity-30"
-      )}
+      className={cn(isDragging && "opacity-30")}
     >
+      <div
+        className={cn(
+          "bg-surface border p-md flex flex-col gap-sm hover:border-text-display cursor-pointer group",
+          !isDragOverlay && "animate-terminal-boot",
+          project.status === "Editing" && project.reviewFeedback
+            ? "border-accent/30"
+            : "border-border"
+        )}
+        style={bootStyle}
+      >
       {/* Title + Menu */}
       <div className="flex justify-between items-start">
         <div className="text-style-subheading text-text-primary font-[family-name:var(--font-heading)]">
@@ -239,6 +251,7 @@ export default function KanbanCard({
             ))}
           </div>
         ) : null}
+      </div>
       </div>
     </div>
   );

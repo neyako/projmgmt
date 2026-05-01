@@ -135,10 +135,10 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
               key={r.key}
               type="button"
               onClick={() => setRange(r.key)}
-              className={`px-2 py-1 text-[10px] font-mono uppercase tracking-widest border transition-colors ${
+              className={`px-2 py-1 text-[10px] font-mono uppercase tracking-widest border ${
                 range === r.key
                   ? "border-text-display text-text-display"
-                  : "border-border-visible text-text-secondary hover:text-text-display"
+                  : "border-border-visible text-text-secondary hover:bg-text-display hover:text-text-inverse hover:border-text-display"
               }`}
             >
               {t(r.labelKey)}
@@ -155,10 +155,10 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
               key={`filter-${m.key}`}
               type="button"
               onClick={() => togglePlat(m.key)}
-              className={`flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono uppercase tracking-widest border transition-colors ${
+              className={`flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono uppercase tracking-widest border ${
                 on
                   ? "border-text-display text-text-display"
-                  : "border-border-visible text-text-disabled hover:text-text-secondary"
+                  : "border-border-visible text-text-disabled hover:bg-text-display hover:text-text-inverse hover:border-text-display"
               }`}
               title={on ? t("analytics.hide", { label: m.label }) : t("analytics.show", { label: m.label })}
             >
@@ -311,17 +311,17 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
                   key={m.key}
                   type="button"
                   onClick={() => togglePlat(m.key)}
-                  className={`flex flex-col border-l-2 pl-3 text-left transition-opacity ${
-                    on ? "opacity-100" : "opacity-40 hover:opacity-70"
+                  className={`flex flex-col border-l-2 pl-3 text-left ${
+                    on ? "opacity-100" : "group opacity-40 hover:bg-text-display hover:text-text-inverse"
                   }`}
                   style={{ borderLeftColor: m.color }}
                 >
-                  <span className="ui-page-kicker">{m.label}</span>
-                  <span className="font-mono text-text-display tabular-nums tracking-wider mt-1 text-lg md:text-xl">
+                  <span className="ui-page-kicker group-hover:text-text-inverse">{m.label}</span>
+                  <span className="font-mono text-text-display group-hover:text-text-inverse tabular-nums tracking-wider mt-1 text-lg md:text-xl">
                     {formatNumber(point ? point[m.key] : 0)}
                   </span>
                   {hover !== null && filtered[hover] && (
-                    <span className="text-[9px] font-mono text-text-secondary uppercase tracking-widest mt-0.5">
+                    <span className="text-[9px] font-mono text-text-secondary group-hover:text-text-inverse uppercase tracking-widest mt-0.5">
                       {formatDateLabel(filtered[hover].date)}
                     </span>
                   )}

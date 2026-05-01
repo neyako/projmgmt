@@ -17,23 +17,23 @@ export default function Checkbox({
   const iconSize = size === "sm" ? "text-[10px]" : "text-[12px]";
 
   return (
-    <label className="flex items-start gap-sm cursor-pointer group">
+    <label className="flex items-start gap-sm cursor-pointer group hover:bg-text-display hover:text-text-inverse">
       <button
         type="button"
         role="checkbox"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          "mt-0.5 flex-shrink-0 border flex items-center justify-center transition-colors",
+          "mt-0.5 flex-shrink-0 border flex items-center justify-center",
           sizeClass,
           checked
             ? "bg-text-primary border-text-secondary"
-            : "bg-surface border-border-visible group-hover:border-text-secondary"
+            : "bg-surface border-border-visible group-hover:border-text-display"
         )}
       >
         {checked && (
           <span
-            className={cn("material-symbols-outlined text-black", iconSize)}
+            className={cn("material-symbols-outlined text-text-inverse", iconSize)}
             style={{ fontVariationSettings: "'wght' 700" }}
           >
             check
@@ -43,10 +43,10 @@ export default function Checkbox({
       {label && (
         <span
           className={cn(
-            "text-style-body-sm transition-colors",
+            "text-style-body-sm",
             checked
               ? "text-text-secondary line-through"
-              : "text-text-primary group-hover:text-text-display"
+              : "text-text-primary group-hover:text-text-inverse"
           )}
         >
           {label}

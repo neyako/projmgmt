@@ -20,7 +20,7 @@ interface UpdateStatsModalProps {
 }
 
 const INPUT_CLASS =
-  "w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors";
+  "w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display";
 
 function initialStatString(n: number | null | undefined): string {
   const safe = Number(n ?? 0);
@@ -104,7 +104,7 @@ export default function UpdateStatsModal({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors shrink-0"
+            className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs shrink-0 px-1"
           >
             {t("statsModal.close")}
           </button>

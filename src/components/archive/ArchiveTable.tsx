@@ -107,16 +107,16 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
           <div className="flex gap-3 md:gap-6 border-b border-border-visible pb-2 overflow-x-auto">
             <button
               onClick={() => setActiveTab("Published")}
-              className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                activeTab === "Published" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
+              className={`text-xl md:text-2xl font-bold uppercase tracking-wider whitespace-nowrap px-1 ${
+                activeTab === "Published" ? "text-text-display" : "text-text-disabled hover:bg-text-display hover:text-text-inverse"
               }`}
             >
               {t("archive.published")}
             </button>
             <button
               onClick={() => setActiveTab("Scrapped")}
-              className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                activeTab === "Scrapped" ? "text-text-display" : "text-text-disabled hover:text-text-secondary"
+              className={`text-xl md:text-2xl font-bold uppercase tracking-wider whitespace-nowrap px-1 ${
+                activeTab === "Scrapped" ? "text-text-display" : "text-text-disabled hover:bg-text-display hover:text-text-inverse"
               }`}
             >
               {t("archive.scrapped")}
@@ -128,7 +128,10 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
         </div>
 
         {activeData.length === 0 ? (
-          <div className="ui-panel p-12 text-center">
+          <div
+            className="ui-panel p-12 text-center animate-terminal-boot"
+            style={{ animationDelay: "120ms" }}
+          >
             <div className="ui-page-kicker">
               {t("archive.noFoundFor", { tab: t(`archive.tab${activeTab}`) })}
             </div>
@@ -136,7 +139,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
         ) : (
           <>
             <div className="md:hidden flex flex-col gap-3">
-              {activeData.map((project) => {
+              {activeData.map((project, index) => {
                 const totalViews =
                   (project.youtubeViews || 0) +
                   (project.metaViews || 0) +
@@ -154,7 +157,8 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                   <div
                     key={project.id}
                     onClick={() => setSelectedId(project.id)}
-                    className="ui-panel p-4 flex flex-col gap-4 cursor-pointer"
+                    className="ui-panel p-4 flex flex-col gap-4 cursor-pointer animate-terminal-boot"
+                    style={{ animationDelay: `${index * 45}ms` }}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -251,7 +255,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                   </tr>
                 </thead>
                 <tbody>
-                  {activeData.map((project) => {
+                  {activeData.map((project, index) => {
                     const totalViews =
                       (project.youtubeViews || 0) +
                       (project.metaViews || 0) +
@@ -269,7 +273,8 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                       <tr
                         key={project.id}
                         onClick={() => setSelectedId(project.id)}
-                        className="ui-table-row cursor-pointer"
+                        className="ui-table-row cursor-pointer animate-terminal-boot"
+                        style={{ animationDelay: `${index * 45}ms` }}
                       >
                         <td className="p-4 ui-table-cell">{project.title}</td>
                         <td className="p-4 ui-table-cell">

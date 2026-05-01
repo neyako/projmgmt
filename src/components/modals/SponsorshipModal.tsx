@@ -132,7 +132,7 @@ export default function SponsorshipModal({
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? t("sponsorshipModal.edit") : t("sponsorshipModal.new")}
           </h2>
-          <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors">
+          <button onClick={onClose} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs px-1">
             {t("sponsorshipModal.close")}
           </button>
         </div>

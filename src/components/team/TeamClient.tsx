@@ -57,18 +57,22 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
         </div>
 
         {users.length === 0 ? (
-          <div className="ui-panel p-12 text-center">
+          <div
+            className="ui-panel p-12 text-center animate-terminal-boot"
+            style={{ animationDelay: "120ms" }}
+          >
             <div className="ui-page-kicker">{t("team.noMembers")}</div>
           </div>
         ) : (
           <>
             <div className="md:hidden flex flex-col gap-3">
-              {users.map((u) => (
+              {users.map((u, index) => (
                 <button
                   key={u.id}
                   type="button"
                   onClick={() => handleOpenEdit(u.id)}
-                  className="ui-panel p-4 text-left flex flex-col gap-2"
+                  className="ui-panel p-4 text-left flex flex-col gap-2 animate-terminal-boot"
+                  style={{ animationDelay: `${index * 45}ms` }}
                 >
                   <div className="text-sm font-bold font-mono text-text-display uppercase tracking-wider break-words">
                     {u.name}
@@ -104,11 +108,12 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
+                  {users.map((u, index) => (
                     <tr
                       key={u.id}
                       onClick={() => handleOpenEdit(u.id)}
-                      className="ui-table-row cursor-pointer"
+                      className="ui-table-row cursor-pointer animate-terminal-boot"
+                      style={{ animationDelay: `${index * 45}ms` }}
                     >
                       <td className="p-4 ui-table-cell font-bold">{u.name}</td>
                       <td className="p-4 ui-table-cell">{t(`role.${u.role}`)}</td>

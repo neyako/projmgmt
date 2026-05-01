@@ -91,7 +91,7 @@ export default function PlatformBadge({
       type="button"
       onClick={handleClick}
       title={hasId ? t(meta.copyKey) : t(meta.noIdTitleKey)}
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-widest border rounded shrink-0 transition-colors ${
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-widest border rounded shrink-0 ${
         hasId
           ? "border-border-visible text-text-display hover:border-text-display cursor-pointer"
           : "border-border text-text-disabled cursor-not-allowed"

@@ -69,7 +69,7 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
     >
       <span
         onClick={() => setIsOpen(!isOpen)}
-        className="material-symbols-outlined text-[16px] text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+        className="material-symbols-outlined text-[16px] text-text-secondary opacity-0 group-hover:opacity-100 hover:bg-text-display hover:text-text-inverse cursor-pointer"
       >
         more_horiz
       </span>
@@ -78,13 +78,13 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
         <div className="absolute right-0 top-full mt-1 w-32 ui-panel z-50 flex flex-col">
           <button
             onClick={handleArchive}
-            className="text-left px-3 py-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest hover:bg-hover-surface hover:text-text-display transition-colors"
+            className="text-left px-3 py-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest hover:bg-text-display hover:text-text-inverse"
           >
             {t("kanban.scrap")}
           </button>
           <button
             onClick={handleDelete}
-            className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent-subtle hover:text-accent transition-colors border-t border-border"
+            className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent hover:text-text-inverse border-t border-border"
           >
             {t("kanban.delete")}
           </button>

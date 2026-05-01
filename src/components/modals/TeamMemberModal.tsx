@@ -131,7 +131,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? t("teamModal.edit") : t("teamModal.new")}
           </h2>
-          <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors">
+          <button onClick={onClose} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs px-1">
             {t("teamModal.close")}
           </button>
         </div>

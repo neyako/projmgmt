@@ -25,7 +25,7 @@ export default function StatusDot({
         "rounded-full",
         size === "sm" ? "w-2 h-2" : "w-3 h-3",
         colorMap[color],
-        pulse && "animate-pulse"
+        pulse && "animate-cursor-blink"
       )}
     />
   );

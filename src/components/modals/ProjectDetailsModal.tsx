@@ -888,6 +888,7 @@ export default function ProjectDetailsModal({
 
   // Form state
   const [title, setTitle] = useState("");
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [contentType, setContentType] = useState<string>("Organic");
   const [format, setFormat] = useState<string>("Short_Form");
   const [platforms, setPlatforms] = useState<string[]>([]);
@@ -1541,17 +1542,24 @@ export default function ProjectDetailsModal({
                 </span>
               </div>
             )}
-            <input
-              className="text-xl md:text-2xl font-bold text-text-display bg-transparent outline-none uppercase w-full placeholder:text-text-disabled"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("projectModal.projectTitlePlaceholder")}
-              readOnly={isEditing}
-            />
+            <div className="flex items-center text-text-display">
+              <input
+                className="min-w-0 flex-1 text-xl md:text-2xl font-bold bg-transparent outline-none uppercase placeholder:text-text-disabled"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onFocus={() => setIsTitleFocused(true)}
+                onBlur={() => setIsTitleFocused(false)}
+                placeholder={t("projectModal.projectTitlePlaceholder")}
+                readOnly={isEditing}
+              />
+              {(isEditing || isTitleFocused) && (
+                <span className="animate-cursor-blink inline-block w-2 h-4 bg-current ml-1 shrink-0" />
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col items-end ml-4 shrink-0">
-            <button onClick={onClose} className="text-text-secondary hover:text-text-display font-mono text-xs mb-2 transition-colors">
+            <button onClick={onClose} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs mb-2 px-1">
               [ X ]
             </button>
             {isEditing && (
@@ -1578,8 +1586,8 @@ export default function ProjectDetailsModal({
                   <div className="flex gap-2 flex-wrap">
                     {contentTypeOptions.map((ct) => (
                       <button key={ct.value} type="button" onClick={() => handleContentTypeSelect(ct.value)} className={cn(
-                        "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-                        contentType === ct.value ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
+                        "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest",
+                        contentType === ct.value ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:bg-text-display hover:text-text-inverse hover:border-text-display"
                       )}>{getContentTypeLabel(contentTypeOptions, ct.value, locale)}</button>
                     ))}
                   </div>
@@ -1591,8 +1599,8 @@ export default function ProjectDetailsModal({
                   <div className="flex gap-2 flex-wrap">
                     {FORMATS.map((f) => (
                       <button key={f} type="button" onClick={() => handleFormatSelect(f)} className={cn(
-                        "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-                        format === f ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
+                        "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest",
+                        format === f ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:bg-text-display hover:text-text-inverse hover:border-text-display"
                       )}>{t(`format.${f}`)}</button>
                     ))}
                   </div>
@@ -1604,8 +1612,8 @@ export default function ProjectDetailsModal({
                   <div className="flex gap-2 flex-wrap">
                     {visiblePlatforms.map((p) => (
                       <button key={p} type="button" onClick={() => togglePlatform(p)} className={cn(
-                        "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
-                        platforms.includes(p) ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:border-outline-variant"
+                        "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest",
+                        platforms.includes(p) ? "border border-text-display text-text-display bg-transparent" : "border border-border-visible text-text-secondary bg-transparent hover:bg-text-display hover:text-text-inverse hover:border-text-display"
                       )}>{p}</button>
                     ))}
                   </div>
@@ -1622,7 +1630,7 @@ export default function ProjectDetailsModal({
                         <select
                           value={sponsorshipId}
                           onChange={(e) => handleSponsorshipSelect(e.target.value)}
-                          className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 pr-6 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer color-scheme-dark"
+                          className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 pr-6 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer color-scheme-dark"
                         >
                           <option value="" className="bg-surface text-text-primary">
                             {sponsorshipDeals.length > 0 ? t("projectModal.selectSponsorshipDeal") : t("projectModal.noActiveDeals")}
@@ -1713,11 +1721,11 @@ export default function ProjectDetailsModal({
 
                 {/* Submit */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-border-visible">
-                  <button type="button" onClick={onClose} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:border-outline-variant transition-colors">
+                  <button type="button" onClick={onClose} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:bg-text-display hover:text-text-inverse hover:border-text-display">
                     {t("projectModal.cancel")}
                   </button>
                   <button type="submit" disabled={isPending} className={cn(
-                    "px-6 py-1.5 text-[10px] font-mono uppercase tracking-widest bg-text-display text-text-inverse hover:opacity-80 transition-colors",
+                    "px-6 py-1.5 text-[10px] font-mono uppercase tracking-widest border border-text-display bg-text-display text-text-inverse hover:bg-background hover:text-text-display",
                     isPending && "opacity-50 cursor-wait"
                   )}>
                     {isPending ? t("projectModal.creating") : t("projectModal.createProject")}
@@ -1856,7 +1864,7 @@ export default function ProjectDetailsModal({
                       value={youtubeId}
                       onChange={(e) => setYoutubeId(e.target.value)}
                       placeholder="dQw4w9WgXcQ"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors mb-4"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
                     />
 
                     <label
@@ -1872,7 +1880,7 @@ export default function ProjectDetailsModal({
                       value={metaId}
                       onChange={(e) => setMetaId(e.target.value)}
                       placeholder="17841400000000000"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors mb-4"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
                     />
 
                     <label
@@ -1888,7 +1896,7 @@ export default function ProjectDetailsModal({
                       value={tiktokId}
                       onChange={(e) => setTiktokId(e.target.value)}
                       placeholder="7234567890123456789"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display transition-colors mb-4"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
                     />
 
                     <div className="flex justify-end mt-2">
@@ -1896,7 +1904,7 @@ export default function ProjectDetailsModal({
                         type="submit"
                         disabled={isSavingIds}
                         className={cn(
-                          "px-4 py-2 text-[10px] font-mono uppercase tracking-widest border border-border-visible text-text-secondary hover:text-text-display hover:border-text-display transition-colors",
+                          "px-4 py-2 text-[10px] font-mono uppercase tracking-widest border border-border-visible text-text-secondary hover:bg-text-display hover:text-text-inverse hover:border-text-display",
                           isSavingIds && "opacity-50 cursor-wait"
                         )}
                       >
@@ -1959,7 +1967,7 @@ export default function ProjectDetailsModal({
                             setTempFolderName(folderName);
                             setIsEditingRaw(true);
                           }}
-                          className="text-[10px] font-mono text-text-secondary hover:text-text-display px-3 py-2.5 transition-colors"
+                          className="text-[10px] font-mono text-text-secondary hover:bg-text-display hover:text-text-inverse px-3 py-2.5"
                         >
                           [ EDIT ]
                         </button>
@@ -1967,7 +1975,7 @@ export default function ProjectDetailsModal({
                           <button
                             type="button"
                             onClick={() => copyToClipboard(rawPath)}
-                            className="text-[10px] font-mono text-text-secondary hover:text-text-display px-3 py-2.5 border-l border-border-visible transition-colors"
+                            className="text-[10px] font-mono text-text-secondary hover:bg-text-display hover:text-text-inverse px-3 py-2.5 border-l border-border-visible"
                           >
                             [ COPY ]
                           </button>
@@ -1994,7 +2002,7 @@ export default function ProjectDetailsModal({
                         type="button"
                         onClick={handleScanForDrafts}
                         disabled={isScanningDraft}
-                        className="text-[10px] font-mono uppercase tracking-widest text-success hover:text-text-display hover:bg-hover-surface px-3 py-2.5 border-l border-border-visible transition-colors shrink-0 whitespace-nowrap disabled:cursor-wait disabled:opacity-50"
+                        className="text-[10px] font-mono uppercase tracking-widest text-success hover:bg-success hover:text-text-inverse hover:border-success px-3 py-2.5 border-l border-border-visible shrink-0 whitespace-nowrap disabled:cursor-wait disabled:opacity-50"
                       >
                         {isScanningDraft ? t("projectModal.scanning") : t("projectModal.scanForDraft", { version: project.draftVersion })}
                       </button>
@@ -2004,7 +2012,7 @@ export default function ProjectDetailsModal({
                         href={reviewLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-text-secondary hover:text-text-display px-3 py-2.5 border-l border-border-visible transition-colors shrink-0"
+                        className="text-text-secondary hover:bg-text-display hover:text-text-inverse px-3 py-2.5 border-l border-border-visible shrink-0"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -2097,7 +2105,7 @@ export default function ProjectDetailsModal({
                             addShot("a");
                           }
                         }}
-                        className="w-full bg-surface border border-border-visible text-text-primary font-mono text-xs p-2 focus:outline-none focus:border-text-display/50 transition-colors mt-2"
+                        className="w-full bg-surface border border-border-visible text-text-primary font-mono text-xs p-2 focus:outline-none focus:border-text-display/50 mt-2"
                       />
                     </div>
 
@@ -2135,7 +2143,7 @@ export default function ProjectDetailsModal({
                             addShot("b");
                           }
                         }}
-                        className="w-full bg-surface border border-border-visible text-text-primary font-mono text-xs p-2 focus:outline-none focus:border-text-display/50 transition-colors mt-2"
+                        className="w-full bg-surface border border-border-visible text-text-primary font-mono text-xs p-2 focus:outline-none focus:border-text-display/50 mt-2"
                       />
                     </div>
                   </div>
@@ -2199,7 +2207,7 @@ export default function ProjectDetailsModal({
                       ""
                     }
                     placeholder="—"
-                    className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors whitespace-nowrap overflow-x-auto"
+                    className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display whitespace-nowrap overflow-x-auto"
                   />
                 </div>
               )}
@@ -2224,7 +2232,7 @@ export default function ProjectDetailsModal({
                           setScriptingDueDate(value);
                           saveMetadata({ scriptingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
+                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2241,7 +2249,7 @@ export default function ProjectDetailsModal({
                           setFilmingDueDate(value);
                           saveMetadata({ filmingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
+                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2258,7 +2266,7 @@ export default function ProjectDetailsModal({
                           setEditingDueDate(value);
                           saveMetadata({ editingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors color-scheme-dark"
+                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2284,7 +2292,7 @@ export default function ProjectDetailsModal({
                         setEditorId(value);
                         saveMetadata({ assignedEditorId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2316,7 +2324,7 @@ export default function ProjectDetailsModal({
                         setCameramanId(value);
                         saveMetadata({ assignedCameramanId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2346,7 +2354,7 @@ export default function ProjectDetailsModal({
                         setTalentId(value);
                         saveMetadata({ assignedTalentId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display transition-colors appearance-none cursor-pointer pr-6"
+                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2381,7 +2389,7 @@ export default function ProjectDetailsModal({
                     saveMetadata({ productLinks: next });
                   }}
                   placeholder={`Keychron K2 — https://...\nElgato Key Light — https://...`}
-                  className="w-full bg-surface border border-border-visible p-3 text-xs font-mono text-text-primary uppercase focus:outline-none focus:border-text-display transition-colors min-h-[80px] resize-y mt-1"
+                  className="w-full bg-surface border border-border-visible p-3 text-xs font-mono text-text-primary uppercase focus:outline-none focus:border-text-display min-h-[80px] resize-y mt-1"
                 />
               </div>
             )}
@@ -2400,10 +2408,10 @@ export default function ProjectDetailsModal({
                     onClick={() => (isEditing ? handlePlatformToggle(p) : togglePlatform(p))}
                     disabled={isPending}
                     className={cn(
-                      "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors disabled:opacity-50",
+                      "px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest disabled:opacity-50",
                       platforms.includes(p)
                         ? "border border-text-display text-text-display"
-                        : "border border-border-visible text-text-disabled hover:border-outline-variant hover:text-text-primary"
+                        : "border border-border-visible text-text-disabled hover:bg-text-display hover:text-text-inverse hover:border-text-display"
                     )}
                   >
                     {p}
@@ -2433,17 +2441,18 @@ export default function ProjectDetailsModal({
                         onClick={() => handleStageSelect(stage)}
                         disabled={isPending || isCurrent}
                         className={cn(
-                          "group flex items-center gap-2 py-1 w-full text-left transition-colors disabled:cursor-default",
+                          "group flex items-center gap-2 py-1 px-2 w-full text-left disabled:cursor-default",
+                          !isCurrent && "hover:bg-text-display hover:text-text-inverse",
                           !isCurrent && "cursor-pointer"
                         )}
                       >
                         <div className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0",
-                          isCurrent ? statusColors[stage] || "bg-white" : isPast ? "bg-text-secondary" : "bg-surface-raised"
+                          isCurrent ? statusColors[stage] || "bg-text-display" : isPast ? "bg-text-secondary" : "bg-surface-raised"
                         )} />
                         <span className={cn(
-                          "text-[10px] font-mono uppercase tracking-widest transition-colors",
-                          isCurrent ? "text-text-display" : isPast ? "text-text-secondary group-hover:text-text-display" : "text-text-disabled group-hover:text-text-display"
+                          "text-[10px] font-mono uppercase tracking-widest",
+                          isCurrent ? "text-text-display" : isPast ? "text-text-secondary group-hover:text-text-inverse" : "text-text-disabled group-hover:text-text-inverse"
                         )}>
                           {t(`stage.${stage}`)}
                         </span>

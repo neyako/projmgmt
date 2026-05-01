@@ -96,7 +96,7 @@ export default async function SettingsPage() {
             <button
               type="submit"
               form="change-password-form"
-              className="bg-text-display text-text-inverse text-[10px] font-mono uppercase tracking-widest px-6 py-2 hover:opacity-80 transition-opacity flex items-center gap-2"
+              className="border border-text-display bg-text-display text-text-inverse text-[10px] font-mono uppercase tracking-widest px-6 py-2 hover:bg-background hover:text-text-display flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[16px]">save</span>
               {t("settings.saveChanges")}

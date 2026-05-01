@@ -17,16 +17,16 @@ export default function Button({
   return (
     <button
       className={cn(
-        "text-style-label uppercase tracking-widest transition-colors duration-200 active:opacity-80 flex items-center justify-center gap-sm whitespace-nowrap",
+        "text-style-label uppercase tracking-widest active:opacity-80 flex items-center justify-center gap-sm whitespace-nowrap border",
         // Variants
         variant === "primary" &&
-          "bg-text-display text-black hover:bg-text-primary",
+          "bg-text-display text-text-inverse border-text-display hover:bg-background hover:text-text-display",
         variant === "secondary" &&
-          "bg-transparent border border-border-visible text-text-display hover:bg-surface-raised",
+          "bg-transparent border-border-visible text-text-display hover:bg-text-display hover:text-text-inverse hover:border-text-display",
         variant === "ghost" &&
-          "bg-transparent text-text-secondary hover:text-text-display",
+          "bg-transparent border-transparent text-text-secondary hover:bg-text-display hover:text-text-inverse hover:border-text-display",
         variant === "danger" &&
-          "bg-accent text-white hover:opacity-90",
+          "bg-transparent border-accent/40 text-accent hover:bg-accent hover:text-text-inverse hover:border-accent",
         // Sizes
         size === "sm" && "px-3 py-1 text-[10px]",
         size === "md" && "px-md py-sm",

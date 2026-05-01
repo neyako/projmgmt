@@ -62,7 +62,7 @@ export default function LoginForm() {
             <div className="flex flex-col gap-sm group">
               <label
                 htmlFor="username"
-                className="text-style-label text-text-secondary group-focus-within:text-text-display transition-colors"
+                className="text-style-label text-text-secondary group-focus-within:text-text-display"
               >
                 {t("login.username")}
               </label>
@@ -74,14 +74,14 @@ export default function LoginForm() {
                 autoComplete="username"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
-                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
+                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
               />
             </div>
 
             <div className="flex flex-col gap-sm group">
               <label
                 htmlFor="password"
-                className="text-style-label text-text-secondary group-focus-within:text-text-display transition-colors"
+                className="text-style-label text-text-secondary group-focus-within:text-text-display"
               >
                 {t("login.accessKey")}
               </label>
@@ -93,20 +93,20 @@ export default function LoginForm() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
+                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
               />
             </div>
           </div>
 
           {errorMessage ? (
-            <p className="text-style-label text-red-500 tracking-widest text-center">{errorMessage}</p>
+            <p className="text-style-label text-error tracking-widest text-center">{errorMessage}</p>
           ) : null}
 
           <div className="flex flex-col items-center pt-md">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-text-display text-text-inverse text-style-label rounded-full px-xl py-md min-w-[160px] hover:opacity-80 transition-opacity active:scale-95 duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-text-display bg-text-display text-text-inverse text-style-label rounded-full px-xl py-md min-w-[160px] hover:bg-background hover:text-text-display disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? t("login.verifying") : t("login.login")}
             </button>
@@ -120,10 +120,10 @@ export default function LoginForm() {
               type="button"
               onClick={() => handleLocaleChange(code)}
               className={cn(
-                "text-style-label tracking-widest px-2 py-1 transition-colors",
+                "text-style-label tracking-widest px-2 py-1",
                 code === currentLocale
                   ? "text-text-display"
-                  : "text-text-secondary hover:text-text-display",
+                  : "text-text-secondary hover:bg-text-display hover:text-text-inverse",
               )}
             >
               {code.toUpperCase()}

@@ -173,10 +173,10 @@ export default function SponsorshipsClient({
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`text-xl md:text-2xl font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
+                    className={`text-xl md:text-2xl font-bold uppercase tracking-wider whitespace-nowrap px-1 ${
                       activeTab === tab
                         ? "text-text-display"
-                        : "text-text-disabled hover:text-text-secondary"
+                        : "text-text-disabled hover:bg-text-display hover:text-text-inverse"
                     }`}
                   >
                     {t(tabKeyMap[tab])}
@@ -206,7 +206,7 @@ export default function SponsorshipsClient({
               href={rateSnapshot.providerUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-text-secondary hover:text-text-display transition-colors"
+              className="text-text-secondary hover:bg-text-display hover:text-text-inverse"
             >
               {t("sponsorships.rateProvider")}
             </a>
@@ -221,7 +221,10 @@ export default function SponsorshipsClient({
         <section className="mb-6">
           <div className="ui-page-kicker mb-3">{t("sponsorships.atAGlance")}</div>
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-3">
-            <div className="ui-panel p-4 min-w-0">
+            <div
+              className="ui-panel p-4 min-w-0 animate-terminal-boot"
+              style={{ animationDelay: "0ms" }}
+            >
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
                   {t("sponsorships.pendingPayment")}
@@ -238,7 +241,10 @@ export default function SponsorshipsClient({
               </div>
             </div>
 
-            <div className="ui-panel p-4 min-w-0">
+            <div
+              className="ui-panel p-4 min-w-0 animate-terminal-boot"
+              style={{ animationDelay: "70ms" }}
+            >
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
                   {t("sponsorships.closedThisMonth")}
@@ -255,7 +261,10 @@ export default function SponsorshipsClient({
               </div>
             </div>
 
-            <div className="ui-panel p-4 min-w-0">
+            <div
+              className="ui-panel p-4 min-w-0 animate-terminal-boot"
+              style={{ animationDelay: "140ms" }}
+            >
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
                   {t("sponsorships.monthlyRevenue")}
@@ -265,10 +274,11 @@ export default function SponsorshipsClient({
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                {summary.monthlyTotals.map((month) => (
+                {summary.monthlyTotals.map((month, index) => (
                   <div
                     key={month.key}
-                    className="border border-border-visible bg-surface-raised p-3 min-w-0"
+                    className="border border-border-visible bg-surface-raised p-3 min-w-0 animate-terminal-boot"
+                    style={{ animationDelay: `${210 + index * 45}ms` }}
                   >
                     <div className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
                       {month.label}
@@ -284,7 +294,10 @@ export default function SponsorshipsClient({
         </section>
 
         {filtered.length === 0 ? (
-          <div className="ui-panel p-12 text-center">
+          <div
+            className="ui-panel p-12 text-center animate-terminal-boot"
+            style={{ animationDelay: "120ms" }}
+          >
             <div className="ui-page-kicker">
               {t("sponsorships.noFoundFor", { tab: t(`sponsorships.tab${activeTab}`) })}
             </div>
@@ -292,12 +305,13 @@ export default function SponsorshipsClient({
         ) : (
           <>
             <div className="md:hidden flex flex-col gap-3">
-              {filtered.map((s) => (
+              {filtered.map((s, index) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => handleOpenEdit(s.id)}
-                  className="ui-panel p-4 text-left flex flex-col gap-4"
+                  className="ui-panel p-4 text-left flex flex-col gap-4 animate-terminal-boot"
+                  style={{ animationDelay: `${index * 45}ms` }}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -365,11 +379,12 @@ export default function SponsorshipsClient({
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((s) => (
+                  {filtered.map((s, index) => (
                     <tr
                       key={s.id}
                       onClick={() => handleOpenEdit(s.id)}
-                      className="ui-table-row cursor-pointer"
+                      className="ui-table-row cursor-pointer animate-terminal-boot"
+                      style={{ animationDelay: `${index * 45}ms` }}
                     >
                       <td className="p-4 ui-table-cell font-bold">
                         {s.brandName}

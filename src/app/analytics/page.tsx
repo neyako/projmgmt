@@ -211,10 +211,11 @@ export default async function AnalyticsPage() {
 
           {/* ─── Aggregate Metrics ───────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 lg:gap-6 mb-8 md:mb-12">
-            {metrics.map((m) => (
+            {metrics.map((m, index) => (
               <div
                 key={m.label}
-                className="ui-panel p-4 md:p-5 lg:p-6 flex flex-col min-w-0"
+                className="ui-panel p-4 md:p-5 lg:p-6 flex flex-col min-w-0 animate-terminal-boot"
+                style={{ animationDelay: `${index * 70}ms` }}
               >
                 <span className="ui-page-kicker">
                   {m.label}
@@ -227,7 +228,10 @@ export default async function AnalyticsPage() {
           </div>
 
           {/* ─── Cross-Platform Time-Series Chart ────────── */}
-          <div className="mb-8 md:mb-12">
+          <div
+            className="mb-8 md:mb-12 animate-terminal-boot"
+            style={{ animationDelay: "120ms" }}
+          >
             <PerformanceChart points={timeSeries} />
           </div>
 
@@ -238,14 +242,17 @@ export default async function AnalyticsPage() {
             </h2>
 
             {published.length === 0 ? (
-              <div className="ui-panel p-12 text-center">
+              <div
+                className="ui-panel p-12 text-center animate-terminal-boot"
+                style={{ animationDelay: "180ms" }}
+              >
                 <div className="ui-page-kicker">
                   {t("analytics.noPublished")}
                 </div>
               </div>
             ) : (
               <div className="flex flex-col">
-                {published.map((p) => {
+                {published.map((p, index) => {
                   const widthPct =
                     maxViews > 0 ? (p.totalViews / maxViews) * 100 : 0;
                   const hasYoutube =
@@ -279,7 +286,11 @@ export default async function AnalyticsPage() {
                   const isLongForm = hasPlatform(p.platforms, ["YOUTUBE"]);
 
                   return (
-                    <div key={p.id} className="mb-6 w-full">
+                    <div
+                      key={p.id}
+                      className="mb-6 w-full animate-terminal-boot"
+                      style={{ animationDelay: `${180 + index * 45}ms` }}
+                    >
                       {/* Row header: title + views */}
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 sm:gap-4">
                         <div className="flex flex-col min-w-0 flex-1">
@@ -342,7 +353,7 @@ export default async function AnalyticsPage() {
                       {/* Bar-chart hack: flat track + filled bar */}
                       <div className="w-full h-2 ui-bar-track mt-2">
                         <div
-                          className="h-full ui-bar-fill transition-all duration-1000"
+                          className="h-full ui-bar-fill"
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>

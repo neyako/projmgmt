@@ -86,7 +86,7 @@ export default function AvatarUploadForm({ avatarUrl }: AvatarUploadFormProps) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={isPending}
-          className="border border-border-visible text-text-display text-[10px] font-mono uppercase tracking-widest px-4 py-2 hover:bg-surface-raised transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="border border-border-visible text-text-display text-[10px] font-mono uppercase tracking-widest px-4 py-2 hover:bg-text-display hover:text-text-inverse hover:border-text-display disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? t("settings.uploading") : t("settings.uploadAvatar")}
         </button>

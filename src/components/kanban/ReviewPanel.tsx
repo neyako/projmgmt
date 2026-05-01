@@ -83,7 +83,7 @@ export default function ReviewPanel({
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
         placeholder={t("kanban.addFeedback")}
-        className="w-full bg-surface border-b border-border-visible text-xs font-mono text-text-display p-2 min-h-[80px] resize-y focus:outline-none focus:border-text-display transition-colors"
+        className="w-full bg-surface border-b border-border-visible text-xs font-mono text-text-display p-2 min-h-[80px] resize-y focus:outline-none focus:border-text-display"
       />
       <div className="flex gap-2">
         <button
@@ -91,7 +91,7 @@ export default function ReviewPanel({
           onClick={handleReject}
           disabled={isPending}
           className={cn(
-            "flex-1 border border-accent/40 text-accent hover:bg-accent-subtle py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
+            "flex-1 border border-accent/40 text-accent hover:bg-accent hover:text-text-inverse hover:border-accent py-1.5 text-[10px] font-mono uppercase tracking-widest",
             isPending && "opacity-50 cursor-wait"
           )}
         >
@@ -102,7 +102,7 @@ export default function ReviewPanel({
           onClick={handleApprove}
           disabled={isPending}
           className={cn(
-            "flex-1 border border-success/40 text-success hover:bg-success/10 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors",
+            "flex-1 border border-success/40 text-success hover:bg-success hover:text-text-inverse hover:border-success py-1.5 text-[10px] font-mono uppercase tracking-widest",
             isPending && "opacity-50 cursor-wait"
           )}
         >

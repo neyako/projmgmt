@@ -9,7 +9,7 @@ export default async function Shell({ children }: { children: React.ReactNode })
 
   return (
     <ToastProvider>
-      <div className="flex h-[100dvh] w-full bg-background overflow-hidden text-text-primary">
+      <div className="flex h-[100dvh] w-full bg-background overflow-hidden text-text-primary animate-crt-flicker">
         <Sidebar workspaceId={workspaceId} />
         <div className="flex-1 min-w-0 h-full flex flex-col md:ml-56 lg:ml-64">
           <Suspense

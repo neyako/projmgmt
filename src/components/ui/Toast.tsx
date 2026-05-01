@@ -51,7 +51,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             className={cn(
-              "pointer-events-auto px-lg py-md border flex items-start gap-sm min-w-[320px] max-w-[420px] animate-[slideIn_200ms_ease-out]",
+              "pointer-events-auto px-lg py-md border flex items-start gap-sm min-w-[320px] max-w-[420px] animate-terminal-boot",
               toast.type === "error" &&
                 "bg-surface border-accent/40 text-text-display",
               toast.type === "success" &&
@@ -90,7 +90,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               onClick={() =>
                 setToasts((prev) => prev.filter((t) => t.id !== toast.id))
               }
-              className="text-text-secondary hover:text-text-display transition-colors flex-shrink-0"
+              className="text-text-secondary hover:bg-text-display hover:text-text-inverse flex-shrink-0"
             >
               <span className="material-symbols-outlined text-[14px]">
                 close

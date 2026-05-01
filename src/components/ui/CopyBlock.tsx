@@ -64,8 +64,8 @@ export default function CopyBlock({
         type="button"
         onClick={handleCopy}
         className={cn(
-          "absolute top-2 right-2 text-[10px] font-mono uppercase tracking-widest transition-colors",
-          copied ? "text-success" : "text-text-secondary hover:text-text-display"
+          "absolute top-2 right-2 text-[10px] font-mono uppercase tracking-widest",
+          copied ? "text-success" : "text-text-secondary hover:bg-text-display hover:text-text-inverse"
         )}
       >
         {copied ? t("ui.copied") : t("ui.copy")}

@@ -104,10 +104,10 @@ export default function Sidebar({ workspaceId }: { workspaceId: string }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "px-2 lg:px-3 py-2 flex items-center gap-3 lg:gap-4 text-style-label tracking-widest transition-all duration-150 active:scale-95",
+                  "px-2 lg:px-3 py-2 flex items-center gap-3 lg:gap-4 text-style-label tracking-widest",
                   isActive
                     ? "text-text-display border border-border-visible bg-surface-raised"
-                    : "text-text-disabled hover:text-text-display hover:bg-surface-raised border border-transparent"
+                    : "text-text-disabled hover:text-text-inverse hover:bg-text-display hover:border-text-display border border-transparent"
                 )}
               >
                 <span
@@ -151,7 +151,7 @@ export default function Sidebar({ workspaceId }: { workspaceId: string }) {
           type="button"
           onClick={() => setIsOpen(true)}
           onPointerDown={() => setIsOpen(true)}
-          className="w-11 h-10 border border-border-visible bg-background text-text-display flex items-center justify-center touch-manipulation"
+          className="w-11 h-10 border border-border-visible bg-background text-text-display hover:bg-text-display hover:text-text-inverse hover:border-text-display flex items-center justify-center touch-manipulation"
           aria-label={t("nav.openMenu")}
           aria-expanded={isOpen}
         >
@@ -177,7 +177,7 @@ export default function Sidebar({ workspaceId }: { workspaceId: string }) {
               type="button"
               onClick={() => setIsOpen(false)}
               onPointerDown={() => setIsOpen(false)}
-              className="w-11 h-10 border border-border-visible bg-background text-text-display flex items-center justify-center touch-manipulation"
+              className="w-11 h-10 border border-border-visible bg-background text-text-display hover:bg-text-display hover:text-text-inverse hover:border-text-display flex items-center justify-center touch-manipulation"
               aria-label={t("nav.closeMenu")}
             >
               <X className="w-5 h-5" />
@@ -196,7 +196,7 @@ export default function Sidebar({ workspaceId }: { workspaceId: string }) {
                       "px-4 py-4 min-h-[44px] flex items-center gap-4 text-style-label tracking-widest border",
                       isActive
                         ? "text-text-display border-border-visible bg-surface-raised"
-                        : "text-text-disabled border-transparent hover:text-text-display hover:bg-surface-raised"
+                        : "text-text-disabled border-transparent hover:text-text-inverse hover:bg-text-display hover:border-text-display"
                     )}
                   >
                     <span

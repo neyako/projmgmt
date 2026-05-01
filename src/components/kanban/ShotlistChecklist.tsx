@@ -63,15 +63,15 @@ export default function ShotlistChecklist({
               aria-checked={item.completed}
               onClick={() => handleToggle(item.id, !item.completed)}
               className={cn(
-                "w-3 h-3 flex items-center justify-center border bg-transparent rounded-none shrink-0 transition-colors mt-[3px]",
+                "w-3 h-3 flex items-center justify-center border bg-transparent rounded-none shrink-0 mt-[3px]",
                 item.completed
-                  ? "bg-white border-white"
-                  : "border-border-visible group-hover:border-outline-variant"
+                  ? "bg-text-display border-text-display"
+                  : "border-border-visible group-hover:border-text-display"
               )}
             >
               {item.completed && (
                 <svg
-                  className="w-2 h-2 text-black"
+                  className="w-2 h-2 text-text-inverse"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -83,7 +83,7 @@ export default function ShotlistChecklist({
             </button>
             <span
               className={cn(
-                "text-xs font-mono transition-colors",
+                "text-xs font-mono",
                 item.completed ? "line-through text-text-disabled" : "text-text-secondary"
               )}
             >

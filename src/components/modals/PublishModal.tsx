@@ -22,7 +22,7 @@ function todayInputValue(): string {
 }
 
 const INPUT_CLASS =
-  "w-full bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none font-mono text-sm text-text-display py-2 px-0 transition-colors placeholder:text-text-disabled";
+  "w-full bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none font-mono text-sm text-text-display py-2 px-0 placeholder:text-text-disabled";
 
 export default function PublishModal({
   project,
@@ -135,7 +135,7 @@ export default function PublishModal({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="text-text-secondary hover:text-text-display font-mono text-xs transition-colors ml-4 shrink-0"
+            className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs ml-4 shrink-0 px-1"
           >
             {t("publishModal.close")}
           </button>

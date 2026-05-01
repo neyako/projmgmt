@@ -51,7 +51,7 @@ export default function SetupForm() {
           <div className="flex flex-col gap-sm group">
             <label
               htmlFor="workspaceName"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
+              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
             >
               {t("setup.workspaceId")}
             </label>
@@ -62,14 +62,14 @@ export default function SetupForm() {
               placeholder={t("setup.workspaceIdPlaceholder")}
               autoComplete="off"
               required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
+              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
             />
           </div>
 
           <div className="flex flex-col gap-sm group">
             <label
               htmlFor="username"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
+              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
             >
               {t("setup.adminUsername")}
             </label>
@@ -80,14 +80,14 @@ export default function SetupForm() {
               placeholder={t("setup.adminUsernamePlaceholder")}
               autoComplete="username"
               required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
+              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
             />
           </div>
 
           <div className="flex flex-col gap-sm group">
             <label
               htmlFor="displayName"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
+              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
             >
               {t("setup.displayName")}
             </label>
@@ -98,14 +98,14 @@ export default function SetupForm() {
               placeholder={t("setup.displayNamePlaceholder")}
               autoComplete="name"
               required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
+              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
             />
           </div>
 
           <div className="flex flex-col gap-sm group">
             <label
               htmlFor="password"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
+              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
             >
               {t("setup.accessKey")}
             </label>
@@ -117,14 +117,14 @@ export default function SetupForm() {
               autoComplete="new-password"
               minLength={8}
               required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
+              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
             />
           </div>
 
           <div className="flex flex-col gap-sm group">
             <label
               htmlFor="confirmPassword"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display transition-colors"
+              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
             >
               {t("setup.confirmAccessKey")}
             </label>
@@ -136,19 +136,19 @@ export default function SetupForm() {
               autoComplete="new-password"
               minLength={8}
               required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display transition-colors"
+              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
             />
           </div>
 
           {errorMessage ? (
-            <p className="text-style-label text-red-500 tracking-widest text-center">{errorMessage}</p>
+            <p className="text-style-label text-error tracking-widest text-center">{errorMessage}</p>
           ) : null}
 
           <div className="flex flex-col items-center pt-md">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-text-display text-text-inverse text-style-label tracking-widest px-xl py-md min-w-[240px] hover:opacity-80 transition-opacity active:scale-95 duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-text-display bg-text-display text-text-inverse text-style-label tracking-widest px-xl py-md min-w-[240px] hover:bg-background hover:text-text-display disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? t("setup.initializing") : t("setup.initialize")}
             </button>

@@ -67,7 +67,7 @@ export function Monogram({
     solid:
       "bg-text-display text-text-inverse border border-text-display",
     signal:
-      "bg-accent text-white border border-accent",
+      "bg-accent text-text-inverse border border-accent",
     ghost:
       "bg-transparent text-text-display border border-border-visible",
   };

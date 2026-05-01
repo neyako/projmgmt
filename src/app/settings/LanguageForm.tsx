@@ -53,7 +53,7 @@ export default function LanguageForm() {
               onClick={() => selectLocale(code)}
               disabled={pending}
               className={cn(
-                "px-4 py-2 border text-[11px] font-mono uppercase tracking-widest transition-colors disabled:opacity-50",
+                "px-4 py-2 border text-[11px] font-mono uppercase tracking-widest disabled:opacity-50",
                 isActive
                   ? "bg-text-display text-text-inverse border-text-display"
                   : "bg-transparent text-text-display border-border-visible hover:border-text-display",
