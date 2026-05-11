@@ -76,12 +76,43 @@ function escapeHtml(text: string) {
 // ─── WYSIWYG Markdown Editor (Notion/Obsidian-style) ────────
 // Per-line contenteditable. Lines render formatted while raw markdown stays in state.
 
+const INLINE_MARKDOWN_PATTERN = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\n]+\)|\*[^*\n]+\*)/g;
+
+function canPreviewInlineToken(text: string, rawEnd: number): boolean {
+  return rawEnd === text.length || /\s/.test(text[rawEnd]);
+}
+
+function getActiveHeadingPreview(text: string): { bodyStart: number; level: number } | null {
+  const match = text.match(/^(#{1,3})\s+(.*)$/);
+  if (!match) return null;
+  return { bodyStart: match[1].length + 1, level: match[1].length };
+}
+
+function getActivePreviewSource(text: string): { source: string; bodyStart: number } {
+  const heading = getActiveHeadingPreview(text);
+  if (!heading) return { source: text, bodyStart: 0 };
+  return { source: text.slice(heading.bodyStart), bodyStart: heading.bodyStart };
+}
+
+function hasActivePreview(text: string): boolean {
+  const { source } = getActivePreviewSource(text);
+  return Boolean(getActiveHeadingPreview(text)) || hasActiveInlinePreview(source);
+}
+
+function activeLineClassName(text: string): string {
+  const heading = getActiveHeadingPreview(text);
+  if (!heading) {
+    return "outline-none focus:outline-none px-3 py-1 min-h-[1.75rem] whitespace-pre-wrap break-words leading-relaxed text-text-primary";
+  }
+  return lineWrapperClassName("heading", heading.level);
+}
+
 function renderInlineFormatted(text: string): string {
   if (!text) return "";
-  const pattern = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\n]+\)|\*[^*\n]+\*)/g;
   let out = "";
   let cursor = 0;
   let m: RegExpExecArray | null;
+  const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
   while ((m = pattern.exec(text)) !== null) {
     if (m.index > cursor) out += escapeHtml(text.slice(cursor, m.index));
     const tok = m[0];
@@ -99,6 +130,106 @@ function renderInlineFormatted(text: string): string {
   }
   if (cursor < text.length) out += escapeHtml(text.slice(cursor));
   return out;
+}
+
+function renderInlineActivePreview(text: string): string {
+  if (!text) return "";
+  let out = "";
+  let cursor = 0;
+  let m: RegExpExecArray | null;
+  const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
+
+  while ((m = pattern.exec(text)) !== null) {
+    const rawEnd = pattern.lastIndex;
+    if (!canPreviewInlineToken(text, rawEnd)) continue;
+
+    if (m.index > cursor) out += escapeHtml(text.slice(cursor, m.index));
+    const tok = m[0];
+    if (tok.startsWith("**")) {
+      out += `<strong class="font-bold text-text-display">${escapeHtml(tok.slice(2, -2))}</strong>`;
+    } else if (tok.startsWith("`")) {
+      out += `<code class="border border-border-visible bg-surface px-1.5 py-0.5 text-text-display rounded-sm">${escapeHtml(tok.slice(1, -1))}</code>`;
+    } else if (tok.startsWith("[")) {
+      const link = tok.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      out += `<span class="text-text-display underline decoration-border-visible underline-offset-4">${escapeHtml(link?.[1] ?? "")}</span>`;
+    } else {
+      out += `<em class="italic text-text-primary">${escapeHtml(tok.slice(1, -1))}</em>`;
+    }
+    cursor = rawEnd;
+  }
+
+  if (cursor < text.length) out += escapeHtml(text.slice(cursor));
+  return out;
+}
+
+function hasActiveInlinePreview(text: string): boolean {
+  const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    if (canPreviewInlineToken(text, pattern.lastIndex)) return true;
+  }
+  return false;
+}
+
+function getActivePreviewText(text: string): string {
+  if (!hasActivePreview(text)) return text;
+  const { source } = getActivePreviewSource(text);
+  if (!hasActiveInlinePreview(source)) return source;
+  let out = "";
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+  const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
+
+  while ((match = pattern.exec(source)) !== null) {
+    const token = match[0];
+    const rawEnd = pattern.lastIndex;
+    if (!canPreviewInlineToken(source, rawEnd)) continue;
+
+    out += source.slice(cursor, match.index);
+    if (token.startsWith("**")) out += token.slice(2, -2);
+    else if (token.startsWith("`")) out += token.slice(1, -1);
+    else if (token.startsWith("[")) out += token.match(/^\[([^\]]+)\]\(([^)]+)\)$/)?.[1] ?? "";
+    else out += token.slice(1, -1);
+    cursor = rawEnd;
+  }
+
+  return out + source.slice(cursor);
+}
+
+function reconcileActivePreviewInput(text: string, visibleText: string): {
+  nextText: string;
+  rawCaret: number;
+} {
+  const previousVisible = getActivePreviewText(text);
+  let start = 0;
+
+  while (
+    start < previousVisible.length &&
+    start < visibleText.length &&
+    previousVisible[start] === visibleText[start]
+  ) {
+    start += 1;
+  }
+
+  let previousEnd = previousVisible.length;
+  let nextEnd = visibleText.length;
+  while (
+    previousEnd > start &&
+    nextEnd > start &&
+    previousVisible[previousEnd - 1] === visibleText[nextEnd - 1]
+  ) {
+    previousEnd -= 1;
+    nextEnd -= 1;
+  }
+
+  const rawStart = activeVisibleOffsetToRawOffset(text, start);
+  const rawEnd = activeVisibleOffsetToRawOffset(text, previousEnd);
+  const insert = visibleText.slice(start, nextEnd);
+
+  return {
+    nextText: replaceRawRange(text, rawStart, rawEnd, insert),
+    rawCaret: rawStart + insert.length,
+  };
 }
 
 type LineKind = "heading" | "bullet" | "numbered" | "quote" | "hr" | "code" | "para";
@@ -193,7 +324,10 @@ function renderInactiveInner(text: string): string {
 }
 
 function renderActiveInner(text: string): string {
-  return renderInactiveInner(text);
+  if (!text) return "<br>";
+  const { source } = getActivePreviewSource(text);
+  const html = hasActiveInlinePreview(source) ? renderInlineActivePreview(source) : escapeHtml(source);
+  return html || "<br>";
 }
 
 function getCaretOffsetWithin(el: HTMLElement): number {
@@ -302,10 +436,10 @@ function getLineBodyStart(text: string): number {
 
 function buildInlineVisibleMap(text: string): number[] {
   const map: number[] = [0];
-  const pattern = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\n]+\)|\*[^*\n]+\*)/g;
   let visibleLength = 0;
   let cursor = 0;
   let match: RegExpExecArray | null;
+  const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
 
   function appendPlain(start: number, end: number) {
     for (let raw = start; raw < end; raw += 1) {
@@ -347,6 +481,76 @@ function buildInlineVisibleMap(text: string): number[] {
   appendPlain(cursor, text.length);
   map[visibleLength] = text.length;
   return map;
+}
+
+function buildActivePreviewMap(text: string): number[] {
+  const { bodyStart } = getActivePreviewSource(text);
+  const map: number[] = [bodyStart];
+  let visibleLength = 0;
+  let cursor = bodyStart;
+  let match: RegExpExecArray | null;
+  const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
+
+  function appendPlain(start: number, end: number) {
+    for (let raw = start; raw < end; raw += 1) {
+      map[visibleLength] = raw;
+      visibleLength += 1;
+      map[visibleLength] = raw + 1;
+    }
+  }
+
+  function appendPreview(rawStart: number, bodyStart: number, body: string, rawEnd: number) {
+    map[visibleLength] = rawStart;
+    for (let i = 0; i < body.length; i += 1) {
+      visibleLength += 1;
+      map[visibleLength] = bodyStart + i + 1;
+    }
+    map[visibleLength] = rawEnd;
+  }
+
+  while ((match = pattern.exec(text)) !== null) {
+    const token = match[0];
+    const rawStart = match.index;
+    const rawEnd = pattern.lastIndex;
+    if (rawStart < bodyStart || !canPreviewInlineToken(text, rawEnd)) continue;
+
+    appendPlain(cursor, rawStart);
+
+    if (token.startsWith("**")) {
+      appendPreview(rawStart, rawStart + 2, token.slice(2, -2), rawEnd);
+    } else if (token.startsWith("`")) {
+      appendPreview(rawStart, rawStart + 1, token.slice(1, -1), rawEnd);
+    } else if (token.startsWith("[")) {
+      const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      appendPreview(rawStart, rawStart + 1, link?.[1] ?? "", rawEnd);
+    } else {
+      appendPreview(rawStart, rawStart + 1, token.slice(1, -1), rawEnd);
+    }
+
+    cursor = rawEnd;
+  }
+
+  appendPlain(cursor, text.length);
+  map[visibleLength] = text.length;
+  return map;
+}
+
+function activeVisibleOffsetToRawOffset(text: string, visibleOffset: number): number {
+  if (!hasActivePreview(text)) return visibleOffset;
+  const map = buildActivePreviewMap(text);
+  const clamped = Math.max(0, Math.min(visibleOffset, map.length - 1));
+  return map[clamped] ?? text.length;
+}
+
+function rawOffsetToActiveVisibleOffset(text: string, rawOffset: number): number {
+  if (!hasActivePreview(text)) return rawOffset;
+  const map = buildActivePreviewMap(text);
+  let visible = 0;
+  for (let i = 0; i < map.length; i += 1) {
+    if (map[i] <= rawOffset) visible = i;
+    else break;
+  }
+  return visible;
 }
 
 function buildLineVisibleMap(text: string): number[] {
@@ -397,7 +601,7 @@ function MarkdownLine({
   active: boolean;
   focusHint: FocusHint;
   onActivate: (idx: number, pos: "start" | "end" | number | null) => void;
-  onChange: (idx: number, text: string, visibleCaret: number) => void;
+  onChange: (idx: number, text: string, rawCaret: number) => void;
   onSplit: (idx: number, before: string, after: string) => void;
   onMerge: (idx: number) => void;
   onArrowUp: (idx: number) => void;
@@ -409,13 +613,15 @@ function MarkdownLine({
   const wasActiveRef = useRef(false);
   const meta = getLineMeta(text);
   const t = useT();
+  const className = active ? activeLineClassName(text) : lineWrapperClassName(meta.kind, meta.level);
+  const rendersActivePreview = active && hasActivePreview(text);
 
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
 
     const justActivated = active && !wasActiveRef.current;
-    const nextHtml = renderActiveInner(text);
+    const nextHtml = active ? renderActiveInner(text) : renderInactiveInner(text);
     if (el.innerHTML !== nextHtml) {
       el.innerHTML = nextHtml;
     }
@@ -427,11 +633,13 @@ function MarkdownLine({
       if (focusHint && focusHint.idx === idx) {
         if (focusHint.pos === "start") setCaretOffsetWithin(el, 0);
         else if (focusHint.pos === "end") {
-          setCaretOffsetWithin(el, rawOffsetToVisibleOffset(text, text.length));
-        } else if (typeof focusHint.pos === "number") setCaretOffsetWithin(el, focusHint.pos);
+          setCaretOffsetWithin(el, rawOffsetToActiveVisibleOffset(text, text.length));
+        } else if (typeof focusHint.pos === "number") {
+          setCaretOffsetWithin(el, rawOffsetToActiveVisibleOffset(text, focusHint.pos));
+        }
         onConsumeFocusHint();
       } else if (justActivated) {
-        setCaretOffsetWithin(el, rawOffsetToVisibleOffset(text, text.length));
+        setCaretOffsetWithin(el, rawOffsetToActiveVisibleOffset(text, text.length));
       }
     }
 
@@ -443,13 +651,17 @@ function MarkdownLine({
     if (inputEvent.isComposing) return;
 
     const selection = getSelectionOffsetsWithin(e.currentTarget);
-    const visibleStart = Math.min(selection.start, selection.end);
-    const visibleEnd = Math.max(selection.start, selection.end);
-    const rawStart = visibleOffsetToRawOffset(text, visibleStart);
-    const rawEnd = visibleOffsetToRawOffset(text, visibleEnd);
+    const selectionStart = rendersActivePreview
+      ? activeVisibleOffsetToRawOffset(text, selection.start)
+      : selection.start;
+    const selectionEnd = rendersActivePreview
+      ? activeVisibleOffsetToRawOffset(text, selection.end)
+      : selection.end;
+    const rawStart = Math.min(selectionStart, selectionEnd);
+    const rawEnd = Math.max(selectionStart, selectionEnd);
 
     function commit(nextText: string, rawCaret: number) {
-      onChange(idx, nextText, rawOffsetToVisibleOffset(nextText, rawCaret));
+      onChange(idx, nextText, rawCaret);
     }
 
     if (inputEvent.inputType === "insertText") {
@@ -470,28 +682,27 @@ function MarkdownLine({
 
     if (inputEvent.inputType === "deleteContentBackward") {
       e.preventDefault();
-      if (visibleStart !== visibleEnd) {
+      if (rawStart !== rawEnd) {
         commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart);
         return;
       }
-      if (visibleStart === 0) {
+      if (rawStart === 0) {
         if (idx > 0) onMerge(idx);
         return;
       }
-      const prevRaw = visibleOffsetToRawOffset(text, visibleStart - 1);
+      const prevRaw = rawStart - 1;
       commit(replaceRawRange(text, prevRaw, rawStart, ""), prevRaw);
       return;
     }
 
     if (inputEvent.inputType === "deleteContentForward") {
       e.preventDefault();
-      if (visibleStart !== visibleEnd) {
+      if (rawStart !== rawEnd) {
         commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart);
         return;
       }
-      const lineEnd = rawOffsetToVisibleOffset(text, text.length);
-      if (visibleStart >= lineEnd) return;
-      const nextRaw = visibleOffsetToRawOffset(text, visibleStart + 1);
+      if (rawStart >= text.length) return;
+      const nextRaw = rawStart + 1;
       commit(replaceRawRange(text, rawStart, nextRaw, ""), rawStart);
     }
   }
@@ -499,13 +710,20 @@ function MarkdownLine({
   function handleInput(e: ReactFormEvent<HTMLDivElement>) {
     // Fallback for browser paths that do not emit beforeinput.
     const raw = e.currentTarget.innerText.replace(/\n/g, "");
-    onChange(idx, raw, rawOffsetToVisibleOffset(raw, raw.length));
+    if (rendersActivePreview) {
+      const reconciled = reconcileActivePreviewInput(text, raw);
+      onChange(idx, reconciled.nextText, reconciled.rawCaret);
+      return;
+    }
+    onChange(idx, raw, raw.length);
   }
 
   function handleKeyDown(e: ReactKeyboardEvent<HTMLDivElement>) {
     const el = e.currentTarget;
     const visibleOffset = getCaretOffsetWithin(el);
-    const rawOffset = visibleOffsetToRawOffset(text, visibleOffset);
+    const rawOffset = rendersActivePreview
+      ? activeVisibleOffsetToRawOffset(text, visibleOffset)
+      : visibleOffset;
 
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
@@ -515,7 +733,7 @@ function MarkdownLine({
 
     if (e.key === "Backspace") {
       const sel = window.getSelection();
-      if (visibleOffset === 0 && (!sel || sel.toString() === "") && idx > 0) {
+      if (rawOffset === 0 && (!sel || sel.toString() === "") && idx > 0) {
         e.preventDefault();
         onMerge(idx);
       }
@@ -525,7 +743,7 @@ function MarkdownLine({
     if (e.key === "Tab") {
       e.preventDefault();
       const nextText = replaceRawRange(text, rawOffset, rawOffset, "  ");
-      onChange(idx, nextText, rawOffsetToVisibleOffset(nextText, rawOffset + 2));
+      onChange(idx, nextText, rawOffset + 2);
       return;
     }
 
@@ -549,18 +767,18 @@ function MarkdownLine({
     const normalized = data.replace(/\r\n?/g, "\n");
     const segments = normalized.split("\n");
     const selection = getSelectionOffsetsWithin(e.currentTarget);
-    const visibleStart = Math.min(selection.start, selection.end);
-    const visibleEnd = Math.max(selection.start, selection.end);
-    const rawStart = visibleOffsetToRawOffset(text, visibleStart);
-    const rawEnd = visibleOffsetToRawOffset(text, visibleEnd);
+    const selectionStart = rendersActivePreview
+      ? activeVisibleOffsetToRawOffset(text, selection.start)
+      : selection.start;
+    const selectionEnd = rendersActivePreview
+      ? activeVisibleOffsetToRawOffset(text, selection.end)
+      : selection.end;
+    const rawStart = Math.min(selectionStart, selectionEnd);
+    const rawEnd = Math.max(selectionStart, selectionEnd);
 
     if (segments.length === 1) {
       const nextText = replaceRawRange(text, rawStart, rawEnd, segments[0]);
-      onChange(
-        idx,
-        nextText,
-        rawOffsetToVisibleOffset(nextText, rawStart + segments[0].length)
-      );
+      onChange(idx, nextText, rawStart + segments[0].length);
       return;
     }
 
@@ -572,7 +790,8 @@ function MarkdownLine({
 
   function handleMouseDown(e: ReactMouseEvent<HTMLDivElement>) {
     if (active) return;
-    const offset = getCaretOffsetFromPoint(e.currentTarget, e.clientX, e.clientY);
+    const visibleOffset = getCaretOffsetFromPoint(e.currentTarget, e.clientX, e.clientY);
+    const offset = visibleOffsetToRawOffset(text, visibleOffset);
     e.preventDefault();
     onActivate(idx, offset);
   }
@@ -593,7 +812,7 @@ function MarkdownLine({
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       onPaste={handlePaste}
-      className={`${lineWrapperClassName(meta.kind, meta.level)} relative caret-text-display`}
+      className={`${className} relative caret-text-display`}
     />
   );
 }
@@ -624,12 +843,12 @@ function MarkdownLiveEditor({
   );
 
   const updateLine = useCallback(
-    (idx: number, text: string, visibleCaret: number) => {
+    (idx: number, text: string, rawCaret: number) => {
       const next = lines.slice();
       next[idx] = text;
       onChange(next.join("\n"));
       setActiveIdx(idx);
-      setFocusHint({ idx, pos: visibleCaret });
+      setFocusHint({ idx, pos: rawCaret });
     },
     [lines, onChange]
   );
@@ -657,7 +876,7 @@ function MarkdownLiveEditor({
       setActiveIdx(idx - 1);
       setFocusHint({
         idx: idx - 1,
-        pos: rawOffsetToVisibleOffset(next[idx - 1], prevRawLength),
+        pos: prevRawLength,
       });
     },
     [lines, onChange]
@@ -670,7 +889,7 @@ function MarkdownLiveEditor({
       setActiveIdx(prevIdx);
       setFocusHint({
         idx: prevIdx,
-        pos: rawOffsetToVisibleOffset(lines[prevIdx] ?? "", lines[prevIdx]?.length ?? 0),
+        pos: lines[prevIdx]?.length ?? 0,
       });
     },
     [lines]
@@ -683,7 +902,7 @@ function MarkdownLiveEditor({
       setActiveIdx(nextIdx);
       setFocusHint({
         idx: nextIdx,
-        pos: rawOffsetToVisibleOffset(lines[nextIdx] ?? "", lines[nextIdx]?.length ?? 0),
+        pos: lines[nextIdx]?.length ?? 0,
       });
     },
     [lines]
@@ -699,7 +918,7 @@ function MarkdownLiveEditor({
       setActiveIdx(last);
       setFocusHint({
         idx: last,
-        pos: rawOffsetToVisibleOffset(segments[segments.length - 1], segments[segments.length - 1].length),
+        pos: segments[segments.length - 1].length,
       });
     },
     [lines, onChange]

@@ -15,7 +15,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="flex items-center gap-2.5 py-1.5 px-2 hover:bg-text-display hover:text-text-inverse group"
+      className="flex items-center gap-2.5 py-1.5 px-2 hover:bg-text-display hover:text-text-inverse group/shot"
     >
       <button
         type="button"
@@ -26,7 +26,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
           "w-3.5 h-3.5 flex items-center justify-center border shrink-0 bg-transparent",
           shot.isCompleted
             ? "border-success text-success"
-            : "border-border-visible group-hover:border-text-display"
+            : "border-border-visible group-hover/shot:border-text-display"
         )}
       >
         {shot.isCompleted && (
@@ -44,7 +44,9 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
       <span
         className={cn(
           "flex-1 text-xs font-mono",
-          shot.isCompleted ? "line-through text-text-disabled group-hover:text-text-inverse" : "text-text-primary group-hover:text-text-inverse"
+          shot.isCompleted
+            ? "line-through text-text-disabled group-hover/shot:text-text-inverse"
+            : "text-text-primary group-hover/shot:text-text-inverse"
         )}
       >
         {shot.text}
@@ -53,7 +55,7 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
         <button
           type="button"
           onClick={() => onDelete(shot.id)}
-          className="text-text-disabled hover:bg-accent hover:text-text-inverse opacity-0 group-hover:opacity-100 text-[10px] font-mono shrink-0"
+          className="text-text-disabled hover:bg-accent hover:text-text-inverse opacity-0 group-hover/shot:opacity-100 text-[10px] font-mono shrink-0"
           aria-label={t("kanban.deleteShot")}
         >
           ✕
