@@ -14,6 +14,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { flushSync } from "react-dom";
 import {
   createProject,
   getUsers,
@@ -74,37 +75,66 @@ function escapeHtml(text: string) {
 }
 
 // ─── WYSIWYG Markdown Editor (Notion/Obsidian-style) ────────
-// Per-line contenteditable. Lines render formatted while raw markdown stays in state.
+// Per-block contenteditable. Blocks render formatted while raw markdown stays in state.
 
 const INLINE_MARKDOWN_PATTERN = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\n]+\)|\*[^*\n]+\*)/g;
+const SOFT_BREAK_MARKER = "  \n";
+const CARET_HOLDER = "\u200B";
 
 function canPreviewInlineToken(text: string, rawEnd: number): boolean {
   return rawEnd === text.length || /\s/.test(text[rawEnd]);
 }
 
-function getActiveHeadingPreview(text: string): { bodyStart: number; level: number } | null {
-  const match = text.match(/^(#{1,3})\s+(.*)$/);
-  if (!match) return null;
-  return { bodyStart: match[1].length + 1, level: match[1].length };
+function textWithVisibleSoftBreaks(text: string): string {
+  return text.replaceAll(SOFT_BREAK_MARKER, "\n");
+}
+
+function renderVisibleText(text: string): string {
+  const parts = text.split(SOFT_BREAK_MARKER);
+  return parts.reduce((html, part, index) => {
+    const escaped = escapeHtml(part);
+    if (index === 0) return escaped;
+    const filler = part === "" ? CARET_HOLDER : "";
+    return `${html}\n${filler}${escaped}`;
+  }, "");
+}
+
+function getActiveBlockPreview(
+  text: string
+): { bodyStart: number; level: number; kind: "heading" | "bullet" | "quote" } | null {
+  const match = text.match(/^(#{1,3})\s+([\s\S]*)$/);
+  if (match) return { bodyStart: match[1].length + 1, level: match[1].length, kind: "heading" };
+
+  const bullet = text.match(/^[-*]\s+([\s\S]*)$/);
+  if (bullet) return { bodyStart: 2, level: 0, kind: "bullet" };
+
+  const quote = text.match(/^>\s?/);
+  if (quote) return { bodyStart: quote[0].length, level: 0, kind: "quote" };
+
+  return null;
 }
 
 function getActivePreviewSource(text: string): { source: string; bodyStart: number } {
-  const heading = getActiveHeadingPreview(text);
-  if (!heading) return { source: text, bodyStart: 0 };
-  return { source: text.slice(heading.bodyStart), bodyStart: heading.bodyStart };
+  const block = getActiveBlockPreview(text);
+  if (!block) return { source: text, bodyStart: 0 };
+  return { source: text.slice(block.bodyStart), bodyStart: block.bodyStart };
+}
+
+function getRenderedLineStartRawOffset(text: string): number {
+  return getActiveBlockPreview(text)?.bodyStart ?? 0;
 }
 
 function hasActivePreview(text: string): boolean {
   const { source } = getActivePreviewSource(text);
-  return Boolean(getActiveHeadingPreview(text)) || hasActiveInlinePreview(source);
+  return Boolean(getActiveBlockPreview(text)) || hasActiveInlinePreview(source);
 }
 
 function activeLineClassName(text: string): string {
-  const heading = getActiveHeadingPreview(text);
-  if (!heading) {
+  const block = getActiveBlockPreview(text);
+  if (!block) {
     return "outline-none focus:outline-none px-3 py-1 min-h-[1.75rem] whitespace-pre-wrap break-words leading-relaxed text-text-primary";
   }
-  return lineWrapperClassName("heading", heading.level);
+  return lineWrapperClassName(block.kind, block.level);
 }
 
 function renderInlineFormatted(text: string): string {
@@ -114,7 +144,7 @@ function renderInlineFormatted(text: string): string {
   let m: RegExpExecArray | null;
   const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
   while ((m = pattern.exec(text)) !== null) {
-    if (m.index > cursor) out += escapeHtml(text.slice(cursor, m.index));
+    if (m.index > cursor) out += renderVisibleText(text.slice(cursor, m.index));
     const tok = m[0];
     if (tok.startsWith("**")) {
       out += `<strong class="font-bold text-text-display">${escapeHtml(tok.slice(2, -2))}</strong>`;
@@ -128,7 +158,7 @@ function renderInlineFormatted(text: string): string {
     }
     cursor = pattern.lastIndex;
   }
-  if (cursor < text.length) out += escapeHtml(text.slice(cursor));
+  if (cursor < text.length) out += renderVisibleText(text.slice(cursor));
   return out;
 }
 
@@ -143,7 +173,7 @@ function renderInlineActivePreview(text: string): string {
     const rawEnd = pattern.lastIndex;
     if (!canPreviewInlineToken(text, rawEnd)) continue;
 
-    if (m.index > cursor) out += escapeHtml(text.slice(cursor, m.index));
+    if (m.index > cursor) out += renderVisibleText(text.slice(cursor, m.index));
     const tok = m[0];
     if (tok.startsWith("**")) {
       out += `<strong class="font-bold text-text-display">${escapeHtml(tok.slice(2, -2))}</strong>`;
@@ -158,7 +188,7 @@ function renderInlineActivePreview(text: string): string {
     cursor = rawEnd;
   }
 
-  if (cursor < text.length) out += escapeHtml(text.slice(cursor));
+  if (cursor < text.length) out += renderVisibleText(text.slice(cursor));
   return out;
 }
 
@@ -174,7 +204,7 @@ function hasActiveInlinePreview(text: string): boolean {
 function getActivePreviewText(text: string): string {
   if (!hasActivePreview(text)) return text;
   const { source } = getActivePreviewSource(text);
-  if (!hasActiveInlinePreview(source)) return source;
+  if (!hasActiveInlinePreview(source)) return textWithVisibleSoftBreaks(source);
   let out = "";
   let cursor = 0;
   let match: RegExpExecArray | null;
@@ -185,7 +215,7 @@ function getActivePreviewText(text: string): string {
     const rawEnd = pattern.lastIndex;
     if (!canPreviewInlineToken(source, rawEnd)) continue;
 
-    out += source.slice(cursor, match.index);
+    out += textWithVisibleSoftBreaks(source.slice(cursor, match.index));
     if (token.startsWith("**")) out += token.slice(2, -2);
     else if (token.startsWith("`")) out += token.slice(1, -1);
     else if (token.startsWith("[")) out += token.match(/^\[([^\]]+)\]\(([^)]+)\)$/)?.[1] ?? "";
@@ -193,7 +223,7 @@ function getActivePreviewText(text: string): string {
     cursor = rawEnd;
   }
 
-  return out + source.slice(cursor);
+  return out + textWithVisibleSoftBreaks(source.slice(cursor));
 }
 
 function reconcileActivePreviewInput(text: string, visibleText: string): {
@@ -224,7 +254,7 @@ function reconcileActivePreviewInput(text: string, visibleText: string): {
 
   const rawStart = activeVisibleOffsetToRawOffset(text, start);
   const rawEnd = activeVisibleOffsetToRawOffset(text, previousEnd);
-  const insert = visibleText.slice(start, nextEnd);
+  const insert = visibleText.slice(start, nextEnd).replace(/\n/g, SOFT_BREAK_MARKER);
 
   return {
     nextText: replaceRawRange(text, rawStart, rawEnd, insert),
@@ -244,14 +274,14 @@ function getLineMeta(text: string): {
     return { kind: "para", level: 0, marker: "", body: "" };
   }
   const trimmed = text.trim();
-  const hMatch = trimmed.match(/^(#{1,3})\s+(.*)$/);
+  const hMatch = trimmed.match(/^(#{1,3})\s+([\s\S]*)$/);
   if (hMatch) {
     return { kind: "heading", level: hMatch[1].length, marker: hMatch[1] + " ", body: hMatch[2] };
   }
   if (/^[-*]\s+/.test(trimmed)) {
     return { kind: "bullet", level: 0, marker: trimmed.slice(0, 2), body: trimmed.replace(/^[-*]\s+/, "") };
   }
-  const nMatch = trimmed.match(/^(\d+\.)\s+(.*)$/);
+  const nMatch = trimmed.match(/^(\d+\.)\s+([\s\S]*)$/);
   if (nMatch) {
     return { kind: "numbered", level: 0, marker: nMatch[1] + " ", body: nMatch[2] };
   }
@@ -326,7 +356,7 @@ function renderInactiveInner(text: string): string {
 function renderActiveInner(text: string): string {
   if (!text) return "<br>";
   const { source } = getActivePreviewSource(text);
-  const html = hasActiveInlinePreview(source) ? renderInlineActivePreview(source) : escapeHtml(source);
+  const html = hasActiveInlinePreview(source) ? renderInlineActivePreview(source) : renderVisibleText(source);
   return html || "<br>";
 }
 
@@ -335,10 +365,7 @@ function getCaretOffsetWithin(el: HTMLElement): number {
   if (!sel || sel.rangeCount === 0) return 0;
   const range = sel.getRangeAt(0);
   if (!el.contains(range.endContainer)) return 0;
-  const pre = range.cloneRange();
-  pre.selectNodeContents(el);
-  pre.setEnd(range.endContainer, range.endOffset);
-  return pre.toString().length;
+  return getVisibleOffsetForPoint(el, range.endContainer, range.endOffset);
 }
 
 function getCaretOffsetFromPoint(el: HTMLElement, x: number, y: number): number {
@@ -374,16 +401,42 @@ function getCaretOffsetFromPoint(el: HTMLElement, x: number, y: number): number 
 function setCaretOffsetWithin(el: HTMLElement, offset: number) {
   const sel = window.getSelection();
   if (!sel) return;
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+  const walker = document.createTreeWalker(
+    el,
+    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+    {
+      acceptNode(node) {
+        if (isSoftBreakFillerNode(node)) return NodeFilter.FILTER_REJECT;
+        if (node.nodeType === Node.TEXT_NODE) return NodeFilter.FILTER_ACCEPT;
+        if (isSoftBreakNode(node)) return NodeFilter.FILTER_ACCEPT;
+        return NodeFilter.FILTER_SKIP;
+      },
+    }
+  );
   let remaining = offset;
   let target: Text | null = null;
   let targetOffset = 0;
+  let targetElement: Element | null = null;
+  let placeAfterElement = false;
+
   while (walker.nextNode()) {
-    const n = walker.currentNode as Text;
-    const len = n.textContent?.length ?? 0;
+    const n = walker.currentNode;
+    if (isSoftBreakNode(n)) {
+      if (remaining <= 1) {
+        targetElement = n;
+        placeAfterElement = remaining === 1;
+        break;
+      }
+      remaining -= 1;
+      continue;
+    }
+
+    const textNode = n as Text;
+    const text = textNode.textContent ?? "";
+    const len = getVisibleTextLength(text);
     if (remaining <= len) {
-      target = n;
-      targetOffset = remaining;
+      target = textNode;
+      targetOffset = getTextOffsetForVisibleOffset(text, remaining);
       break;
     }
     remaining -= len;
@@ -391,6 +444,9 @@ function setCaretOffsetWithin(el: HTMLElement, offset: number) {
   const range = document.createRange();
   if (target) {
     range.setStart(target, targetOffset);
+  } else if (targetElement) {
+    if (placeAfterElement) range.setStartAfter(targetElement);
+    else range.setStartBefore(targetElement);
   } else {
     range.selectNodeContents(el);
     range.collapse(false);
@@ -407,18 +463,82 @@ function getSelectionOffsetsWithin(el: HTMLElement): { start: number; end: numbe
   const range = sel.getRangeAt(0);
   if (!el.contains(range.commonAncestorContainer)) return { start: 0, end: 0 };
 
-  const startRange = range.cloneRange();
-  startRange.selectNodeContents(el);
-  startRange.setEnd(range.startContainer, range.startOffset);
-
-  const endRange = range.cloneRange();
-  endRange.selectNodeContents(el);
-  endRange.setEnd(range.endContainer, range.endOffset);
-
   return {
-    start: startRange.toString().length,
-    end: endRange.toString().length,
+    start: getVisibleOffsetForPoint(el, range.startContainer, range.startOffset),
+    end: getVisibleOffsetForPoint(el, range.endContainer, range.endOffset),
   };
+}
+
+function isSoftBreakNode(node: Node): node is HTMLBRElement {
+  return node instanceof HTMLBRElement && node.dataset.softBreak === "true";
+}
+
+function isSoftBreakFillerNode(node: Node): node is HTMLElement {
+  return node instanceof HTMLElement && node.dataset.softBreakFiller === "true";
+}
+
+function getNodeVisibleLength(node: Node): number {
+  if (isSoftBreakFillerNode(node)) return 0;
+  if (node.nodeType === Node.TEXT_NODE) return getVisibleTextLength(node.textContent ?? "");
+  if (isSoftBreakNode(node)) return 1;
+  let length = 0;
+  node.childNodes.forEach((child) => {
+    length += getNodeVisibleLength(child);
+  });
+  return length;
+}
+
+function getVisibleOffsetForPoint(root: HTMLElement, container: Node, offset: number): number {
+  let visibleOffset = 0;
+  let found = false;
+
+  function walk(node: Node) {
+    if (found) return;
+
+    if (node === container) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        visibleOffset += getVisibleOffsetForTextOffset(node.textContent ?? "", offset);
+      } else {
+        const children = Array.from(node.childNodes).slice(0, offset);
+        children.forEach((child) => {
+          visibleOffset += getNodeVisibleLength(child);
+        });
+      }
+      found = true;
+      return;
+    }
+
+    if (node.nodeType === Node.TEXT_NODE || isSoftBreakNode(node)) {
+      visibleOffset += getNodeVisibleLength(node);
+      return;
+    }
+
+    node.childNodes.forEach(walk);
+  }
+
+  walk(root);
+  return visibleOffset;
+}
+
+function getVisibleTextLength(text: string): number {
+  return text.replaceAll(CARET_HOLDER, "").length;
+}
+
+function getVisibleOffsetForTextOffset(text: string, textOffset: number): number {
+  let visibleOffset = 0;
+  for (let i = 0; i < Math.min(textOffset, text.length); i += 1) {
+    if (text[i] !== CARET_HOLDER) visibleOffset += 1;
+  }
+  return visibleOffset;
+}
+
+function getTextOffsetForVisibleOffset(text: string, visibleOffset: number): number {
+  let visible = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    if (visible === visibleOffset) return i;
+    if (text[i] !== CARET_HOLDER) visible += 1;
+  }
+  return text.length;
 }
 
 function getLineBodyStart(text: string): number {
@@ -442,10 +562,19 @@ function buildInlineVisibleMap(text: string): number[] {
   const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
 
   function appendPlain(start: number, end: number) {
-    for (let raw = start; raw < end; raw += 1) {
+    let raw = start;
+    while (raw < end) {
+      if (text.startsWith(SOFT_BREAK_MARKER, raw) && raw + SOFT_BREAK_MARKER.length <= end) {
+        map[visibleLength] = raw;
+        visibleLength += 1;
+        map[visibleLength] = raw + SOFT_BREAK_MARKER.length;
+        raw += SOFT_BREAK_MARKER.length;
+        continue;
+      }
       map[visibleLength] = raw;
       visibleLength += 1;
       map[visibleLength] = raw + 1;
+      raw += 1;
     }
   }
 
@@ -492,10 +621,19 @@ function buildActivePreviewMap(text: string): number[] {
   const pattern = new RegExp(INLINE_MARKDOWN_PATTERN.source, "g");
 
   function appendPlain(start: number, end: number) {
-    for (let raw = start; raw < end; raw += 1) {
+    let raw = start;
+    while (raw < end) {
+      if (text.startsWith(SOFT_BREAK_MARKER, raw) && raw + SOFT_BREAK_MARKER.length <= end) {
+        map[visibleLength] = raw;
+        visibleLength += 1;
+        map[visibleLength] = raw + SOFT_BREAK_MARKER.length;
+        raw += SOFT_BREAK_MARKER.length;
+        continue;
+      }
       map[visibleLength] = raw;
       visibleLength += 1;
       map[visibleLength] = raw + 1;
+      raw += 1;
     }
   }
 
@@ -580,7 +718,43 @@ function replaceRawRange(text: string, start: number, end: number, insert: strin
   return `${text.slice(0, start)}${insert}${text.slice(end)}`;
 }
 
-type FocusHint = { idx: number; pos: "start" | "end" | number } | null;
+type FocusPosition = "start" | "end" | number;
+type FocusHint = { idx: number; pos: FocusPosition } | null;
+type SplitMode = "plain" | "continue";
+
+function getLineContinuationPrefix(text: string): string {
+  const bullet = text.match(/^([-*])\s+([\s\S]+)$/);
+  if (bullet?.[2].trim()) return `${bullet[1]} `;
+
+  const quote = text.match(/^(>\s?)([\s\S]+)$/);
+  if (quote?.[2].trim()) return "> ";
+
+  return "";
+}
+
+function shouldClearEmptyContinuation(text: string): boolean {
+  return /^[-*]\s*$/.test(text) || /^>\s*$/.test(text);
+}
+
+function splitMarkdownBlocks(value: string): string[] {
+  if (value === "") return [""];
+
+  const rawLines = value.split("\n");
+  const blocks: string[] = [];
+  let current = "";
+
+  rawLines.forEach((line, index) => {
+    current = index === 0 || current === "" ? `${current}${line}` : `${current}\n${line}`;
+
+    if (index < rawLines.length - 1 && !line.endsWith("  ")) {
+      blocks.push(current);
+      current = "";
+    }
+  });
+
+  blocks.push(current);
+  return blocks;
+}
 
 function MarkdownLine({
   idx,
@@ -602,8 +776,8 @@ function MarkdownLine({
   focusHint: FocusHint;
   onActivate: (idx: number, pos: "start" | "end" | number | null) => void;
   onChange: (idx: number, text: string, rawCaret: number) => void;
-  onSplit: (idx: number, before: string, after: string) => void;
-  onMerge: (idx: number) => void;
+  onSplit: (idx: number, before: string, after: string, mode?: SplitMode) => void;
+  onMerge: (idx: number, fromRawOffset?: number) => void;
   onArrowUp: (idx: number) => void;
   onArrowDown: (idx: number) => void;
   onPasteMultiline: (idx: number, segments: string[]) => void;
@@ -611,6 +785,7 @@ function MarkdownLine({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const wasActiveRef = useRef(false);
+  const skipNextInputRef = useRef(false);
   const meta = getLineMeta(text);
   const t = useT();
   const className = active ? activeLineClassName(text) : lineWrapperClassName(meta.kind, meta.level);
@@ -659,6 +834,7 @@ function MarkdownLine({
       : selection.end;
     const rawStart = Math.min(selectionStart, selectionEnd);
     const rawEnd = Math.max(selectionStart, selectionEnd);
+    const renderedLineStart = getRenderedLineStartRawOffset(text);
 
     function commit(nextText: string, rawCaret: number) {
       onChange(idx, nextText, rawCaret);
@@ -676,7 +852,24 @@ function MarkdownLine({
       inputEvent.inputType === "insertLineBreak"
     ) {
       e.preventDefault();
-      onSplit(idx, text.slice(0, rawStart), text.slice(rawEnd));
+      skipNextInputRef.current = true;
+      if (inputEvent.inputType === "insertLineBreak") {
+        flushSync(() =>
+          commit(
+            replaceRawRange(text, rawStart, rawEnd, SOFT_BREAK_MARKER),
+            rawStart + SOFT_BREAK_MARKER.length
+          )
+        );
+        return;
+      }
+      flushSync(() =>
+        onSplit(
+          idx,
+          text.slice(0, rawStart),
+          text.slice(rawEnd),
+          "continue"
+        )
+      );
       return;
     }
 
@@ -686,8 +879,9 @@ function MarkdownLine({
         commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart);
         return;
       }
-      if (rawStart === 0) {
-        if (idx > 0) onMerge(idx);
+      if (rawStart === renderedLineStart) {
+        if (idx > 0) onMerge(idx, renderedLineStart);
+        else if (renderedLineStart > 0) commit(text.slice(renderedLineStart), 0);
         return;
       }
       const prevRaw = rawStart - 1;
@@ -709,7 +903,11 @@ function MarkdownLine({
 
   function handleInput(e: ReactFormEvent<HTMLDivElement>) {
     // Fallback for browser paths that do not emit beforeinput.
-    const raw = e.currentTarget.innerText.replace(/\n/g, "");
+    if (skipNextInputRef.current) {
+      skipNextInputRef.current = false;
+      return;
+    }
+    const raw = e.currentTarget.innerText.replaceAll(CARET_HOLDER, "").replace(/\n$/, "");
     if (rendersActivePreview) {
       const reconciled = reconcileActivePreviewInput(text, raw);
       onChange(idx, reconciled.nextText, reconciled.rawCaret);
@@ -724,18 +922,50 @@ function MarkdownLine({
     const rawOffset = rendersActivePreview
       ? activeVisibleOffsetToRawOffset(text, visibleOffset)
       : visibleOffset;
+    const renderedLineStart = getRenderedLineStartRawOffset(text);
 
-    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      onSplit(idx, text.slice(0, rawOffset), text.slice(rawOffset));
+      skipNextInputRef.current = true;
+      if (e.shiftKey) {
+        flushSync(() =>
+          onChange(
+            idx,
+            replaceRawRange(text, rawOffset, rawOffset, SOFT_BREAK_MARKER),
+            rawOffset + SOFT_BREAK_MARKER.length
+          )
+        );
+        return;
+      }
+      flushSync(() =>
+        onSplit(
+          idx,
+          text.slice(0, rawOffset),
+          text.slice(rawOffset),
+          "continue"
+        )
+      );
       return;
     }
 
     if (e.key === "Backspace") {
       const sel = window.getSelection();
-      if (rawOffset === 0 && (!sel || sel.toString() === "") && idx > 0) {
+      if (
+        rawOffset === renderedLineStart &&
+        (!sel || sel.toString() === "") &&
+        idx > 0
+      ) {
         e.preventDefault();
-        onMerge(idx);
+        onMerge(idx, renderedLineStart);
+        return;
+      }
+      if (
+        rawOffset === renderedLineStart &&
+        (!sel || sel.toString() === "") &&
+        renderedLineStart > 0
+      ) {
+        e.preventDefault();
+        onChange(idx, text.slice(renderedLineStart), 0);
       }
       return;
     }
@@ -824,7 +1054,7 @@ function MarkdownLiveEditor({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const lines = useMemo(() => (value === "" ? [""] : value.split("\n")), [value]);
+  const lines = useMemo(() => splitMarkdownBlocks(value), [value]);
   const [activeIdx, setActiveIdx] = useState<number>(-1);
   const [focusHint, setFocusHint] = useState<FocusHint>(null);
   const [guideMenu, setGuideMenu] = useState<{ x: number; y: number } | null>(null);
@@ -854,23 +1084,41 @@ function MarkdownLiveEditor({
   );
 
   const splitLine = useCallback(
-    (idx: number, before: string, after: string) => {
+    (idx: number, before: string, after: string, mode: SplitMode = "plain") => {
       const next = lines.slice();
-      next[idx] = before;
-      next.splice(idx + 1, 0, after);
+      let currentLine = before;
+      let nextLine = after;
+      let nextPos: FocusPosition = "start";
+
+      if (mode === "continue") {
+        const prefix = getLineContinuationPrefix(before);
+        if (prefix) {
+          nextLine = `${prefix}${after}`;
+          nextPos = prefix.length;
+        } else if (!after && shouldClearEmptyContinuation(before)) {
+          next[idx] = "";
+          onChange(next.join("\n"));
+          setActiveIdx(idx);
+          setFocusHint({ idx, pos: "start" });
+          return;
+        }
+      }
+
+      next[idx] = currentLine;
+      next.splice(idx + 1, 0, nextLine);
       onChange(next.join("\n"));
       setActiveIdx(idx + 1);
-      setFocusHint({ idx: idx + 1, pos: "start" });
+      setFocusHint({ idx: idx + 1, pos: nextPos });
     },
     [lines, onChange]
   );
 
   const mergeLine = useCallback(
-    (idx: number) => {
+    (idx: number, fromRawOffset = 0) => {
       if (idx === 0) return;
       const next = lines.slice();
       const prevRawLength = next[idx - 1].length;
-      next[idx - 1] = next[idx - 1] + next[idx];
+      next[idx - 1] = next[idx - 1] + next[idx].slice(fromRawOffset);
       next.splice(idx, 1);
       onChange(next.join("\n"));
       setActiveIdx(idx - 1);

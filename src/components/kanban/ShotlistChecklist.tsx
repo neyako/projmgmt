@@ -55,7 +55,7 @@ export default function ShotlistChecklist({
           <label
             key={item.id}
             onClick={(e) => e.stopPropagation()}
-            className="flex items-start gap-2 cursor-pointer group"
+            className="flex items-start gap-2 cursor-pointer group px-1 py-0.5 hover:bg-text-display hover:text-text-inverse"
           >
             <button
               type="button"
@@ -65,13 +65,13 @@ export default function ShotlistChecklist({
               className={cn(
                 "w-3 h-3 flex items-center justify-center border bg-transparent rounded-none shrink-0 mt-[3px]",
                 item.completed
-                  ? "bg-text-display border-text-display"
-                  : "border-border-visible group-hover:border-text-display"
+                  ? "bg-text-display border-text-display group-hover:bg-text-inverse group-hover:border-text-inverse"
+                  : "border-border-visible group-hover:border-text-inverse"
               )}
             >
               {item.completed && (
                 <svg
-                  className="w-2 h-2 text-text-inverse"
+                  className="w-2 h-2 text-text-inverse group-hover:text-text-display"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -84,7 +84,9 @@ export default function ShotlistChecklist({
             <span
               className={cn(
                 "text-xs font-mono",
-                item.completed ? "line-through text-text-disabled" : "text-text-secondary"
+                item.completed
+                  ? "line-through text-text-disabled group-hover:text-text-inverse"
+                  : "text-text-secondary group-hover:text-text-inverse"
               )}
             >
               {item.label}

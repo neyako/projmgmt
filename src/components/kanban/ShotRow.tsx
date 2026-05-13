@@ -25,8 +25,8 @@ export default function ShotRow({ shot, onToggle, onDelete }: ShotRowProps) {
         className={cn(
           "w-3.5 h-3.5 flex items-center justify-center border shrink-0 bg-transparent",
           shot.isCompleted
-            ? "border-success text-success"
-            : "border-border-visible group-hover/shot:border-text-display"
+            ? "border-success text-success group-hover/shot:border-text-inverse group-hover/shot:text-text-inverse"
+            : "border-border-visible group-hover/shot:border-text-inverse"
         )}
       >
         {shot.isCompleted && (

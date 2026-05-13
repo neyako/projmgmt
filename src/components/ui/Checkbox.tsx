@@ -27,13 +27,13 @@ export default function Checkbox({
           "mt-0.5 flex-shrink-0 border flex items-center justify-center",
           sizeClass,
           checked
-            ? "bg-text-primary border-text-secondary"
-            : "bg-surface border-border-visible group-hover:border-text-display"
+            ? "bg-text-primary border-text-secondary group-hover:bg-text-inverse group-hover:border-text-inverse"
+            : "bg-surface border-border-visible group-hover:border-text-inverse"
         )}
       >
         {checked && (
           <span
-            className={cn("material-symbols-outlined text-text-inverse", iconSize)}
+            className={cn("material-symbols-outlined text-text-inverse group-hover:text-text-display", iconSize)}
             style={{ fontVariationSettings: "'wght' 700" }}
           >
             check
