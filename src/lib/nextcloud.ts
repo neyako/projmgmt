@@ -118,20 +118,12 @@ function tokenizeName(value: string): string[] {
     .filter(Boolean);
 }
 
-function matchesDraftVersion(fileName: string, projectName: string, currentVersion: number): boolean {
+function matchesDraftVersion(fileName: string, currentVersion: number): boolean {
   const fileTokens = new Set(tokenizeName(fileName));
-  const projectTokens = tokenizeName(projectName);
-
-  if (projectTokens.length === 0) return false;
-  for (const token of projectTokens) {
-    if (!fileTokens.has(token)) return false;
-  }
-
   const versionStr = String(currentVersion);
   const combined = `draft${versionStr}`;
   if (fileTokens.has(combined)) return true;
   if (fileTokens.has("draft") && fileTokens.has(versionStr)) return true;
-
   return false;
 }
 
@@ -241,7 +233,7 @@ export async function generateDraftReviewLink(
     });
     const contents = contentsResponse.data;
     const draft = contents
-      .filter((item) => item.type === "file" && matchesDraftVersion(item.basename, projectDirectory.name, expectedVersion))
+      .filter((item) => item.type === "file" && matchesDraftVersion(item.basename, expectedVersion))
       .sort((a, b) => getFileModifiedTime(b) - getFileModifiedTime(a))[0];
 
     if (!draft) {
