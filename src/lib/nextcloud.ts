@@ -77,8 +77,12 @@ function buildProjectPath(basePath: string, projectName: string): string {
   return normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
 }
 
+function stripDiacritics(str: string): string {
+  return str.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[đĐ]/g, "d");
+}
+
 function normalizeLookupName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return stripDiacritics(name).toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 function getFileModifiedTime(file: FileStat): number {
@@ -107,7 +111,7 @@ function buildInternalFileLink(config: NextcloudConfig, fileId: string): string 
 }
 
 function tokenizeName(value: string): string[] {
-  return value
+  return stripDiacritics(value)
     .toLowerCase()
     .replace(/\.[^.]+$/, "")
     .split(/[^a-z0-9]+/)
