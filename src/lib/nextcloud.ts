@@ -106,10 +106,29 @@ function buildInternalFileLink(config: NextcloudConfig, fileId: string): string 
   return `${config.baseUrl}/f/${encodeURIComponent(fileId)}`;
 }
 
-function matchesDraftVersion(fileName: string, projectName: string, currentVersion: number): boolean {
-  const targetFileName = "draft " + currentVersion + " - " + projectName.toLowerCase();
+function tokenizeName(value: string): string[] {
+  return value
+    .toLowerCase()
+    .replace(/\.[^.]+$/, "")
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
 
-  return fileName.toLowerCase().startsWith(targetFileName);
+function matchesDraftVersion(fileName: string, projectName: string, currentVersion: number): boolean {
+  const fileTokens = new Set(tokenizeName(fileName));
+  const projectTokens = tokenizeName(projectName);
+
+  if (projectTokens.length === 0) return false;
+  for (const token of projectTokens) {
+    if (!fileTokens.has(token)) return false;
+  }
+
+  const versionStr = String(currentVersion);
+  const combined = `draft${versionStr}`;
+  if (fileTokens.has(combined)) return true;
+  if (fileTokens.has("draft") && fileTokens.has(versionStr)) return true;
+
+  return false;
 }
 
 async function resolveProjectDirectory(

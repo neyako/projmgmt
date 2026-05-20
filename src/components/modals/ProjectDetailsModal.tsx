@@ -797,7 +797,13 @@ function MarkdownLine({
 
     const justActivated = active && !wasActiveRef.current;
     const nextHtml = active ? renderActiveInner(text) : renderInactiveInner(text);
-    if (el.innerHTML !== nextHtml) {
+    const htmlChanged = el.innerHTML !== nextHtml;
+    const previousVisibleCaret =
+      htmlChanged && active && document.activeElement === el
+        ? getCaretOffsetWithin(el)
+        : null;
+
+    if (htmlChanged) {
       el.innerHTML = nextHtml;
     }
 
@@ -815,6 +821,9 @@ function MarkdownLine({
         onConsumeFocusHint();
       } else if (justActivated) {
         setCaretOffsetWithin(el, rawOffsetToActiveVisibleOffset(text, text.length));
+      } else if (htmlChanged && previousVisibleCaret !== null) {
+        const maxVisible = rawOffsetToActiveVisibleOffset(text, text.length);
+        setCaretOffsetWithin(el, Math.min(previousVisibleCaret, maxVisible));
       }
     }
 
@@ -842,8 +851,11 @@ function MarkdownLine({
 
     if (inputEvent.inputType === "insertText") {
       e.preventDefault();
+      skipNextInputRef.current = true;
       const insert = inputEvent.data ?? "";
-      commit(replaceRawRange(text, rawStart, rawEnd, insert), rawStart + insert.length);
+      flushSync(() =>
+        commit(replaceRawRange(text, rawStart, rawEnd, insert), rawStart + insert.length)
+      );
       return;
     }
 
@@ -875,29 +887,31 @@ function MarkdownLine({
 
     if (inputEvent.inputType === "deleteContentBackward") {
       e.preventDefault();
+      skipNextInputRef.current = true;
       if (rawStart !== rawEnd) {
-        commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart);
+        flushSync(() => commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart));
         return;
       }
       if (rawStart === renderedLineStart) {
-        if (idx > 0) onMerge(idx, renderedLineStart);
-        else if (renderedLineStart > 0) commit(text.slice(renderedLineStart), 0);
+        if (idx > 0) flushSync(() => onMerge(idx, renderedLineStart));
+        else if (renderedLineStart > 0) flushSync(() => commit(text.slice(renderedLineStart), 0));
         return;
       }
       const prevRaw = rawStart - 1;
-      commit(replaceRawRange(text, prevRaw, rawStart, ""), prevRaw);
+      flushSync(() => commit(replaceRawRange(text, prevRaw, rawStart, ""), prevRaw));
       return;
     }
 
     if (inputEvent.inputType === "deleteContentForward") {
       e.preventDefault();
+      skipNextInputRef.current = true;
       if (rawStart !== rawEnd) {
-        commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart);
+        flushSync(() => commit(replaceRawRange(text, rawStart, rawEnd, ""), rawStart));
         return;
       }
       if (rawStart >= text.length) return;
       const nextRaw = rawStart + 1;
-      commit(replaceRawRange(text, rawStart, nextRaw, ""), rawStart);
+      flushSync(() => commit(replaceRawRange(text, rawStart, nextRaw, ""), rawStart));
     }
   }
 
@@ -1376,6 +1390,7 @@ export default function ProjectDetailsModal({
   const lastSavedScriptRef = useRef("");
   const scriptSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scriptSaveSeqRef = useRef(0);
+  const loadedProjectIdRef = useRef<string | null>(null);
 
   // Interactive metadata state
   const [scriptingDueDate, setScriptingDueDate] = useState("");
@@ -1449,6 +1464,10 @@ export default function ProjectDetailsModal({
   }, []);
 
   useEffect(() => {
+    const projectId = project?.id ?? null;
+    if (loadedProjectIdRef.current === projectId) return;
+    loadedProjectIdRef.current = projectId;
+
     if (scriptSaveTimerRef.current) {
       clearTimeout(scriptSaveTimerRef.current);
       scriptSaveTimerRef.current = null;
