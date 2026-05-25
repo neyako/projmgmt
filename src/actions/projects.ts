@@ -10,7 +10,7 @@ import {
   provisionNextcloudFolder,
 } from "@/lib/nextcloud";
 import { projectUserSelect } from "@/lib/userSelect";
-import type { Sponsorship } from "@prisma/client";
+import type { Project, Sponsorship } from "@prisma/client";
 
 // ─── RESULT TYPE ────────────────────────────────────────
 type ActionResult<T = unknown> =
@@ -32,6 +32,88 @@ function toDateInputValue(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function cleanOptionalText(value: string | undefined) {
+  if (value === undefined) return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function readUrl(value: string) {
+  try {
+    return new URL(value);
+  } catch {
+    try {
+      return new URL(`https://${value}`);
+    } catch {
+      return null;
+    }
+  }
+}
+
+function normalizeYoutubeId(value: string | undefined) {
+  const trimmed = cleanOptionalText(value);
+  if (!trimmed) return trimmed;
+
+  const url = readUrl(trimmed);
+  if (url) {
+    const watchId = url.searchParams.get("v");
+    if (watchId && /^[\w-]{11}$/.test(watchId)) return watchId;
+
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (url.hostname.includes("youtu.be") && /^[\w-]{11}$/.test(parts[0] ?? "")) {
+      return parts[0];
+    }
+
+    const markerIndex = parts.findIndex((part) =>
+      ["shorts", "embed", "live", "v"].includes(part)
+    );
+    const pathId = markerIndex >= 0 ? parts[markerIndex + 1] : undefined;
+    if (pathId && /^[\w-]{11}$/.test(pathId)) return pathId;
+  }
+
+  const match = trimmed.match(/[\w-]{11}/);
+  return match?.[0] ?? trimmed;
+}
+
+function normalizeMetaId(value: string | undefined) {
+  const trimmed = cleanOptionalText(value);
+  if (!trimmed) return trimmed;
+
+  const url = readUrl(trimmed);
+  if (url) {
+    const queryId =
+      url.searchParams.get("v") ?? url.searchParams.get("story_fbid");
+    if (queryId) return queryId;
+
+    const parts = url.pathname.split("/").filter(Boolean);
+    const markerIndex = parts.findIndex((part) =>
+      ["reel", "reels", "videos", "video", "watch"].includes(part)
+    );
+    const pathId = markerIndex >= 0 ? parts[markerIndex + 1] : undefined;
+    if (pathId) return pathId;
+  }
+
+  const reelMatch = trimmed.match(/(?:reel|reels|videos?|watch)\/([\w.-]+)/i);
+  const numericMatch = trimmed.match(/\b\d{8,}\b/);
+  return reelMatch?.[1] ?? numericMatch?.[0] ?? trimmed;
+}
+
+function normalizeTiktokId(value: string | undefined) {
+  const trimmed = cleanOptionalText(value);
+  if (!trimmed) return trimmed;
+
+  const url = readUrl(trimmed);
+  if (url) {
+    const parts = url.pathname.split("/").filter(Boolean);
+    const markerIndex = parts.findIndex((part) => part === "video");
+    const pathId = markerIndex >= 0 ? parts[markerIndex + 1] : undefined;
+    if (pathId) return pathId;
+  }
+
+  const match = trimmed.match(/(?:video\/)?(\d{12,})/i);
+  return match?.[1] ?? trimmed;
 }
 
 function parseFutureDate(value: string | null | undefined, label: string) {
@@ -614,7 +696,7 @@ export async function publishProject(
     abTitles?: string[];
     thumbnails?: string[];
   }
-): Promise<ActionResult> {
+): Promise<ActionResult<Project>> {
   if (!data.finalTitle?.trim()) {
     return { success: false, error: "Final video title is required." };
   }
@@ -635,9 +717,9 @@ export async function publishProject(
     .map((t) => t?.trim() ?? "")
     .filter(Boolean);
 
-  const cleanedYoutubeId = data.youtubeId?.trim() || null;
-  const cleanedMetaId = data.metaId?.trim() || null;
-  const cleanedTiktokId = data.tiktokId?.trim() || null;
+  const cleanedYoutubeId = normalizeYoutubeId(data.youtubeId);
+  const cleanedMetaId = normalizeMetaId(data.metaId);
+  const cleanedTiktokId = normalizeTiktokId(data.tiktokId);
 
   try {
     const updated = await prisma.project.update({
@@ -1118,17 +1200,14 @@ export async function updatePlatformIds(
     tiktokId?: string;
     folderName?: string;
   }
-): Promise<ActionResult> {
-  const clean = (v: string | undefined) => {
-    if (v === undefined) return undefined;
-    const trimmed = v.trim();
-    return trimmed.length > 0 ? trimmed : null;
-  };
-
-  const nextYoutubeId = ids.youtubeId === undefined ? undefined : clean(ids.youtubeId);
-  const nextMetaId = ids.metaId === undefined ? undefined : clean(ids.metaId);
-  const nextTiktokId = ids.tiktokId === undefined ? undefined : clean(ids.tiktokId);
-  const nextFolderName = ids.folderName === undefined ? undefined : clean(ids.folderName);
+): Promise<ActionResult<Project>> {
+  const nextYoutubeId =
+    ids.youtubeId === undefined ? undefined : normalizeYoutubeId(ids.youtubeId);
+  const nextMetaId = ids.metaId === undefined ? undefined : normalizeMetaId(ids.metaId);
+  const nextTiktokId =
+    ids.tiktokId === undefined ? undefined : normalizeTiktokId(ids.tiktokId);
+  const nextFolderName =
+    ids.folderName === undefined ? undefined : cleanOptionalText(ids.folderName);
 
   try {
     const updated = await prisma.project.update({

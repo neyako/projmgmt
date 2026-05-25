@@ -1410,7 +1410,7 @@ export default function ProjectDetailsModal({
   // Ideation metadata
   const [productLinks, setProductLinks] = useState("");
 
-  // Platform API IDs (Published post-publish edit)
+  // Platform Links / API IDs (Published post-publish edit)
   const [youtubeId, setYoutubeId] = useState("");
   const [metaId, setMetaId] = useState("");
   const [tiktokId, setTiktokId] = useState("");
@@ -1779,11 +1779,14 @@ export default function ProjectDetailsModal({
         showToast(result.error, "error");
         return;
       }
+      setYoutubeId(result.data.youtubeId || "");
+      setMetaId(result.data.metaId || "");
+      setTiktokId(result.data.tiktokId || "");
       onProjectUpdate?.({
         id: project.id,
-        youtubeId: nextYoutube || null,
-        metaId: nextMeta || null,
-        tiktokId: nextTiktok || null,
+        youtubeId: result.data.youtubeId || null,
+        metaId: result.data.metaId || null,
+        tiktokId: result.data.tiktokId || null,
       });
       showToast(t("projectModal.detailsUpdated"), "success");
     });
@@ -2334,14 +2337,14 @@ export default function ProjectDetailsModal({
                     className="border border-border-visible bg-surface p-4 flex flex-col"
                   >
                     <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4">
-                      Platform API IDs
+                      Platform Links / API IDs
                     </h3>
 
                     <label
                       htmlFor="platform-youtube"
                       className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
                     >
-                      YouTube Video ID
+                      YouTube Link / Video ID
                     </label>
                     <input
                       id="platform-youtube"
@@ -2349,7 +2352,7 @@ export default function ProjectDetailsModal({
                       autoComplete="off"
                       value={youtubeId}
                       onChange={(e) => setYoutubeId(e.target.value)}
-                      placeholder="dQw4w9WgXcQ"
+                      placeholder="https://youtube.com/watch?v=dQw4w9WgXcQ"
                       className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
                     />
 
@@ -2357,7 +2360,7 @@ export default function ProjectDetailsModal({
                       htmlFor="platform-meta"
                       className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
                     >
-                      Meta Reel ID
+                      Meta Link / Reel ID
                     </label>
                     <input
                       id="platform-meta"
@@ -2365,7 +2368,7 @@ export default function ProjectDetailsModal({
                       autoComplete="off"
                       value={metaId}
                       onChange={(e) => setMetaId(e.target.value)}
-                      placeholder="17841400000000000"
+                      placeholder="https://facebook.com/reel/17841400000000000"
                       className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
                     />
 
@@ -2373,7 +2376,7 @@ export default function ProjectDetailsModal({
                       htmlFor="platform-tiktok"
                       className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
                     >
-                      TikTok Video ID
+                      TikTok Link / Video ID
                     </label>
                     <input
                       id="platform-tiktok"
@@ -2381,7 +2384,7 @@ export default function ProjectDetailsModal({
                       autoComplete="off"
                       value={tiktokId}
                       onChange={(e) => setTiktokId(e.target.value)}
-                      placeholder="7234567890123456789"
+                      placeholder="https://tiktok.com/@account/video/7234567890123456789"
                       className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
                     />
 
