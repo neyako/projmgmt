@@ -10,10 +10,12 @@ import { useT } from "@/lib/i18n/client";
 
 interface KanbanBoardWrapperProps {
   initialProjects: ProjectCardData[];
+  frequentHashtags: string[];
 }
 
 export default function KanbanBoardWrapper({
   initialProjects,
+  frequentHashtags,
 }: KanbanBoardWrapperProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -150,6 +152,7 @@ export default function KanbanBoardWrapper({
       {publishingProject && (
         <PublishModal
           project={publishingProject}
+          frequentHashtags={frequentHashtags}
           onClose={handlePublishClose}
           onPublished={handlePublished}
         />

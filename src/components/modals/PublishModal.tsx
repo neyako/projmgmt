@@ -10,6 +10,7 @@ import { useT } from "@/lib/i18n/client";
 
 interface PublishModalProps {
   project: ProjectCardData;
+  frequentHashtags: string[];
   onClose: () => void;
   onPublished: (updated: Partial<ProjectCardData> & { id: string }) => void;
 }
@@ -24,17 +25,6 @@ function todayInputValue(): string {
 
 const INPUT_CLASS =
   "w-full bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none font-mono text-sm text-text-display py-2 px-0 placeholder:text-text-disabled";
-
-const FREQUENT_HASHTAGS = [
-  "review",
-  "tech",
-  "setup",
-  "workspace",
-  "desksetup",
-  "shorts",
-  "reels",
-  "fyp",
-];
 
 function hashtagTokens(raw: string): string[] {
   return raw
@@ -51,6 +41,7 @@ function normalizeHashtags(raw: string): string {
 
 export default function PublishModal({
   project,
+  frequentHashtags,
   onClose,
   onPublished,
 }: PublishModalProps) {
@@ -109,7 +100,10 @@ export default function PublishModal({
     setHashtags((prev) => {
       const nextTag = tag.replace(/^#+/, "");
       const tokens = hashtagTokens(prev);
-      if (tokens.includes(nextTag)) return prev;
+      const tokenKeys = new Set(
+        tokens.map((token) => token.toLocaleLowerCase()),
+      );
+      if (tokenKeys.has(nextTag.toLocaleLowerCase())) return prev;
       return [...tokens, nextTag].join(" ");
     });
   }
@@ -249,23 +243,25 @@ export default function PublishModal({
                     <p className="text-[10px] font-mono text-text-disabled mt-2">
                       {t("publishModal.hashtagsHint")}
                     </p>
-                    <div className="mt-3">
-                      <div className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2">
-                        {t("publishModal.frequentHashtags")}
+                    {frequentHashtags.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2">
+                          {t("publishModal.frequentHashtags")}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {frequentHashtags.map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => addFrequentHashtag(tag)}
+                              className="ui-tag-muted hover:bg-text-display hover:text-text-inverse hover:border-text-display"
+                            >
+                              #{tag}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {FREQUENT_HASHTAGS.map((tag) => (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => addFrequentHashtag(tag)}
-                            className="ui-tag-muted hover:bg-text-display hover:text-text-inverse hover:border-text-display"
-                          >
-                            #{tag}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </>
               )}
