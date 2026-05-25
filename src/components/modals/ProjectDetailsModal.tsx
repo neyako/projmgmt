@@ -2511,6 +2511,42 @@ export default function ProjectDetailsModal({
                   </div>
                 </div>
 
+                <div className="md:hidden">
+                  <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">
+                    NC {t("projectModal.reviewLink")}
+                  </label>
+                  <div className="bg-surface border border-border-visible flex min-h-10 items-stretch">
+                    <input
+                      type="text"
+                      value={reviewLink}
+                      onChange={(e) => setReviewLink(e.target.value)}
+                      onBlur={() => saveAssets({ reviewLink })}
+                      placeholder="https://nc.studio.local/s/..."
+                      className="flex-1 min-w-0 bg-transparent text-xs font-mono text-text-primary px-3 py-2.5 outline-none placeholder:text-text-disabled"
+                    />
+                    {!reviewLink && (
+                      <button
+                        type="button"
+                        onClick={handleScanForDrafts}
+                        disabled={isScanningDraft}
+                        className="text-[10px] font-mono uppercase tracking-widest text-success hover:bg-success hover:text-text-inverse hover:border-success px-3 py-2.5 border-l border-border-visible shrink-0 whitespace-nowrap disabled:cursor-wait disabled:opacity-50"
+                      >
+                        {isScanningDraft ? "[ ... ]" : "[ SCAN ]"}
+                      </button>
+                    )}
+                    {reviewLink && (
+                      <a
+                        href={reviewLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-mono uppercase tracking-widest text-text-secondary hover:bg-text-display hover:text-text-inverse px-3 py-2.5 border-l border-border-visible shrink-0"
+                      >
+                        [ OPEN ]
+                      </a>
+                    )}
+                  </div>
+                </div>
+
                 {/* ── Sponsorship Context (Sponsored) ── */}
                 {project.contentType === "Sponsored" && (linkedSponsorship || briefingContext) && (
                   <div>
@@ -2878,7 +2914,7 @@ export default function ProjectDetailsModal({
                     saveMetadata({ productLinks: next });
                   }}
                   placeholder={`Keychron K2 — https://...\nElgato Key Light — https://...`}
-                  className="w-full bg-surface border border-border-visible p-3 text-xs font-mono text-text-primary uppercase focus:outline-none focus:border-text-display min-h-[80px] resize-y mt-1"
+                  className="w-full bg-surface border border-border-visible p-3 text-xs font-mono text-text-primary focus:outline-none focus:border-text-display min-h-[80px] resize-y mt-1"
                 />
               </div>
             )}
