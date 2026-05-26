@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import { useT } from "@/lib/i18n/client";
 import { Wordmark } from "@/components/brand/Logo";
+import { MotionBlock, MotionPresence } from "@/components/motion/TerminalMotion";
 
 const memberHiddenRoutes = new Set(["/analytics", "/sponsorships", "/team"]);
 
@@ -159,102 +160,105 @@ export default function Sidebar({ workspaceId }: { workspaceId: string }) {
         </button>
       </header>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-[90] md:hidden bg-background flex flex-col motion-panel-in">
-          <div className="flex items-center justify-between h-14 shrink-0 border-b border-border-visible px-4">
-            <div className="min-w-0">
-              <span className="text-style-label text-text-display tracking-widest">
-                {t("nav.menu")}
-              </span>
-              <div
-                className="mt-0.5 max-w-[12rem] truncate text-[8px] font-mono uppercase tracking-widest text-text-secondary"
-                title={workspaceId}
-              >
-                {workspaceId}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              onPointerDown={() => setIsOpen(false)}
-              className="w-11 h-10 border border-border-visible bg-background text-text-display hover:bg-text-display hover:text-text-inverse hover:border-text-display flex items-center justify-center touch-manipulation"
-              aria-label={t("nav.closeMenu")}
+      <MotionPresence
+        show={isOpen}
+        preset="panel"
+        exit={{ x: 0, y: -18, scale: 1, duration: 0.18 }}
+        className="fixed inset-0 z-[90] md:hidden bg-background flex flex-col"
+      >
+        <div className="flex items-center justify-between h-14 shrink-0 border-b border-border-visible px-4">
+          <div className="min-w-0">
+            <span className="text-style-label text-text-display tracking-widest">
+              {t("nav.menu")}
+            </span>
+            <div
+              className="mt-0.5 max-w-[12rem] truncate text-[8px] font-mono uppercase tracking-widest text-text-secondary"
+              title={workspaceId}
             >
-              <X className="w-5 h-5" />
-            </button>
+              {workspaceId}
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            onPointerDown={() => setIsOpen(false)}
+            className="w-11 h-10 border border-border-visible bg-background text-text-display hover:bg-text-display hover:text-text-inverse hover:border-text-display flex items-center justify-center touch-manipulation"
+            aria-label={t("nav.closeMenu")}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="flex flex-col gap-2">
-              {visibleNavItems.map((item) => {
-                const isActive = pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex flex-col gap-2">
+            {visibleNavItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "px-4 py-4 min-h-[44px] flex items-center gap-4 text-style-label tracking-widest border",
+                    isActive
+                      ? "text-text-display border-border-visible bg-surface-raised"
+                      : "text-text-disabled border-transparent hover:text-text-inverse hover:bg-text-display hover:border-text-display"
+                  )}
+                >
+                  <span
                     className={cn(
-                      "px-4 py-4 min-h-[44px] flex items-center gap-4 text-style-label tracking-widest border",
-                      isActive
-                        ? "text-text-display border-border-visible bg-surface-raised"
-                        : "text-text-disabled border-transparent hover:text-text-inverse hover:bg-text-display hover:border-text-display"
+                      "material-symbols-outlined text-[20px]",
+                      isActive && "icon-fill"
                     )}
                   >
-                    <span
-                      className={cn(
-                        "material-symbols-outlined text-[20px]",
-                        isActive && "icon-fill"
-                      )}
-                    >
-                      {item.icon}
-                    </span>
-                    {t(item.i18nKey)}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="shrink-0 border-t border-border-visible p-4 flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={handleNewProjectClick}
-              className="ui-button-primary px-4 py-3 min-h-[44px] text-left"
-            >
-              {t("nav.newProject")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-              className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center justify-between gap-3"
-            >
-              <span className="flex items-center gap-3">
-                {isDarkMode ? (
-                  <Moon className="w-4 h-4" />
-                ) : (
-                  <Sun className="w-4 h-4" />
-                )}
-                <span>{isDarkMode ? t("nav.darkMode") : t("nav.lightMode")}</span>
-              </span>
-              <span>{isDarkMode ? t("nav.lightTag") : t("nav.darkTag")}</span>
-            </button>
-            <Link
-              href="/settings"
-              className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center gap-3"
-            >
-              <Settings className="w-4 h-4" />
-              <span>{t("nav.settings")}</span>
-            </Link>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center gap-3"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>{t("nav.logout")}</span>
-            </button>
+                    {item.icon}
+                  </span>
+                  {t(item.i18nKey)}
+                </Link>
+              );
+            })}
           </div>
         </div>
-      )}
+
+        <div className="shrink-0 border-t border-border-visible p-4 flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={handleNewProjectClick}
+            className="ui-button-primary px-4 py-3 min-h-[44px] text-left"
+          >
+            {t("nav.newProject")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+            className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center justify-between gap-3"
+          >
+            <span className="flex items-center gap-3">
+              {isDarkMode ? (
+                <Moon className="w-4 h-4" />
+              ) : (
+                <Sun className="w-4 h-4" />
+              )}
+              <span>{isDarkMode ? t("nav.darkMode") : t("nav.lightMode")}</span>
+            </span>
+            <span>{isDarkMode ? t("nav.lightTag") : t("nav.darkTag")}</span>
+          </button>
+          <Link
+            href="/settings"
+            className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center gap-3"
+          >
+            <Settings className="w-4 h-4" />
+            <span>{t("nav.settings")}</span>
+          </Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="ui-button-outline px-4 py-3 min-h-[44px] flex items-center gap-3"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>{t("nav.logout")}</span>
+          </button>
+        </div>
+      </MotionPresence>
     </>
   );
 }

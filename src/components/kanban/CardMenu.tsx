@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useTransition } from "react";
 import { archiveProject, deleteProject } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
+import { MotionPresence } from "@/components/motion/TerminalMotion";
 import { useT } from "@/lib/i18n/client";
 
 interface CardMenuProps {
@@ -74,22 +75,25 @@ export default function CardMenu({ projectId, onRemove }: CardMenuProps) {
         more_horiz
       </span>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-32 ui-panel z-50 flex flex-col">
-          <button
-            onClick={handleArchive}
-            className="text-left px-3 py-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest hover:bg-text-display hover:text-text-inverse"
-          >
-            {t("kanban.scrap")}
-          </button>
-          <button
-            onClick={handleDelete}
-            className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent hover:text-text-inverse border-t border-border"
-          >
-            {t("kanban.delete")}
-          </button>
-        </div>
-      )}
+      <MotionPresence
+        show={isOpen}
+        preset="panel"
+        exit={{ x: 10, y: -4, scale: 0.98, duration: 0.14 }}
+        className="absolute right-0 top-full mt-1 w-32 ui-panel z-50 flex flex-col"
+      >
+        <button
+          onClick={handleArchive}
+          className="text-left px-3 py-2 text-[10px] font-mono text-text-secondary uppercase tracking-widest hover:bg-text-display hover:text-text-inverse"
+        >
+          {t("kanban.scrap")}
+        </button>
+        <button
+          onClick={handleDelete}
+          className="text-left px-3 py-2 text-[10px] font-mono text-accent/80 uppercase tracking-widest hover:bg-accent hover:text-text-inverse border-t border-border"
+        >
+          {t("kanban.delete")}
+        </button>
+      </MotionPresence>
     </div>
   );
 }

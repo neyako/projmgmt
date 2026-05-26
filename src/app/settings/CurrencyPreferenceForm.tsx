@@ -8,6 +8,7 @@ import {
   normalizeCurrency,
   type CurrencyCode,
 } from "@/lib/currency";
+import Picker from "@/components/ui/Picker";
 import { useToast } from "@/components/ui/Toast";
 import { useT } from "@/lib/i18n/client";
 
@@ -50,18 +51,19 @@ export default function CurrencyPreferenceForm({
           {t("settings.currencyDescription")}
         </p>
       </div>
-      <select
+      <Picker
         value={selected}
         onChange={(event) => handleChange(event.target.value)}
         disabled={pending}
-        className="ui-select px-3 py-2 text-xs font-mono uppercase tracking-widest color-scheme-dark disabled:opacity-50"
+        variant="panel"
+        className="px-3 py-2"
       >
         {SUPPORTED_CURRENCIES.map((currency) => (
           <option key={currency.code} value={currency.code}>
             {currency.code} / {currency.label}
           </option>
         ))}
-      </select>
+      </Picker>
     </div>
   );
 }

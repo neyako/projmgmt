@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { publishProject } from "@/actions/projects";
+import Button from "@/components/ui/Button";
+import { inputStyles } from "@/components/ui/controlStyles";
 import { useToast } from "@/components/ui/Toast";
 import CopyBlock from "@/components/ui/CopyBlock";
+import { MotionBlock, useTerminalDismiss } from "@/components/motion/TerminalMotion";
 import type { ProjectCardData } from "@/types";
 import { useT } from "@/lib/i18n/client";
 
@@ -24,7 +27,7 @@ function todayInputValue(): string {
 }
 
 const INPUT_CLASS =
-  "w-full bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none font-mono text-sm text-text-display py-2 px-0 placeholder:text-text-disabled";
+  inputStyles({ variant: "underline", size: "sm", className: "text-sm py-2" });
 
 function hashtagTokens(raw: string): string[] {
   return raw
@@ -48,6 +51,22 @@ export default function PublishModal({
   const { showToast } = useToast();
   const t = useT();
   const [isPending, startTransition] = useTransition();
+  const publishedUpdateRef = useRef<(Partial<ProjectCardData> & { id: string }) | null>(null);
+  const handleDismissed = useCallback(() => {
+    if (publishedUpdateRef.current) {
+      const updated = publishedUpdateRef.current;
+      publishedUpdateRef.current = null;
+      onPublished(updated);
+      return;
+    }
+    onClose();
+  }, [onClose, onPublished]);
+  const {
+    ref: panelRef,
+    isDismissing,
+    requestDismiss,
+    forceDismiss,
+  } = useTerminalDismiss<HTMLDivElement>(handleDismissed, { disabled: isPending });
 
   const isShort = project.format === "Short_Form";
   const isLong = project.format === "Long_Form";
@@ -83,11 +102,11 @@ export default function PublishModal({
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && !isPending) onClose();
+      if (e.key === "Escape") requestDismiss();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, isPending]);
+  }, [requestDismiss]);
 
   function updateArrayAt(
     setter: React.Dispatch<React.SetStateAction<string[]>>,
@@ -139,15 +158,15 @@ export default function PublishModal({
         showToast(result.error, "error");
         return;
       }
-      onPublished({
+      publishedUpdateRef.current = {
         id: project.id,
         status: "Published",
-      });
+      };
       showToast(
         t("publishModal.publishedToast", { title: trimmedTitle }),
         "success",
       );
-      onClose();
+      forceDismiss();
     });
   }
 
@@ -155,10 +174,16 @@ export default function PublishModal({
     <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       <div
         className="absolute inset-0 ui-modal-backdrop"
-        onClick={() => !isPending && onClose()}
+        onClick={requestDismiss}
       />
 
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[48rem] ui-panel flex flex-col md:max-h-[90vh] motion-panel-in">
+      <MotionBlock
+        ref={panelRef}
+        preset="panel"
+        aria-hidden={isDismissing}
+        data-motion-state={isDismissing ? "exiting" : "entered"}
+        className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[48rem] ui-panel flex flex-col md:max-h-[90vh]"
+      >
         <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -186,7 +211,7 @@ export default function PublishModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestDismiss}
             disabled={isPending}
             className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs ml-4 shrink-0 px-1"
           >
@@ -434,24 +459,25 @@ export default function PublishModal({
         </form>
 
         <div className="flex flex-col md:flex-row md:justify-end gap-3 p-4 md:p-6 border-t border-border-visible shrink-0">
-          <button
+          <Button
             type="button"
             onClick={() =>
-              step === "metadata" ? onClose() : setStep("metadata")
+              step === "metadata" ? requestDismiss() : setStep("metadata")
             }
             disabled={isPending}
-            className="ui-button-outline px-4 py-2 disabled:opacity-50"
+            variant="outline"
+            className="px-4 py-2"
           >
             {step === "metadata"
               ? t("publishModal.cancel")
               : t("publishModal.back")}
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             form="publish-form"
             disabled={isPending}
             className={cn(
-              "ui-button-primary px-6 py-2 flex items-center justify-center gap-2",
+              "px-6 py-2",
               isPending && "opacity-50 cursor-wait",
             )}
           >
@@ -461,9 +487,9 @@ export default function PublishModal({
               : step === "metadata"
                 ? t("publishModal.nextUpload")
                 : t("publishModal.confirmPublish")}
-          </button>
+          </Button>
         </div>
-      </div>
+      </MotionBlock>
     </div>
   );
 }

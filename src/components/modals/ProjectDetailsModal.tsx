@@ -43,6 +43,9 @@ import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
 import CopyBlock from "@/components/ui/CopyBlock";
+import { MotionBlock, useTerminalDismiss } from "@/components/motion/TerminalMotion";
+import { inputStyles, pickerStyles } from "@/components/ui/controlStyles";
+import { PickerChevron } from "@/components/ui/Picker";
 import { generateNasPaths, type NasConfig } from "@/utils/nasPaths";
 import type { ProjectCardData, ProjectUser, ShotItem } from "@/types";
 
@@ -1293,32 +1296,25 @@ interface ProjectDetailsModalProps {
 
 type SponsorshipDealOption = Awaited<ReturnType<typeof getSponsorshipDeals>>[number];
 
+const modalInputClass = inputStyles({
+  variant: "underline",
+  size: "sm",
+  className: "text-sm pt-0 mb-4",
+});
+const sidebarInputClass = inputStyles({ variant: "underline", size: "sm" });
+const sidebarPickerClass = pickerStyles({ variant: "underline", size: "sm" });
+const sidebarDateInputClass = inputStyles({
+  variant: "underline",
+  size: "sm",
+  nativePicker: true,
+});
+
 function parseShotItems(json?: string): ShotItem[] {
   try {
     return json ? JSON.parse(json) : [];
   } catch {
     return [];
   }
-}
-
-// Custom chevron for `<select>` fields (native arrow hidden via `appearance-none`).
-function ChevronDown() {
-  return (
-    <svg
-      className="pointer-events-none absolute right-0 bottom-2 w-3 h-3 text-text-secondary"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M19 9l-7 7-7-7"
-      />
-    </svg>
-  );
 }
 
 function toDateInputValue(d?: Date | string | null): string {
@@ -1358,6 +1354,11 @@ export default function ProjectDetailsModal({
   const { showToast } = useToast();
   const t = useT();
   const locale = useLocale();
+  const {
+    ref: panelRef,
+    isDismissing,
+    requestDismiss,
+  } = useTerminalDismiss<HTMLDivElement>(onClose);
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<ProjectUser[]>([]);
   const [sponsorshipDeals, setSponsorshipDeals] = useState<SponsorshipDealOption[]>([]);
@@ -1444,11 +1445,11 @@ export default function ProjectDetailsModal({
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestDismiss();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [requestDismiss]);
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
@@ -2006,10 +2007,16 @@ export default function ProjectDetailsModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       {/* Backdrop */}
-      <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
+      <div className="absolute inset-0 ui-modal-backdrop" onClick={requestDismiss} />
 
       {/* Modal Container */}
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-5xl ui-panel flex flex-col md:max-h-[90vh] motion-panel-in">
+      <MotionBlock
+        ref={panelRef}
+        preset="panel"
+        aria-hidden={isDismissing}
+        data-motion-state={isDismissing ? "exiting" : "entered"}
+        className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-5xl ui-panel flex flex-col md:max-h-[90vh]"
+      >
 
         {/* ─── HEADER ─── */}
         <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
@@ -2048,7 +2055,7 @@ export default function ProjectDetailsModal({
           </div>
 
           <div className="flex flex-col items-end ml-4 shrink-0">
-            <button onClick={onClose} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs mb-2 px-1">
+            <button onClick={requestDismiss} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs mb-2 px-1">
               [ X ]
             </button>
             {isEditing && (
@@ -2119,7 +2126,7 @@ export default function ProjectDetailsModal({
                         <select
                           value={sponsorshipId}
                           onChange={(e) => handleSponsorshipSelect(e.target.value)}
-                          className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 pr-6 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer color-scheme-dark"
+                          className={sidebarPickerClass}
                         >
                           <option value="" className="bg-surface text-text-primary">
                             {sponsorshipDeals.length > 0 ? t("projectModal.selectSponsorshipDeal") : t("projectModal.noActiveDeals")}
@@ -2133,7 +2140,7 @@ export default function ProjectDetailsModal({
                             </option>
                           ))}
                         </select>
-                        <ChevronDown />
+                        <PickerChevron />
                       </div>
                     </div>
 
@@ -2210,7 +2217,7 @@ export default function ProjectDetailsModal({
 
                 {/* Submit */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-border-visible">
-                  <button type="button" onClick={onClose} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:bg-text-display hover:text-text-inverse hover:border-text-display">
+                  <button type="button" onClick={requestDismiss} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:bg-text-display hover:text-text-inverse hover:border-text-display">
                     {t("projectModal.cancel")}
                   </button>
                   <button type="submit" disabled={isPending} className={cn(
@@ -2353,7 +2360,7 @@ export default function ProjectDetailsModal({
                       value={youtubeId}
                       onChange={(e) => setYoutubeId(e.target.value)}
                       placeholder="https://youtube.com/watch?v=dQw4w9WgXcQ"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
+                    className={modalInputClass}
                     />
 
                     <label
@@ -2369,7 +2376,7 @@ export default function ProjectDetailsModal({
                       value={metaId}
                       onChange={(e) => setMetaId(e.target.value)}
                       placeholder="https://facebook.com/reel/17841400000000000"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
+                      className={modalInputClass}
                     />
 
                     <label
@@ -2385,7 +2392,7 @@ export default function ProjectDetailsModal({
                       value={tiktokId}
                       onChange={(e) => setTiktokId(e.target.value)}
                       placeholder="https://tiktok.com/@account/video/7234567890123456789"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
+                      className={modalInputClass}
                     />
 
                     <div className="flex justify-end mt-2">
@@ -2732,7 +2739,7 @@ export default function ProjectDetailsModal({
                       ""
                     }
                     placeholder="—"
-                    className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display whitespace-nowrap overflow-x-auto"
+                    className={cn(sidebarInputClass, "whitespace-nowrap overflow-x-auto")}
                   />
                 </div>
               )}
@@ -2757,7 +2764,7 @@ export default function ProjectDetailsModal({
                           setScriptingDueDate(value);
                           saveMetadata({ scriptingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
+                        className={sidebarDateInputClass}
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2774,7 +2781,7 @@ export default function ProjectDetailsModal({
                           setFilmingDueDate(value);
                           saveMetadata({ filmingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
+                        className={sidebarDateInputClass}
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2791,7 +2798,7 @@ export default function ProjectDetailsModal({
                           setEditingDueDate(value);
                           saveMetadata({ editingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
+                        className={sidebarDateInputClass}
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2817,7 +2824,7 @@ export default function ProjectDetailsModal({
                         setEditorId(value);
                         saveMetadata({ assignedEditorId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
+                      className={sidebarPickerClass}
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2826,7 +2833,7 @@ export default function ProjectDetailsModal({
                           </option>
                         ))}
                     </select>
-                    <ChevronDown />
+                    <PickerChevron />
                   </>
                 ) : (
                   <span className="text-xs font-bold text-text-disabled uppercase tracking-wider block">
@@ -2849,7 +2856,7 @@ export default function ProjectDetailsModal({
                         setCameramanId(value);
                         saveMetadata({ assignedCameramanId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
+                      className={sidebarPickerClass}
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2858,7 +2865,7 @@ export default function ProjectDetailsModal({
                           </option>
                         ))}
                     </select>
-                    <ChevronDown />
+                    <PickerChevron />
                   </>
                 ) : (
                   <span className="text-xs font-bold text-text-display uppercase tracking-wider block">—</span>
@@ -2879,7 +2886,7 @@ export default function ProjectDetailsModal({
                         setTalentId(value);
                         saveMetadata({ assignedTalentId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
+                      className={sidebarPickerClass}
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2888,7 +2895,7 @@ export default function ProjectDetailsModal({
                           </option>
                         ))}
                     </select>
-                    <ChevronDown />
+                    <PickerChevron />
                   </>
                 ) : (
                   <span className="text-xs font-bold text-text-display uppercase tracking-wider block">—</span>
@@ -2992,7 +2999,7 @@ export default function ProjectDetailsModal({
             )}
           </div>
         </div>
-      </div>
+      </MotionBlock>
     </div>
   );
 }

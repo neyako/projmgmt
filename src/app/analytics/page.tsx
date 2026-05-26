@@ -4,6 +4,7 @@ import PerformanceChart, {
   type DayPoint,
 } from "@/components/analytics/PerformanceChart";
 import PlatformBadge from "@/components/analytics/PlatformBadge";
+import { MotionBlock } from "@/components/motion/TerminalMotion";
 import { prisma } from "@/lib/prisma";
 import { getT } from "@/lib/i18n/server";
 
@@ -212,10 +213,11 @@ export default async function AnalyticsPage() {
           {/* ─── Aggregate Metrics ───────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 lg:gap-6 mb-8 md:mb-12">
             {metrics.map((m, index) => (
-              <div
+              <MotionBlock
                 key={m.label}
-                className="ui-panel p-4 md:p-5 lg:p-6 flex flex-col min-w-0 animate-terminal-boot"
-                style={{ animationDelay: `${index * 70}ms` }}
+                preset="panel"
+                delayMs={index * 70}
+                className="ui-panel p-4 md:p-5 lg:p-6 flex flex-col min-w-0"
               >
                 <span className="ui-page-kicker">
                   {m.label}
@@ -223,17 +225,14 @@ export default async function AnalyticsPage() {
                 <span className="font-mono text-text-display tabular-nums tracking-tight md:tracking-wide lg:tracking-widest mt-2 text-2xl md:text-[1.75rem] lg:text-4xl break-all leading-none">
                   {formatNumber(m.value)}
                 </span>
-              </div>
+              </MotionBlock>
             ))}
           </div>
 
           {/* ─── Cross-Platform Time-Series Chart ────────── */}
-          <div
-            className="mb-8 md:mb-12 animate-terminal-boot"
-            style={{ animationDelay: "120ms" }}
-          >
+          <MotionBlock preset="panel" delayMs={120} className="mb-8 md:mb-12">
             <PerformanceChart points={timeSeries} />
-          </div>
+          </MotionBlock>
 
           {/* ─── Top Performers (Bar-Chart Leaderboard) ── */}
           <div>
@@ -242,14 +241,11 @@ export default async function AnalyticsPage() {
             </h2>
 
             {published.length === 0 ? (
-              <div
-                className="ui-panel p-12 text-center animate-terminal-boot"
-                style={{ animationDelay: "180ms" }}
-              >
+              <MotionBlock preset="panel" delayMs={180} className="ui-panel p-12 text-center">
                 <div className="ui-page-kicker">
                   {t("analytics.noPublished")}
                 </div>
-              </div>
+              </MotionBlock>
             ) : (
               <div className="flex flex-col">
                 {published.map((p, index) => {
@@ -286,10 +282,11 @@ export default async function AnalyticsPage() {
                   const isLongForm = hasPlatform(p.platforms, ["YOUTUBE"]);
 
                   return (
-                    <div
+                    <MotionBlock
                       key={p.id}
-                      className="mb-6 w-full animate-terminal-boot"
-                      style={{ animationDelay: `${180 + index * 45}ms` }}
+                      preset="boot"
+                      delayMs={180 + index * 45}
+                      className="mb-6 w-full"
                     >
                       {/* Row header: title + views */}
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 sm:gap-4">
@@ -357,7 +354,7 @@ export default async function AnalyticsPage() {
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>
-                    </div>
+                    </MotionBlock>
                   );
                 })}
               </div>

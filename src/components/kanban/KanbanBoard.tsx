@@ -17,6 +17,7 @@ import KanbanCard from "./KanbanCard";
 import { KANBAN_STAGES, VALID_TRANSITIONS } from "@/lib/constants";
 import { updateProjectStatus } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
+import { useTerminalStagger } from "@/components/motion/TerminalMotion";
 import type { ProjectCardData, ShotItem } from "@/types";
 import type { KanbanStage } from "@/lib/constants";
 import { useT } from "@/lib/i18n/client";
@@ -42,6 +43,23 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
   const [, startTransition] = useTransition();
   const { showToast } = useToast();
   const t = useT();
+  const boardRef = useRef<HTMLDivElement | null>(null);
+  useTerminalStagger(boardRef, [projects.length], {
+    selector: "[data-motion-column]",
+    x: -18,
+    y: 0,
+    scale: 0.985,
+    duration: 0.46,
+    stagger: 0.055,
+  });
+  useTerminalStagger(boardRef, [projects.length], {
+    selector: "[data-motion-card]",
+    y: 18,
+    scale: 0.975,
+    duration: 0.38,
+    stagger: 0.035,
+    delay: 0.12,
+  });
 
   // Keep a snapshot to revert on failed moves
   const [snapshot, setSnapshot] = useState<ProjectCardData[]>(projects);
@@ -267,8 +285,11 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-md md:gap-lg h-full md:min-w-max pb-lg snap-x snap-mandatory md:snap-none">
-        {KANBAN_STAGES.filter((s) => s !== "Published").map((stage, stageIndex) => (
+      <div
+        ref={boardRef}
+        className="flex gap-md md:gap-lg h-full md:min-w-max pb-lg snap-x snap-mandatory md:snap-none"
+      >
+        {KANBAN_STAGES.filter((s) => s !== "Published").map((stage) => (
           <KanbanColumn
             key={stage}
             id={stage}
@@ -277,11 +298,10 @@ export default function KanbanBoard({ projects, setProjects, onNewProjectClick, 
             isFilming={stage === "Filming"}
             onAddClick={onNewProjectClick}
           >
-            {(columns[stage] ?? []).map((project, cardIndex) => (
+            {(columns[stage] ?? []).map((project) => (
               <KanbanCard
                 key={project.id}
                 project={project}
-                bootDelayMs={stageIndex * 35 + cardIndex * 70}
                 onProjectUpdate={handleProjectUpdate}
                 onRemove={handleProjectRemove}
                 onClick={handleCardClick}

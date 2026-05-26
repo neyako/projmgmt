@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useT, useLocale } from "@/lib/i18n/client";
@@ -8,11 +8,16 @@ import { setLocale } from "@/lib/i18n/actions";
 import { LOCALES, type Locale } from "@/lib/i18n/locales";
 import { cn } from "@/lib/utils";
 import { Wordmark } from "@/components/brand/Logo";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { useTerminalStagger } from "@/components/motion/TerminalMotion";
 
 export default function LoginForm() {
   const router = useRouter();
   const t = useT();
   const currentLocale = useLocale();
+  const motionRef = useRef<HTMLElement | null>(null);
+  useTerminalStagger(motionRef, [], { stagger: 0.06 });
 
   async function handleLocaleChange(next: Locale) {
     if (next === currentLocale) return;
@@ -47,8 +52,14 @@ export default function LoginForm() {
 
   return (
     <div className="bg-background text-text-primary min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      <main className="w-full max-w-[24rem] px-lg flex flex-col items-center gap-4xl">
-        <header className="text-center flex flex-col items-center gap-xs">
+      <main
+        ref={motionRef}
+        className="w-full max-w-[24rem] px-lg flex flex-col items-center gap-4xl"
+      >
+        <header
+          data-motion-item
+          className="text-center flex flex-col items-center gap-xs"
+        >
           <Wordmark as="h1" size="xl" weight={700} cursorBlink />
           <div className="flex items-center gap-sm opacity-50">
             <span className="block w-md h-2xs bg-border-visible" />
@@ -57,45 +68,33 @@ export default function LoginForm() {
           </div>
         </header>
 
-        <form className="w-full flex flex-col gap-2xl" onSubmit={handleSubmit}>
+        <form
+          data-motion-item
+          className="w-full flex flex-col gap-2xl"
+          onSubmit={handleSubmit}
+        >
           <div className="flex flex-col gap-xl">
-            <div className="flex flex-col gap-sm group">
-              <label
-                htmlFor="username"
-                className="text-style-label text-text-secondary group-focus-within:text-text-display"
-              >
-                {t("login.username")}
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                placeholder={t("login.identifier")}
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-              />
-            </div>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              label={t("login.username")}
+              placeholder={t("login.identifier")}
+              autoComplete="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+            />
 
-            <div className="flex flex-col gap-sm group">
-              <label
-                htmlFor="password"
-                className="text-style-label text-text-secondary group-focus-within:text-text-display"
-              >
-                {t("login.accessKey")}
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder={t("login.passwordPlaceholder")}
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-              />
-            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              label={t("login.accessKey")}
+              placeholder={t("login.passwordPlaceholder")}
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
           </div>
 
           {errorMessage ? (
@@ -103,17 +102,19 @@ export default function LoginForm() {
           ) : null}
 
           <div className="flex flex-col items-center pt-md">
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="border border-text-display bg-text-display text-text-inverse text-style-label rounded-full px-xl py-md min-w-[160px] hover:bg-background hover:text-text-display disabled:opacity-50 disabled:cursor-not-allowed"
+              size="lg"
+              pill
+              className="min-w-[160px]"
             >
               {isSubmitting ? t("login.verifying") : t("login.login")}
-            </button>
+            </Button>
           </div>
         </form>
 
-        <div className="flex items-center gap-2 opacity-70">
+        <div data-motion-item className="flex items-center gap-2 opacity-70">
           {LOCALES.map((code) => (
             <button
               key={code}

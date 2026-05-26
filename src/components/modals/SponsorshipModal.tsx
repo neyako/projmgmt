@@ -2,7 +2,11 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { createSponsorship, updateSponsorship, deleteSponsorship } from "@/actions/sponsorships";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Picker from "@/components/ui/Picker";
 import { useToast } from "@/components/ui/Toast";
+import { MotionBlock, useTerminalDismiss } from "@/components/motion/TerminalMotion";
 import type { Sponsorship } from "@prisma/client";
 import {
   SUPPORTED_CURRENCIES,
@@ -44,6 +48,12 @@ export default function SponsorshipModal({
   const locale = useLocale();
   const moneyLocale = locale === "vi" ? "vi-VN" : "en-US";
   const [isPending, startTransition] = useTransition();
+  const {
+    ref: panelRef,
+    isDismissing,
+    requestDismiss,
+    forceDismiss,
+  } = useTerminalDismiss<HTMLDivElement>(onClose, { disabled: isPending });
 
   const isEditing = !!sponsorship;
 
@@ -68,11 +78,11 @@ export default function SponsorshipModal({
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestDismiss();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [requestDismiss]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -102,7 +112,7 @@ export default function SponsorshipModal({
       if (result.success) {
         showToast(t(isEditing ? "sponsorshipModal.updated" : "sponsorshipModal.created"), "success");
         onRefresh();
-        onClose();
+        forceDismiss();
       } else {
         showToast(result.error || t("projectModal.updateFailed"), "error");
       }
@@ -116,7 +126,7 @@ export default function SponsorshipModal({
       if (result.success) {
         showToast(t("sponsorshipModal.deleted"), "success");
         onRefresh();
-        onClose();
+        forceDismiss();
       } else {
         showToast(result.error || t("projectModal.updateFailed"), "error");
       }
@@ -125,14 +135,20 @@ export default function SponsorshipModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
-      <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
+      <div className="absolute inset-0 ui-modal-backdrop" onClick={requestDismiss} />
 
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[45rem] ui-panel flex flex-col md:max-h-[90vh] motion-panel-in">
+      <MotionBlock
+        ref={panelRef}
+        preset="panel"
+        aria-hidden={isDismissing}
+        data-motion-state={isDismissing ? "exiting" : "entered"}
+        className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[45rem] ui-panel flex flex-col md:max-h-[90vh]"
+      >
         <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? t("sponsorshipModal.edit") : t("sponsorshipModal.new")}
           </h2>
-          <button onClick={onClose} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs px-1">
+          <button onClick={requestDismiss} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs px-1">
             {t("sponsorshipModal.close")}
           </button>
         </div>
@@ -141,76 +157,75 @@ export default function SponsorshipModal({
           <form id="sponsorship-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.brand")}</label>
-                <input
-                  value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
-                  className="w-full ui-input p-2 w-full"
-                  placeholder={t("sponsorshipModal.brandPlaceholder")}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.contactEmail")}</label>
-                <input
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                  className="w-full ui-input p-2 w-full"
-                  placeholder={t("sponsorshipModal.contactEmailPlaceholder")}
-                />
-              </div>
+              <Input
+                label={t("sponsorshipModal.brand")}
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                variant="panel"
+                labelClassName="text-[10px]"
+                wrapperClassName="gap-3"
+                placeholder={t("sponsorshipModal.brandPlaceholder")}
+              />
+              <Input
+                label={t("sponsorshipModal.contactEmail")}
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                variant="panel"
+                labelClassName="text-[10px]"
+                wrapperClassName="gap-3"
+                placeholder={t("sponsorshipModal.contactEmailPlaceholder")}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.budget")}</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  className="w-full ui-input p-2 w-full"
-                  placeholder={t("sponsorshipModal.budgetPlaceholder")}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.currency")}</label>
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(normalizeCurrency(e.target.value))}
-                  className="w-full ui-input p-2 w-full appearance-none color-scheme-dark"
-                >
-                  {SUPPORTED_CURRENCIES.map((item) => (
-                    <option key={item.code} value={item.code}>
-                      {item.code} / {item.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.status")}</label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full ui-input p-2 w-full appearance-none"
-                >
-                  <option value="Active">{t("sponsorshipModal.active")}</option>
-                  <option value="Pending">{t("sponsorshipModal.pending")}</option>
-                  <option value="Completed">{t("sponsorshipModal.completed")}</option>
-                  <option value="Cancelled">{t("sponsorshipModal.cancelled")}</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("sponsorshipModal.dueDate")}</label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full ui-input p-2 w-full"
-                  style={{ colorScheme: "dark" }}
-                />
-              </div>
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                label={t("sponsorshipModal.budget")}
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                variant="panel"
+                labelClassName="text-[10px]"
+                wrapperClassName="gap-3"
+                placeholder={t("sponsorshipModal.budgetPlaceholder")}
+              />
+              <Picker
+                label={t("sponsorshipModal.currency")}
+                value={currency}
+                onChange={(e) => setCurrency(normalizeCurrency(e.target.value))}
+                variant="panel"
+                labelClassName="text-[10px]"
+                wrapperClassName="gap-3"
+              >
+                {SUPPORTED_CURRENCIES.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.code} / {item.label}
+                  </option>
+                ))}
+              </Picker>
+              <Picker
+                label={t("sponsorshipModal.status")}
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                variant="panel"
+                labelClassName="text-[10px]"
+                wrapperClassName="gap-3"
+              >
+                <option value="Active">{t("sponsorshipModal.active")}</option>
+                <option value="Pending">{t("sponsorshipModal.pending")}</option>
+                <option value="Completed">{t("sponsorshipModal.completed")}</option>
+                <option value="Cancelled">{t("sponsorshipModal.cancelled")}</option>
+              </Picker>
+              <Input
+                type="date"
+                label={t("sponsorshipModal.dueDate")}
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                variant="panel"
+                labelClassName="text-[10px]"
+                wrapperClassName="gap-3"
+              />
             </div>
 
             {shouldShowPreview && (
@@ -243,22 +258,22 @@ export default function SponsorshipModal({
 
         <div className="flex flex-col md:flex-row md:justify-between gap-3 p-4 md:p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
+            <Button type="button" onClick={handleDelete} disabled={isPending} variant="danger" className="px-4 py-2">
               {t("sponsorshipModal.delete")}
-            </button>
+            </Button>
           ) : (
             <div />
           )}
           <div className="flex flex-col md:flex-row gap-3 md:ml-auto">
-            <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
+            <Button type="button" onClick={requestDismiss} variant="outline" className="px-4 py-2">
               {t("sponsorshipModal.cancel")}
-            </button>
-            <button type="submit" form="sponsorship-form" disabled={isPending} className="ui-button-primary px-6 py-2 disabled:opacity-50">
+            </Button>
+            <Button type="submit" form="sponsorship-form" disabled={isPending} className="px-6 py-2">
               {isPending ? t("sponsorshipModal.saving") : t("sponsorshipModal.save")}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </MotionBlock>
     </div>
   );
 }

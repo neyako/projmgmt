@@ -1,331 +1,311 @@
-# Nothing Design System — Source of Truth
-
-This document is the absolute source of truth for the project's UI. The system is rooted in the Nothing Design philosophy: Swiss typography, industrial restraint, monochromatic emphasis, mechanical motion. The dark theme reads as an instrument panel in a dark room; the light theme reads as warm printed paper. Every component, token, and spacing decision must adhere strictly to these guidelines.
-
-AI assistants must reach for the existing primitives in `src/components/ui/*` and the semantic `.ui-*` utilities in `src/app/globals.css` before writing new class chains. Tokens are defined once and consumed everywhere — never hard-code colors.
-
+---
+name: projmgmt
+description: Self-hosted content production management in a sharp terminal dashboard.
+colors:
+  root-black: "#000000"
+  dark-background: "#0a0a0a"
+  dark-surface: "#111111"
+  dark-surface-raised: "#1a1a1a"
+  dark-surface-variant: "#353434"
+  dark-surface-bright: "#3a3939"
+  dark-border: "#222222"
+  dark-border-visible: "#333333"
+  dark-outline: "#444748"
+  dark-text-display: "#ffffff"
+  dark-text-primary: "#e8e8e8"
+  dark-text-secondary: "#999999"
+  dark-text-disabled: "#666666"
+  paper-background: "#f4f1ea"
+  paper-surface: "#ebe7dd"
+  paper-surface-raised: "#e2ddd1"
+  paper-surface-variant: "#d8d1c4"
+  paper-surface-bright: "#cdc3b4"
+  paper-border: "#d8d1c4"
+  paper-border-visible: "#c7beb0"
+  paper-outline: "#a99f91"
+  paper-text-display: "#111111"
+  paper-text-primary: "#242424"
+  paper-text-secondary: "#6f6a60"
+  paper-text-disabled: "#9a9286"
+  signal-red: "#d71921"
+  signal-red-subtle: "#d7192126"
+  interactive-blue: "#5b9bf6"
+  success-green: "#4a9e5c"
+  warning-amber: "#d4a843"
+  error-pink: "#ffb4ab"
+typography:
+  display:
+    fontFamily: "Doto, JetBrains Mono, monospace"
+    fontSize: "72px"
+    fontWeight: 400
+    lineHeight: 1
+    letterSpacing: "-0.03em"
+  headline:
+    fontFamily: "Space Grotesk, DM Sans, system-ui, sans-serif"
+    fontSize: "36px"
+    fontWeight: 500
+    lineHeight: 1.1
+    letterSpacing: "-0.02em"
+  title:
+    fontFamily: "Space Grotesk, DM Sans, system-ui, sans-serif"
+    fontSize: "24px"
+    fontWeight: 500
+    lineHeight: 1.2
+    letterSpacing: "-0.01em"
+  body:
+    fontFamily: "Space Grotesk, DM Sans, system-ui, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: "0"
+  caption:
+    fontFamily: "JetBrains Mono, SF Mono, ui-monospace, monospace"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.4
+    letterSpacing: "0.04em"
+  label:
+    fontFamily: "JetBrains Mono, SF Mono, ui-monospace, monospace"
+    fontSize: "11px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "0.08em"
+rounded:
+  none: "0px"
+  default: "4px"
+  lg: "8px"
+  xl: "12px"
+  full: "9999px"
+spacing:
+  2xs: "2px"
+  xs: "4px"
+  sm: "8px"
+  md: "16px"
+  lg: "24px"
+  xl: "32px"
+  2xl: "48px"
+  3xl: "64px"
+  4xl: "96px"
+components:
+  button-primary:
+    backgroundColor: "{colors.dark-text-display}"
+    textColor: "{colors.root-black}"
+    rounded: "{rounded.none}"
+    padding: "8px 24px"
+  button-outline:
+    backgroundColor: "{colors.dark-background}"
+    textColor: "{colors.dark-text-secondary}"
+    rounded: "{rounded.none}"
+    padding: "8px 16px"
+  button-danger:
+    backgroundColor: "{colors.dark-background}"
+    textColor: "{colors.signal-red}"
+    rounded: "{rounded.none}"
+    padding: "8px 16px"
+  panel:
+    backgroundColor: "{colors.dark-surface}"
+    textColor: "{colors.dark-text-primary}"
+    rounded: "{rounded.none}"
+    padding: "24px"
+  input:
+    backgroundColor: "{colors.dark-background}"
+    textColor: "{colors.dark-text-display}"
+    rounded: "{rounded.none}"
+    padding: "8px"
+  picker:
+    backgroundColor: "{colors.dark-background}"
+    textColor: "{colors.dark-text-display}"
+    rounded: "{rounded.none}"
+    padding: "4px 24px 8px 0"
+  tag:
+    backgroundColor: "{colors.dark-background}"
+    textColor: "{colors.dark-text-secondary}"
+    rounded: "{rounded.none}"
+    padding: "2px 8px"
 ---
 
-## 1. Color Palette
-
-### Token Indirection
-Two layers feed Tailwind v4 (`@theme`):
-
-1. `--theme-*` per-mode variables, swapped by toggling `.dark` / `.light` on `<html>` ([globals.css:104-156](src/app/globals.css:104)).
-2. `--color-*` indirection that maps the active theme into Tailwind utilities ([globals.css:4-43](src/app/globals.css:4)).
-
-Authoring rule: reference Tailwind classes that resolve to `--color-*` (e.g. `bg-surface`, `text-text-display`, `border-border-visible`). Never inline raw hex or use palette-coded utilities like `bg-zinc-*` / `text-white` — those break light-mode parity.
-
-### Dark Mode Palette (`:root, .dark`)
-Color is reserved for data status, events, and highlights — never for decoration.
-
-**Backgrounds & Surfaces**
-- **Black (OLED)**: `#000000` — `bg-root`, raised side rails (rare).
-- **Background**: `#0a0a0a` — main app canvas (`bg-background`).
-- **Surface**: `#111111` — default cards and modals (`bg-surface`).
-- **Surface Raised**: `#1A1A1A` — elevated components, headers, active states (`bg-surface-raised`).
-- **Surface Variant**: `#353434`.
-- **Surface Bright**: `#3A3939`.
-
-**Borders**
-- **Border**: `#222222` — subtle dividers, structural.
-- **Border Visible**: `#333333` — intentional outlines, component borders.
-- **Outline Variant**: `#444748` — focus / hover edges.
-
-**Text**
-- **Text Display**: `#FFFFFF` — headlines, hero metrics.
-- **Text Primary**: `#E8E8E8` — body, primary values.
-- **Text Secondary**: `#999999` — labels, captions, metadata.
-- **Text Disabled**: `#666666` — inactive, empty states.
-
-### Light Mode Palette (`.light`)
-A warm, beige paper system. Same semantic slots, lower contrast, no pure white.
-
-**Backgrounds & Surfaces**
-- **Bg Root / Background**: `#F4F1EA`.
-- **Surface**: `#EBE7DD` — default cards.
-- **Surface Raised**: `#E2DDD1` — elevated components, header rails, active nav.
-- **Surface Variant**: `#D8D1C4`.
-- **Surface Bright**: `#CDC3B4`.
-
-**Borders**
-- **Border**: `#D8D1C4`.
-- **Border Visible**: `#C7BEB0`.
-- **Outline Variant**: `#A99F91`.
-
-**Text**
-- **Text Display**: `#111111`.
-- **Text Primary**: `#242424`.
-- **Text Secondary**: `#6F6A60`.
-- **Text Disabled**: `#9A9286`.
-
-### Cross-Mode Accents & Status
-Status colors are applied to the value, not the background or label.
-- **Accent**: `#D71921` — signal light, active states, urgent moments, destructive actions.
-- **Accent Subtle**: `rgba(215, 25, 33, 0.15)` — alert glows, rejection note backgrounds.
-- **Interactive**: `#5B9BF6` — links, selected elements, hover highlights, "Ideation" pipeline stage.
-- **Success**: `#4A9E5C` — confirmed, completed, "Published".
-- **Warning**: `#D4A843` — caution, pending, degraded, "Filming/Editing" active.
-- **Error**: `#FFB4AB` — critical failures (preserved across modes for legibility).
-
-### Shared Semantic Tokens
-Mode-aware vars used by interactive surfaces and chrome:
-- `text-inverse` — foreground over a `text-display` fill (used by primary buttons and inverted badges).
-- `input-surface` — input fill (transparent in both modes by default).
-- `hover-surface` — translucent overlay for row/menu hover (`rgba(255,255,255,0.05)` dark / `rgba(17,17,17,0.06)` light).
-- `danger-hover` — destructive hover stroke (`#F87171` dark / `#B91C1C` light).
-- `disabled-surface` — disabled overlay.
-- `selection-bg` / `selection-text` — text selection.
-- `scrollbar-track` / `scrollbar-thumb` / `scrollbar-thumb-hover` — mechanical 6px scrollbar.
-
----
-
-## 2. Typography
-
-Maximum 3 font families per screen. Precision over personality.
-
-**Families**
-- **Display**: `Doto` (dot-matrix variable font for hero metrics and major numbers).
-- **Heading / Body**: `Space Grotesk` (Light 300, Regular 400, Medium 500, Bold 700).
-- **Labels / Data**: `JetBrains Mono` (Regular 400, Medium 500, Bold 700). Use for mono UI labels, IDs, metrics, and compact Vietnamese/English data.
-
-**Type Scale**
-
-| Role | Size | Line Height | Tracking | Font & Weight |
-| --- | --- | --- | --- | --- |
-| **Display XL** | 72px | 1.0 | -0.03em | Doto |
-| **Display LG** | 48px | 1.05 | -0.02em | Doto |
-| **Display MD** | 36px | 1.1 | -0.02em | Space Grotesk 500 |
-| **Heading** | 24px | 1.2 | -0.01em | Space Grotesk 500 |
-| **Subheading** | 18px | 1.3 | 0 | Space Grotesk 400 |
-| **Body** | 16px | 1.5 | 0 | Space Grotesk 400 |
-| **Body SM** | 14px | 1.5 | +0.01em | Space Grotesk 400 |
-| **Caption** | 12px | 1.4 | +0.04em | JetBrains Mono 400 |
-| **Label** | 11px | 1.2 | +0.08em | JetBrains Mono 700 (ALL CAPS) |
-
-**Helper Classes** ([globals.css:198-267](src/app/globals.css:198))
-
-These are the canonical way to apply the scale. Prefer them over re-deriving raw `font-*` chains:
-
-`.text-style-display-xl`, `.text-style-display-lg`, `.text-style-display-md`, `.text-style-heading`, `.text-style-subheading`, `.text-style-body`, `.text-style-body-sm`, `.text-style-caption`, `.text-style-label`.
-
----
-
-## 3. Spacing, Shape & Containers
-
-### Spacing Scale (8px base) — [globals.css:46-54](src/app/globals.css:46)
-- **2xs** (2px) — optical adjustments, tight segmented gaps.
-- **xs** (4px) — icon-to-label gaps, tightest padding.
-- **sm** (8px) — component internal spacing.
-- **md** (16px) — standard padding, gaps between form items.
-- **lg** (24px) — group separation, kanban column gaps, primary page margins (`p-lg`).
-- **xl** (32px) — section margins, modal padding.
-- **2xl** (48px) — major section breaks.
-- **3xl** (64px) — page-level vertical rhythm.
-- **4xl** (96px) — hero breathing room.
-
-### Border Radius — [globals.css:73-77](src/app/globals.css:73)
-Sharp edge is the default for everything sitting on the canvas. Components opt into radius only for specific control affordances.
-- **Default** (4px) — internal UI controls (rare).
-- **lg** (8px) — interior chips and small controls (rare).
-- **xl** (12px) — soft callouts (rarely used).
-- **Full** (9999px) — avatars, indicator dots, pill-shaped login button.
-
-Cards, kanban columns, modals, top bar, sidebar, tables: stay at **0px**.
-
-### Container Widths — [globals.css:56-71](src/app/globals.css:56)
-Tailwind v4 `--container-*` values are restored explicitly so `max-w-*` resolves to rem widths (e.g. `max-w-3xl = 48rem`) and is not shadowed by the `--spacing-*` scale. Use the standard Tailwind classes — they map to the correct widths.
-
----
-
-## 4. Component Structures
-
-### A. Kanban Pipeline
-
-**Sidebar** — [Sidebar.tsx](src/components/layout/Sidebar.tsx)
-- Fixed `w-64` (256px), `bg-background border-r border-border`, `z-50`.
-- Logo: `font-[family-name:var(--font-label)] text-[44px] font-black text-text-display tracking-tight`, renders `projmgmt`. Sits inside `mb-xl px-3` block.
-- Workspace identity: compact bordered readout directly under the logo. Label uses `WORKSPACE_ID` copy, value uses `font-mono uppercase tracking-widest text-text-display`, and truncates with `title` for long IDs. Mobile header shows the same value under the wordmark.
-- Nav items: `text-style-label tracking-widest`, 18px Material Symbol leading icon (`icon-fill` when active), `px-3 py-2`, `gap-4` icon-to-label.
-- Active state: `text-text-display border border-border-visible bg-surface-raised`. Inactive: `text-text-disabled hover:text-text-inverse hover:bg-text-display hover:border-text-display`, `border border-transparent`.
-- Role-based filtering: members see a reduced nav (see §8).
-
-**Top Bar** — [TopBar.tsx](src/components/layout/TopBar.tsx)
-- `h-16 px-6 flex items-center justify-between`, `bg-background border-b border-border`, `z-40`.
-- Search: underlined `border-b border-border-visible px-2 py-1`, leading 16px `search` Material Symbol, `font-mono text-xs` input. Updates `?q=` via router.
-- Primary action **NEW PROJECT**: sharp (`bg-text-display text-text-inverse text-[10px] font-mono tracking-widest uppercase px-6 py-2 hover:bg-background hover:text-text-display hover:border-text-display`). The pill shape from earlier specs is reserved for the auth login button — TopBar is sharp.
-- Avatar button: `w-8 h-8 bg-surface border border-border` (sharp), with instant inverted hover. Renders `session.user.avatarUrl` via `next/image` `unoptimized`, falls back to `person` Material Symbol.
-
-**User Dropdown** — [TopBar.tsx:115-159](src/components/layout/TopBar.tsx:115)
-- Wrapper: `.ui-user-dropdown` + `border border-border-visible w-56 text-xs font-mono`.
-- Heading row: `.ui-user-dropdown-heading` with `font-bold tracking-widest`.
-- Action rows use `.ui-user-dropdown-row` (hover -> `bg-text-display` + `text-text-inverse`):
-  - `Settings` (lucide) + `SETTINGS` linking to `/settings`.
-  - Theme toggle: `Sun` (light active) / `Moon` (dark active) lucide icon + bracket toggle on the right showing the **target** mode (`[LIGHT]` while in dark, `[DARK]` while in light).
-  - `LogOut` + `LOG OUT` calling `signOut({ callbackUrl: "/login" })`.
-- Closes on outside click via mousedown listener.
-
-**Pipeline Columns** — [KanbanColumn.tsx](src/components/kanban/KanbanColumn.tsx)
-- `w-[320px]`. Header `border-b border-border-visible`. Title in `uppercase text-text-primary`, item count in brackets (e.g. `[ 2 ]`) in `text-text-secondary`.
-- 6px mechanical scrollbar inherits from `globals.css` (no per-column override).
-
-**Pipeline Cards** — [KanbanCard.tsx](src/components/kanban/KanbanCard.tsx)
-- Sharp `bg-surface border border-border p-md flex flex-col gap-sm`. Hover lifts to `border-border-visible`. `cursor-pointer` (whole card). Drag-and-drop via `@dnd-kit/sortable`; while dragging, opacity drops to 30%.
-- Light-mode rule: standard cards and Filming split cards must read on the same surface token; reserve `surface-raised` for true elevation, not status styling. The `.ui-filming-card-surface` helper handles the inversion automatically (raised in dark, flat in light).
-- Title: `text-style-subheading text-text-primary font-[family-name:var(--font-heading)]`. Card menu (`CardMenu`) sits to the right.
-- Tags: `Tag` component (`text-[9px] uppercase border border-border-visible px-2 py-[2px]`).
-- Rejection feedback (Editing + `reviewFeedback`): card border becomes `border-accent/30`; injects `mt-3 p-2 bg-accent-subtle border-l-2 border-accent` block with `REVISION NOTES` label and `line-clamp-3` body.
-- Deadline strips (Scripting / Filming / Editing due dates): compact `border border-border-visible bg-input-surface px-2 py-1.5`, label on the left, date on the right. Month names must use the active app locale (`APR 29` in English, `29 THG 4` in Vietnamese).
-- Footer: `mt-sm pt-sm border-t border-border` divider with 6-char project ID `#XXXXXX` in `text-style-caption text-text-secondary`, plus the assignee stack on the right.
-
-**Assignee Stack** — [KanbanCard.tsx:46-205](src/components/kanban/KanbanCard.tsx:46)
-- Merges six role fields into a deduped list (skipping `UNASSIGNED`): `assignedEditor`, `assignedCameraman`, `assignedTalent`, `aRollAssignee`, `bRollAssignee`, `editingAssignee`.
-- Each chip: `w-7 h-7 border border-border-visible bg-surface-raised text-text-primary text-xs font-mono flex items-center justify-center overflow-hidden`. Sharp corners.
-- Stacking: chips after the first use `-ml-2` for overlap; `z-index` decreases left → right (first chip on top).
-- Renders `next/image` avatar (`w-7 h-7 object-cover`, `unoptimized`) when `avatarUrl` present, otherwise 2-letter `getInitials()` text.
-- `title={assignee.name}` for hover identification.
-
-**Filming Split Cards** — [FilmingSplitCard.tsx](src/components/kanban/FilmingSplitCard.tsx)
-- Reuses `.ui-filming-card-surface` and the same assignee-stack pattern.
-
-### B. Modals
-
-**Overlay & Shell**
-- Backdrop: `.ui-modal-backdrop` (`color-mix(in srgb, var(--color-background) 92%, transparent)`) wrapped in `fixed inset-0 z-[100]`. Dark mode reads as `bg-black/90 backdrop-blur-md`-equivalent; light mode keeps the warm beige.
-- Centered shell: `relative w-full max-w-5xl ui-panel flex flex-col` (or smaller variants `max-w-2xl` etc.). Sharp corners, no drop shadow.
-- Side sheet variant ([TeamMemberModal.tsx:79-82](src/components/modals/TeamMemberModal.tsx:79)): `right-0 h-screen w-full sm:w-[450px] ui-modal-shell border-l`, slides in from the right.
-
-**Header**
-- `flex justify-between items-start p-6 border-b border-border-visible shrink-0`.
-- Status dot (semantic color), Mono ID, uppercase title on the left. Right side: Doto percentage metric or close `X`.
-
-**Workspace**
-- Inputs use the underlined `Input` component or `.ui-input` / `.ui-select` / `.ui-textarea` for bordered controls.
-- Buttons use bracket notation for outline actions (`[ APPROVE ]`, `[ UPLOAD AVATAR ]`) or `Button` with `variant="primary"` / `.ui-button-primary` for high-contrast fills.
-- Asset Management RAW row: single attached strip (`bg-input-surface border border-border-visible`) with left RAW label, center editable/view state, right utility actions. View state shows OS badge (`[  ]` / `[ ⊞ ]`) and generated NAS path. Edit state is inline text with Enter-to-save.
-- Asset Management Nextcloud row: review link input stays underlined and compact. When no link exists, the scanner appears as a terminal command button labeled `[ SCAN FOR DRAFT {version} ]`; while running it becomes `[ SCANNING... ]`. Once a link is detected, hide the scanner and show only the stored link/open affordance until rejection clears the link.
-- Sponsored create mode adds a required Sponsorship Deal select above the briefing fields. The selected deal preview is a sharp bordered context block with brand, status, source budget, preferred-currency equivalent when applicable, due date, contact, and notes. Keep this block informational and dense; do not turn it into a decorative marketing card.
-- Sponsored project edit mode shows Sponsorship Context in the left modal column and the linked Client / Brand in the metadata sidebar. Preserve uppercase labels, mono metadata, and semantic status/value colors.
-- Sponsorship create/edit modal uses a source currency select directly beside Budget. When the selected source currency differs from the user's preferred currency, show a compact bordered preferred-currency preview below the control row.
-- Interactive metadata sidebar: platform chips and pipeline-stage list support click-to-update with instant inverted hover states and disabled pending states. Terminal typography preserved.
-
-**Destructive Actions**
-- Always map to `.ui-button-danger` (`text-accent border-accent/40 hover:bg-accent-subtle`). Never raw `red-500` palette colors.
-
-### C. Authentication (Login)
-- **Container**: `max-w-[24rem] px-lg` centered in viewport.
-- **Hero**: `text-style-display-xl` with `mix-blend-difference`. Structured separator: hairlines + `SYS_AUTH` label in `.text-style-label`.
-- **Form Inputs**: minimalist. No bounding boxes. `border-b border-border-visible bg-transparent`. Text `text-text-display` in `text-style-caption`. Label sits above and shifts to `text-text-display` on focus via `group-focus-within`.
-- **Buttons**: pill (`rounded-full`), `min-w-[160px]`, `bg-text-display text-text-inverse`. The login screen is the **only** place pill primary buttons are used.
-
-### C.1 First-Run Setup
-- `/setup` appears only while `prisma.user.count() === 0`; `/` and `/login` redirect there in an uninitialized database.
-- Shell: centered `max-w-[28rem]`, sharp `border border-border-visible bg-surface p-2xl`, and the shared `Wordmark` header.
-- Inputs mirror auth: transparent underlines, `.text-style-label` labels, `.text-style-caption` input text, `focus:border-text-display`.
-- Submit action is sharp high-contrast (`bg-text-display text-text-inverse`) and labeled with terminal command copy. Error copy must use `text-error` or another semantic token, never raw palette classes.
-
-### D. Dashboards, Tables & List Pages
-
-**Page Container**
-- Unified to `<div className="h-full w-full overflow-auto p-lg">` with a `mb-6` header wrapper across all tabular screens.
-
-**Data Tables**
-Prefer the semantic class set ([globals.css:426-454](src/app/globals.css:426)) over re-deriving Tailwind chains:
-- `.ui-table-head` — header row (10px Mono uppercase, `border-b border-border-visible`).
-- `.ui-table-row` — body rows (`border-b border-border`, hover → `hover-surface`).
-- `.ui-table-cell` — primary cell (`text-text-primary`, 14px Caption font).
-- `.ui-table-cell-muted` — secondary cell (`text-text-secondary`, 12px).
-
-**Status Cells**: inline link `font-label text-text-secondary` with leading `w-1.5 h-1.5 rounded-full` token-colored dot (`StatusDot`).
-
-**Tab Filters**: huge uppercase typography `text-2xl font-bold tracking-wider`. Inactive `text-text-disabled` with `hover:text-text-secondary`; active `text-text-display`. Header actions (e.g. `NEW SPONSORSHIP`) align right in the bottom-bordered tab row.
-
-**Sponsorship Deal Rows**: table and mobile cards include a compact linked project count. Render the count as plain mono data, not a badge; the row is still primarily about brand, status, contact, due date, and deal value. Deal value renders in the current user's preferred currency, with the source amount underneath when it differs. The header metadata includes preferred currency, last rate refresh, a discreet provider attribution link, and any missing-rate warning in `text-warning`.
-
-**Archive Metric Cells**: Views/Likes/Comments render grand totals from platform columns (`youtube* + meta* + tiktok*`) and display with locale separators (`toLocaleString()`).
-
-**Analytics Performer Rows**: platform chips (`YT`, `IG`, `TT`) and per-platform metric strings render only for selected/synced platforms. Format badges (`Short Form`, `Long Form`) sit inline with the title using tiny bordered uppercase tokens.
-
-### E. Settings
-- **Layout**: `max-w-[48rem]` centered. Categories separated by `border-t border-border-visible pt-8`.
-- **Inputs**: transparent under-bordered `border-0 border-b border-border-visible`.
-- **Avatar Upload Form** ([AvatarUploadForm.tsx](src/app/settings/AvatarUploadForm.tsx)): preview chip is `w-20 h-20 border border-border-visible bg-surface` (sharp). Action button uses bracket notation `[ UPLOAD AVATAR ]`. Files land in `public/avatars/*`, are served through `/api/avatars/[filename]`, and Docker persists them through the `projmgmt-avatars` volume.
-- **Currency Preference Form** ([CurrencyPreferenceForm.tsx](src/app/settings/CurrencyPreferenceForm.tsx)): lives under Preferences beside Language. Use `.ui-select`, mono uppercase labels, and save-on-select behavior with toast feedback.
-- **Save Action**: bottom-anchored, right-aligned, sharp `bg-text-display text-text-inverse` (or `Button variant="primary"`).
-
----
-
-## 5. Animation & Motion
-
-- **Hover timing**: 0ms. Main interactive controls invert instantly with semantic tokens.
-- **Timed motion**: only terminal effects may take time, and they must use `steps(...)`, never smooth easing.
-- **Keyframes**: `blink` for cursors, `crtFlicker` for monitor presence, and `terminalBoot` for short stepped reveals.
-- **Toast / modal / panel entry**: use the stepped terminal boot sequence, not slides or smooth fades.
-- **List-page boot**: Archive, Analytics, Sponsorships, and Team repeated rows, cards, metric panels, and empty states use `animate-terminal-boot` with a short inline stagger. Keep the effect on data surfaces, not navigation chrome or tiny labels.
-- **Style**: mechanical, frame-limited, and precise. Never use bounce, spring, scale hover, drop shadow, or animated layout properties.
-
----
-
-## 6. Semantic UI Utilities
-
-Reference for `.ui-*` classes ([globals.css:269-471](src/app/globals.css:269)). Reach for these before writing new chains.
-
-| Class | Purpose |
-| --- | --- |
-| `.ui-panel` / `.ui-panel-raised` | Card / elevated card shell (surface + visible border) |
-| `.ui-modal-backdrop` | Mode-aware overlay fill |
-| `.ui-modal-shell` | Side-sheet / panel modal container |
-| `.ui-button-primary` | High-contrast fill button (text-display fill) |
-| `.ui-button-outline` | Bordered outline button |
-| `.ui-button-ghost` | Unbordered text-only button |
-| `.ui-button-danger` | Destructive action (accent text, accent/45 border, accent-subtle hover) |
-| `.ui-input` / `.ui-select` / `.ui-textarea` | Bordered form controls (alternative to `Input`'s underline style) |
-| `.ui-table-head` | Table header row |
-| `.ui-table-row` | Table body row with hover-surface |
-| `.ui-table-cell` / `.ui-table-cell-muted` | Cell hierarchy |
-| `.ui-tag-muted` | Inline 9px uppercase tag |
-| `.ui-bar-track` / `.ui-bar-fill` | Progress segments |
-| `.ui-user-dropdown` | Header user-menu wrapper |
-| `.ui-user-dropdown-heading` | Username heading row |
-| `.ui-user-dropdown-row` | Action row (hover swaps to text-inverse + text-display fill) |
-| `.ui-user-dropdown-toggle` | Right-side bracket label inside a row |
-| `.ui-page-kicker` | 10px Mono uppercase pre-title kicker |
-| `.ui-page-title` | Page H1 (uppercase, tracked) |
-| `.ui-page-meta` | Caption-sized metadata |
-| `.ui-divider` | `border-color: var(--color-border-visible)` helper |
-| `.ui-filming-card-surface` | Mode-aware filming card background (raised dark, flat light) |
-
----
-
-## 7. Theme System
-
-- **Provider**: `next-themes` `ThemeProvider` in [providers.tsx](src/app/providers.tsx) with `attribute="class"`, `defaultTheme="system"`, `enableSystem`, `disableTransitionOnChange`.
-- **Mechanism**: toggling sets `<html>` to `.dark` or `.light`. The CSS-variable indirection swaps the entire palette without rerendering React state.
-- **UX Toggle**: in the header user dropdown (see §4.A). Row uses `Sun` / `Moon` icons; the right-hand bracket label shows the **target** mode (`[LIGHT]` while currently dark, `[DARK]` while currently light).
-- **Authoring Rule**: never hard-code colors. Always use semantic tokens (`bg-surface`, `text-text-display`, `border-border-visible`, etc.) so components track mode automatically. Flag any class chain that breaks light-mode parity (e.g. raw `bg-zinc-*`, `text-white`, `border-white/N`) as a bug.
-
----
-
-## 8. Role-Based Access (RBAC)
-
-- **Roles**: `USER_ROLES = ["ADMIN", "MANAGER", "MEMBER"]` ([roles.ts](src/lib/roles.ts)).
-- **Middleware** ([middleware.ts](src/middleware.ts)): blocks `MEMBER` from `/analytics`, `/sponsorships`, `/team`.
-- **Sidebar Gating** ([Sidebar.tsx:9-17](src/components/layout/Sidebar.tsx:9)): `getVisibleNavItems()` filters those routes for `MEMBER` so the side nav matches what middleware allows.
-- **Session**: JWT carries `role` from `normalizeRole()` ([auth.ts](src/lib/auth.ts)). Read via `useSession().data?.user?.role` or server-side `getServerSession`.
-- **Admin-Only UI**: `TeamMemberModal` exposes a role selector backed by `USER_ROLES` for ADMINs to assign roles during create/edit.
-- **Authoring Rule**: gate UI on `session?.user?.role`, not feature flags. New protected pages must be added to **both** `memberHiddenRoutes` and the middleware matcher together; missing one creates a leak.
-
----
-
-## 9. Component Library Reference
-
-Single-line summaries for `src/components/ui/*`. Reach for these before rebuilding.
-
-- **Button** — variants `primary | secondary | ghost | danger`, sizes `sm | md | lg`, `pill` flag. Uses `text-style-label` and theme tokens. ([Button.tsx](src/components/ui/Button.tsx))
-- **Input** — label above with `group-focus-within:text-text-display`; underline-only `border-b border-border-visible`, `bg-transparent`, `text-style-caption`. ([Input.tsx](src/components/ui/Input.tsx))
-- **Checkbox** — sharp `w-3.5 h-3.5` square, `border-border-visible`. ([Checkbox.tsx](src/components/ui/Checkbox.tsx))
-- **ProgressBar** — flex segments with `gap-[2px]`, default `h-[4px]`. Uses `.ui-bar-track` / `.ui-bar-fill`. ([ProgressBar.tsx](src/components/ui/ProgressBar.tsx))
-- **StatusDot** — `w-1.5 h-1.5 rounded-full`, status-color token. ([StatusDot.tsx](src/components/ui/StatusDot.tsx))
-- **Tag** — `text-[9px] uppercase`, bordered, optional `color` / `borderColor` / `bgColor` props. Disabled state = strike-through + 40% opacity. ([Tag.tsx](src/components/ui/Tag.tsx))
-- **Toast** — bottom-right `fixed bottom-xl right-xl z-[9999]`, types `error | success | warning` -> `SYS_ERROR | SYS_OK | SYS_WARN` labels with matching accent border, leading Material Symbol, 4-second auto-dismiss, stepped `terminalBoot` entry. Use via `useToast().showToast(message, type)`. ([Toast.tsx](src/components/ui/Toast.tsx))
-- **CopyBlock** — copy-to-clipboard wrapper. ([CopyBlock.tsx](src/components/ui/CopyBlock.tsx))
+# Design System: projmgmt
+
+## 1. Overview
+
+**Creative North Star: "The Terminal Control Room"**
+
+projmgmt is a self-hosted production console, not a generic SaaS surface. The visual system should feel like a terminal instrument panel used by a small video team while deadlines, shotlists, sponsor deals, drafts, analytics, and storage paths are moving at once. It is sharp, compact, high-contrast, and deliberate.
+
+The system is product-first: design serves the workflow. Familiar structures are allowed when they make the tool faster, but every visible detail must keep the terminal identity. Dark mode reads as a control room. Light mode reads as warm printed paper with the same semantic hierarchy, never a reset into stock web-app styling.
+
+It explicitly rejects the PRODUCT.md anti-references: corporate cards, soft shadows, decorative gradients, glassmorphism, bouncy motion, rounded default UI, raw Tailwind palette colors, smooth easing, spring physics, scale hovers, animated layout properties, marketing layouts, and decorative page choreography.
+
+**Key Characteristics:**
+
+- Dense operational surfaces with clear hierarchy and compact labels.
+- Sharp rectangular panels, visible borders, and semantic color tokens.
+- Mono-heavy labels, IDs, metrics, tags, and table data.
+- Mechanical stepped motion used only for state, load, or terminal presence.
+- Dark and light modes powered by the same semantic slots.
+
+## 2. Colors
+
+The palette is restrained and semantic: near-black control-room neutrals, warm-paper light mode neutrals, one red signal accent, and status colors reserved for meaning.
+
+### Primary
+
+- **Signal Red** (`signal-red`): urgent actions, destructive controls, rejection notes, and alert emphasis. It is never decorative.
+- **Signal Red Subtle** (`signal-red-subtle`): low-intensity alert fills, revision note backgrounds, and destructive-hover context.
+
+### Secondary
+
+- **Interactive Blue** (`interactive-blue`): links, selected interactive affordances, and the Ideation stage signal.
+- **Success Green** (`success-green`): completed work, published state, and positive sync feedback.
+- **Warning Amber** (`warning-amber`): pending, active production caution, filming, editing, and degraded-but-not-failed states.
+- **Error Pink** (`error-pink`): critical failures where legibility must survive both themes.
+
+### Neutral
+
+- **Root Black** (`root-black`): OLED root rails and inverse foregrounds.
+- **Dark Background** (`dark-background`): default app canvas.
+- **Dark Surface** (`dark-surface`): cards, modals, tables, dropdowns, and content panels.
+- **Dark Surface Raised** (`dark-surface-raised`): elevated chrome, active states, skeleton rails, and dark-mode filming surfaces.
+- **Dark Border Visible** (`dark-border-visible`): structural outlines and component boundaries.
+- **Dark Text Display** (`dark-text-display`): headings, primary values, active nav, and high-contrast fills.
+- **Dark Text Primary / Secondary / Disabled** (`dark-text-primary`, `dark-text-secondary`, `dark-text-disabled`): body text, labels, metadata, and inactive states.
+- **Paper Background / Surface / Raised** (`paper-background`, `paper-surface`, `paper-surface-raised`): light-mode equivalents that preserve hierarchy as warm printed paper.
+- **Paper Border Visible** (`paper-border-visible`): light-mode outlines and table structure.
+- **Paper Text Display / Primary / Secondary / Disabled** (`paper-text-display`, `paper-text-primary`, `paper-text-secondary`, `paper-text-disabled`): light-mode text hierarchy.
+
+### Named Rules
+
+**The Token Gate Rule.** Components must consume semantic Tailwind tokens from `src/app/globals.css`, not hardcoded hex values or raw Tailwind palette classes.
+
+**The Meaning Only Rule.** Accent and status colors are applied to values, controls, and state indicators. They are forbidden as decoration.
+
+**The Light Parity Rule.** Every component must work through the same semantic slots in dark and light mode. If a class works only because the app is dark, it is wrong.
+
+## 3. Typography
+
+**Display Font:** Doto, with JetBrains Mono fallback.  
+**Body Font:** Space Grotesk, with DM Sans and system fallback.  
+**Label/Mono Font:** JetBrains Mono, with SF Mono and ui-monospace fallback.
+
+**Character:** Dot-matrix display type is reserved for major values and terminal presence. Space Grotesk carries readable product UI. JetBrains Mono makes labels, IDs, data, and commands feel precise.
+
+### Hierarchy
+
+- **Display** (400, 72px, 1.0): login hero, major metrics, and rare instrument-panel moments.
+- **Headline** (500, 36px, 1.1): page-level or modal-level emphasis when the surface needs a large readout.
+- **Title** (500, 24px, 1.2): page titles, modal titles, and major panel names.
+- **Subheading** (400, 18px, 1.3): card titles, secondary headings, and dense section names.
+- **Body** (400, 16px, 1.5): readable prose and form-adjacent explanation. Keep prose to 65-75ch.
+- **Caption** (400, 12px, 1.4, 0.04em): table data, compact metadata, input text, and machine-like readouts.
+- **Label** (700, 11px, 0.08em, uppercase): navigation, buttons, table heads, form labels, and bracketed commands.
+
+### Named Rules
+
+**The Command Voice Rule.** Functional copy is short, uppercase, and specific. Bracketed commands such as `[ APPROVE ]` and `[ SCAN FOR DRAFT 2 ]` are part of the system language.
+
+**The No Display Labels Rule.** Doto never appears in buttons, form labels, table data, or navigation. Data-dense UI uses mono and Space Grotesk.
+
+## 4. Elevation
+
+projmgmt does not use shadows as its depth system. Elevation is expressed through tonal layers, border visibility, and state inversion. A raised surface is a different semantic background plus a visible border, not a soft floating object.
+
+### Named Rules
+
+**The Flat Instrument Rule.** Panels, tables, modals, dropdowns, cards, and columns stay sharp and flat. Use `ui-panel`, `ui-panel-raised`, borders, and tokenized surfaces instead of shadows.
+
+**The Border Is Structure Rule.** Borders describe containment, table rhythm, and active state. Do not use side-stripe borders as decorative accents.
+
+**The Inversion Rule.** Hover and active states invert or tighten contrast instantly. They do not lift, scale, blur, or bounce.
+
+## 5. Components
+
+### Buttons
+
+- **Shape:** sharp rectangle by default (`0px`). `rounded-full` is reserved for avatars, indicator dots, and the login primary button.
+- **Primary:** `bg-text-display text-text-inverse border-text-display`, mono uppercase label, typically `8px 24px`.
+- **Outline:** transparent or background-colored fill, visible border, `text-text-secondary`, instant hover to `bg-text-display text-text-inverse`.
+- **Danger:** `text-accent border-accent/40 hover:bg-accent-subtle`. Destructive actions must never use raw red palette classes.
+- **States:** disabled states reduce opacity and cursor affordance; loading states keep the same geometry.
+- **Extraction:** use `Button` for React controls and `buttonStyles()` from `src/components/ui/controlStyles.ts` for shared class composition.
+
+### Chips and Tags
+
+- **Style:** tiny mono uppercase tags, `9px` type, `2px 8px` padding, transparent fill, visible border.
+- **State:** selected or status meaning comes from semantic text/border/fill tokens. Disabled tags use lower opacity and line-through.
+- **Use:** platform chips, content format badges, metadata tokens, and compact row facts.
+
+### Cards and Containers
+
+- **Corner Style:** square corners (`0px`) for cards, modals, tables, columns, and page panels.
+- **Background:** `bg-surface` for standard content, `bg-surface-raised` only for true elevation or active chrome.
+- **Border:** `border-border` for quiet structure, `border-border-visible` for intentional containment.
+- **Internal Padding:** `p-md` for cards, `p-lg` for page containers and larger panels, `p-xl` or `p-2xl` only for modal or setup breathing room.
+- **Do not:** nest cards inside cards or wrap page sections in decorative floating panels.
+
+### Inputs and Fields
+
+- **Style:** underlined `Input` component for compact forms, or `.ui-input`, `.ui-select`, and `.ui-textarea` for bordered controls.
+- **Focus:** border moves to `text-display`; no glow, no blur, no shadow.
+- **Native UI:** date and select controls include `color-scheme-dark` where browser chrome can leak.
+- **Errors:** use `text-error`, `text-accent`, or semantic alert treatments.
+- **Extraction:** use `Input` for text/date/number fields and `inputStyles()` for dense modal fields that keep their own label layout.
+
+### Pickers
+
+- **Style:** native `<select>` behind the `Picker` component, with `appearance-none`, semantic field styling, and a shared terminal chevron.
+- **Variants:** `underline` for sidebar/modal metadata fields, `panel` for boxed settings and CRM controls.
+- **State:** focus uses `border-text-display`; disabled uses opacity and cursor state without changing layout.
+- **Extraction:** use `Picker` for labeled selects and `pickerStyles()` plus `PickerChevron` when an existing relative container must remain intact.
+
+### Navigation
+
+- **Sidebar:** fixed `256px` rail on desktop, compact mobile header, mono uppercase nav labels, Material Symbols where the shell already uses them.
+- **Active State:** `text-text-display border-border-visible bg-surface-raised`.
+- **Inactive State:** muted text, transparent border, instant inverted hover.
+- **Role Filtering:** navigation visibility follows session role and middleware. New protected routes must update both.
+
+### Tables and List Pages
+
+- **Container:** `h-full w-full overflow-auto p-lg` with a compact header block.
+- **Rows:** `.ui-table-row` with visible bottom dividers and tokenized hover surface.
+- **Cells:** `.ui-table-cell` for primary data, `.ui-table-cell-muted` for secondary data.
+- **Headers:** `.ui-table-head`, 10px mono uppercase, bottom border visible.
+- **Metrics:** Archive and Analytics totals come from platform-specific columns, not legacy rollup fields.
+
+### Modals and Sheets
+
+- **Overlay:** `.ui-modal-backdrop`, mode-aware and dense.
+- **Shell:** `.ui-panel` or `.ui-modal-shell`, sharp, bordered, no shadow.
+- **Header:** compact ID/status/title cluster with an explicit close control.
+- **Workflow:** avoid modal-first thinking for new UI, but preserve existing modal workflows where they carry dense editing, publish, sponsorship, or team state.
+
+### Kanban Pipeline
+
+- **Columns:** fixed-width work lanes, compact headers, bracketed item counts, mechanical scrollbars.
+- **Cards:** sharp bordered surfaces with title, tags, due strips, assignee stack, project ID, and status-specific controls.
+- **Drag:** `DndContext` remains behind the mounted guard, and `PointerSensor` keeps an activation constraint so card clicks still open modals.
+- **Gates:** Filming to Editing, Editing to Review, Review rejection, and Published transition must show the real workflow conditions at the action point.
+
+## 6. Do's and Don'ts
+
+### Do:
+
+- **Do** use semantic Tailwind tokens from `src/app/globals.css` for all colors, borders, text, and surfaces.
+- **Do** preserve the terminal aesthetic over generic SaaS polish.
+- **Do** keep labels compact, uppercase, mono-heavy, and directly tied to action or data.
+- **Do** use existing primitives and utilities: `Button`, `Input`, `Picker`, `Checkbox`, `Tag`, `StatusDot`, `Toast`, `controlStyles`, `.ui-panel`, `.ui-button-*`, `.ui-table-*`, `.ui-tag-muted`, and `.ui-bar-*`.
+- **Do** keep page containers for tables and lists at `h-full w-full overflow-auto p-lg`.
+- **Do** compute localized dates and sponsorship currency displays through the existing helper APIs.
+- **Do** keep motion mechanical, stepped, short, and state-driven.
+- **Do** verify UI changes in the browser when feasible, especially Kanban interactions, modal state sync, and responsive table/list layouts.
+
+### Don't:
+
+- **Don't** use corporate cards, soft shadows, decorative gradients, glassmorphism, bouncy motion, or rounded default UI.
+- **Don't** use raw Tailwind palette colors such as `red-500`, `green-400`, `emerald-500`, or `zinc-*` in components.
+- **Don't** hardcode color hex values in components. Document tokens here, but consume tokens in code.
+- **Don't** use smooth easing, spring physics, scale hovers, animated layout properties, or decorative page choreography.
+- **Don't** add side-stripe borders, gradient text, glassmorphism, the hero-metric template, identical card grids, or modal-first flows.
+- **Don't** introduce `p-8` page shells, rounded cards, nested cards, decorative floating sections, or shadow-based hierarchy.
+- **Don't** duplicate workflow strings, stage logic, platform names, role names, currency lists, or content-type values outside their shared constants and helpers.
+- **Don't** replace the terminal UI with standard web defaults while fixing small bugs.

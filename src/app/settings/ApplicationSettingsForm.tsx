@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { saveApplicationSettings } from "@/actions/settings";
 import {
   normalizeContentTypeValue,
   type ApplicationSettings,
   type ContentTypeOption,
 } from "@/lib/appSettingsConfig";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { useT } from "@/lib/i18n/client";
+import { useTerminalStagger } from "@/components/motion/TerminalMotion";
 
 type Row = ContentTypeOption & { localId: string };
 
@@ -35,8 +38,10 @@ export default function ApplicationSettingsForm({
   const t = useT();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const rowsRef = useRef<HTMLDivElement | null>(null);
   const [publicUrl, setPublicUrl] = useState(initialSettings.publicUrl);
   const [rows, setRows] = useState<Row[]>(() => toRows(initialSettings.contentTypes));
+  useTerminalStagger(rowsRef, [rows.length], { stagger: 0.04 });
 
   function updateRow(localId: string, patch: Partial<ContentTypeOption>) {
     setRows((current) =>
@@ -82,15 +87,13 @@ export default function ApplicationSettingsForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
-        <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-          {t("settings.publicUrl")}
-        </label>
-        <input
+        <Input
           type="text"
+          label={t("settings.publicUrl")}
           value={publicUrl}
           onChange={(e) => setPublicUrl(e.target.value)}
           placeholder={t("settings.publicUrlPlaceholder")}
-          className="bg-transparent border-0 border-b border-border-visible focus:outline-none focus:border-text-display px-0 py-2 text-xs font-mono text-text-display w-full color-scheme-dark"
+          size="sm"
         />
         <p className="text-xs font-mono text-text-secondary">
           {t("settings.publicUrlDescription")}
@@ -107,78 +110,75 @@ export default function ApplicationSettingsForm({
               {t("settings.contentTypesDescription")}
             </p>
           </div>
-          <button
+          <Button
             type="button"
             onClick={addRow}
-            className="ui-button-outline px-4 py-2 shrink-0"
+            variant="outline"
+            className="px-4 py-2 shrink-0"
           >
             {t("settings.addContentType")}
-          </button>
+          </Button>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div ref={rowsRef} className="flex flex-col gap-3">
           {rows.map((row) => (
             <div
               key={row.localId}
-              className="grid grid-cols-1 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 border border-border-visible bg-input-surface p-3 motion-panel-in"
+              data-motion-item
+              className="grid grid-cols-1 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 border border-border-visible bg-input-surface p-3"
             >
-              <label className="flex flex-col gap-2 min-w-0">
-                <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                  {t("settings.contentTypeValue")}
-                </span>
-                <input
-                  value={row.value}
-                  onChange={(e) => updateRow(row.localId, { value: e.target.value })}
-                  className="ui-input px-2 py-2 w-full"
-                  placeholder="Custom_Type"
-                />
-              </label>
+              <Input
+                label={t("settings.contentTypeValue")}
+                value={row.value}
+                onChange={(e) => updateRow(row.localId, { value: e.target.value })}
+                variant="panel"
+                wrapperClassName="min-w-0"
+                labelClassName="text-[10px]"
+                placeholder="Custom_Type"
+              />
 
-              <label className="flex flex-col gap-2 min-w-0">
-                <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                  {t("settings.contentTypeEnglish")}
-                </span>
-                <input
-                  value={row.labelEn}
-                  onChange={(e) => updateRow(row.localId, { labelEn: e.target.value })}
-                  className="ui-input px-2 py-2 w-full"
-                  placeholder="Custom"
-                />
-              </label>
+              <Input
+                label={t("settings.contentTypeEnglish")}
+                value={row.labelEn}
+                onChange={(e) => updateRow(row.localId, { labelEn: e.target.value })}
+                variant="panel"
+                wrapperClassName="min-w-0"
+                labelClassName="text-[10px]"
+                placeholder="Custom"
+              />
 
-              <label className="flex flex-col gap-2 min-w-0">
-                <span className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                  {t("settings.contentTypeVietnamese")}
-                </span>
-                <input
-                  value={row.labelVi}
-                  onChange={(e) => updateRow(row.localId, { labelVi: e.target.value })}
-                  className="ui-input px-2 py-2 w-full"
-                  placeholder="Tùy chỉnh"
-                />
-              </label>
+              <Input
+                label={t("settings.contentTypeVietnamese")}
+                value={row.labelVi}
+                onChange={(e) => updateRow(row.localId, { labelVi: e.target.value })}
+                variant="panel"
+                wrapperClassName="min-w-0"
+                labelClassName="text-[10px]"
+                placeholder="Tùy chỉnh"
+              />
 
-              <button
+              <Button
                 type="button"
                 onClick={() => removeRow(row.localId)}
                 disabled={rows.length <= 1}
-                className="ui-button-danger px-3 py-2 md:self-end disabled:opacity-40 disabled:pointer-events-none"
+                variant="danger"
+                className="px-3 py-2 md:self-end disabled:opacity-40 disabled:pointer-events-none"
               >
                 {t("settings.removeContentType")}
-              </button>
+              </Button>
             </div>
           ))}
         </div>
       </div>
 
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
           disabled={isPending}
-          className="ui-button-primary px-6 py-2 disabled:opacity-50"
+          className="px-6 py-2"
         >
           {isPending ? t("settings.savingApplication") : t("settings.saveApplication")}
-        </button>
+        </Button>
       </div>
     </form>
   );

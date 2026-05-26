@@ -20,7 +20,6 @@ interface KanbanCardProps {
   onRemove?: (id: string) => void;
   onClick?: (project: ProjectCardData) => void;
   onRequestPublish?: (project: ProjectCardData) => void;
-  bootDelayMs?: number;
 }
 
 function formatScopeDeadline(date: Date | string | null | undefined, locale: Locale) {
@@ -50,7 +49,6 @@ export default function KanbanCard({
   onRemove,
   onClick,
   onRequestPublish,
-  bootDelayMs,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -68,10 +66,6 @@ export default function KanbanCard({
     transform: CSS.Transform.toString(transform),
     transition: steppedTransition,
   };
-  const bootStyle = !isDragOverlay && bootDelayMs !== undefined
-    ? { animationDelay: `${bootDelayMs}ms` }
-    : undefined;
-
   const platforms = parsePlatforms(project.platformsTargeted);
   const scopeDeadline = getScopeDeadline(project);
   const assignmentValues: Array<
@@ -139,7 +133,7 @@ export default function KanbanCard({
         onClick={!isDragOverlay ? handleClick : undefined}
         className={cn(isDragging && "opacity-30")}
       >
-        <div className={cn(!isDragOverlay && "animate-terminal-boot")} style={bootStyle}>
+        <div data-motion-card={!isDragOverlay ? true : undefined}>
           <FilmingSplitCard
             project={project}
             onProjectUpdate={onProjectUpdate}
@@ -160,14 +154,13 @@ export default function KanbanCard({
       className={cn(isDragging && "opacity-30")}
     >
       <div
+        data-motion-card={!isDragOverlay ? true : undefined}
         className={cn(
           "bg-surface border p-md flex flex-col gap-sm hover:border-text-display cursor-pointer group",
-          !isDragOverlay && "animate-terminal-boot",
           project.status === "Editing" && project.reviewFeedback
             ? "border-accent/30"
             : "border-border"
         )}
-        style={bootStyle}
       >
       {/* Title + Menu */}
       <div className="flex justify-between items-start">

@@ -2,8 +2,12 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { createUser, updateUser, deleteUser, resetUserCredentials } from "@/actions/team";
+import Button from "@/components/ui/Button";
 import CopyBlock from "@/components/ui/CopyBlock";
+import Input from "@/components/ui/Input";
+import Picker from "@/components/ui/Picker";
 import { useToast } from "@/components/ui/Toast";
+import { MotionBlock, useTerminalDismiss } from "@/components/motion/TerminalMotion";
 import { USER_ROLES } from "@/lib/roles";
 import type { CredentialHandoff, TeamUser } from "@/types";
 import { useT } from "@/lib/i18n/client";
@@ -18,6 +22,12 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
   const { showToast } = useToast();
   const t = useT();
   const [isPending, startTransition] = useTransition();
+  const {
+    ref: panelRef,
+    isDismissing,
+    requestDismiss,
+    forceDismiss,
+  } = useTerminalDismiss<HTMLDivElement>(onClose, { disabled: isPending });
 
   const isEditing = !!user;
 
@@ -35,11 +45,11 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestDismiss();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [requestDismiss]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +70,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
         if (result.success) {
           showToast(t("teamModal.memberUpdated"), "success");
           onRefresh();
-          onClose();
+          forceDismiss();
         } else {
           showToast(result.error || t("teamModal.failedSave"), "error");
         }
@@ -85,7 +95,7 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
       if (result.success) {
         showToast(t("teamModal.memberDeleted"), "success");
         onRefresh();
-        onClose();
+        forceDismiss();
       } else {
         showToast(result.error || t("teamModal.failedDelete"), "error");
       }
@@ -124,14 +134,20 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
   return (
     <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
-      <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
+      <div className="absolute inset-0 ui-modal-backdrop" onClick={requestDismiss} />
 
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-panel p-4 md:p-6 flex flex-col md:max-h-[90vh] motion-panel-in">
+      <MotionBlock
+        ref={panelRef}
+        preset="panel"
+        aria-hidden={isDismissing}
+        data-motion-state={isDismissing ? "exiting" : "entered"}
+        className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-panel p-4 md:p-6 flex flex-col md:max-h-[90vh]"
+      >
         <div className="flex justify-between items-start pb-6 border-b border-border-visible shrink-0">
           <h2 className="text-xl font-bold text-text-display uppercase tracking-wider">
             {isEditing ? t("teamModal.edit") : t("teamModal.new")}
           </h2>
-          <button onClick={onClose} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs px-1">
+          <button onClick={requestDismiss} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs px-1">
             {t("teamModal.close")}
           </button>
         </div>
@@ -173,41 +189,41 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
               </div>
             )}
 
-            <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.fullName")}</label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full ui-input p-2"
-                placeholder={t("teamModal.fullNamePlaceholder")}
-              />
-            </div>
+            <Input
+              label={t("teamModal.fullName")}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              variant="panel"
+              labelClassName="text-[10px]"
+              wrapperClassName="gap-3"
+              placeholder={t("teamModal.fullNamePlaceholder")}
+            />
 
-            <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.emailAddress")}</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full ui-input p-2 color-scheme-dark"
-                placeholder={t("teamModal.emailPlaceholder")}
-              />
-            </div>
+            <Input
+              type="email"
+              label={t("teamModal.emailAddress")}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              variant="panel"
+              labelClassName="text-[10px]"
+              wrapperClassName="gap-3"
+              placeholder={t("teamModal.emailPlaceholder")}
+            />
 
-            <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.role")}</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full ui-input p-2 appearance-none"
-              >
-                {USER_ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {t(`role.${r}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Picker
+              label={t("teamModal.role")}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              variant="panel"
+              labelClassName="text-[10px]"
+              wrapperClassName="gap-3"
+            >
+              {USER_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {t(`role.${r}`)}
+                </option>
+              ))}
+            </Picker>
 
             {isEditing && (
               <div className="border-t border-border-visible pt-6">
@@ -220,14 +236,15 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
                       {user?.hasLogin ? user.username : t("teamModal.noLoginConfigured")}
                     </div>
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={handleResetCredentials}
                     disabled={isPending}
-                    className="ui-button-outline px-4 py-2 w-full disabled:opacity-50"
+                    variant="outline"
+                    className="px-4 py-2 w-full"
                   >
                     {user?.hasLogin ? t("teamModal.resetLogin") : t("teamModal.createLogin")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -237,27 +254,27 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
         <div className="flex flex-col md:flex-row md:justify-between gap-3 pt-4 md:p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
+            <Button type="button" onClick={handleDelete} disabled={isPending} variant="danger" className="px-4 py-2">
               {t("teamModal.delete")}
-            </button>
+            </Button>
           ) : (
             <div />
           )}
           <div className="flex flex-col md:flex-row gap-3 md:ml-auto">
-            <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
+            <Button type="button" onClick={requestDismiss} variant="outline" className="px-4 py-2">
               {t("teamModal.cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               form="team-form"
               disabled={isPending || (!isEditing && !!credentialHandoff)}
-              className="ui-button-primary px-6 py-2 disabled:opacity-50"
+              className="px-6 py-2"
             >
               {isPending ? t("teamModal.saving") : t("teamModal.save")}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </MotionBlock>
     </div>
   );
 }

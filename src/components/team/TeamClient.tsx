@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TeamMemberModal from "@/components/modals/TeamMemberModal";
+import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import type { TeamUser } from "@/types";
 import { useT } from "@/lib/i18n/client";
+import {
+  MotionBlock,
+  useTerminalStagger,
+} from "@/components/motion/TerminalMotion";
 
 export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] }) {
   const router = useRouter();
@@ -12,6 +17,8 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
   const [users, setUsers] = useState(initialUsers);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const motionRef = useRef<HTMLDivElement | null>(null);
+  useTerminalStagger(motionRef, [users.length], { stagger: 0.035 });
 
   useEffect(() => {
     setUsers(initialUsers);
@@ -47,32 +54,30 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
               {users.length} {users.length === 1 ? t("team.memberSingular") : t("team.memberPlural")} {t("team.active")}
             </div>
           </div>
-          <button
+          <Button
             onClick={handleOpenNew}
-            className="ui-button-outline px-6 py-2 flex items-center justify-center"
+            variant="outline"
+            className="px-6 py-2"
           >
             <span className="material-symbols-outlined text-[14px] mr-2">add</span>
             {t("team.newMember")}
-          </button>
+          </Button>
         </div>
 
         {users.length === 0 ? (
-          <div
-            className="ui-panel p-12 text-center animate-terminal-boot"
-            style={{ animationDelay: "120ms" }}
-          >
+          <MotionBlock preset="panel" delayMs={120} className="ui-panel p-12 text-center">
             <div className="ui-page-kicker">{t("team.noMembers")}</div>
-          </div>
+          </MotionBlock>
         ) : (
-          <>
+          <div ref={motionRef} className="contents">
             <div className="md:hidden flex flex-col gap-3">
-              {users.map((u, index) => (
+              {users.map((u) => (
                 <button
                   key={u.id}
+                  data-motion-item
                   type="button"
                   onClick={() => handleOpenEdit(u.id)}
-                  className="ui-panel p-4 text-left flex flex-col gap-2 animate-terminal-boot"
-                  style={{ animationDelay: `${index * 45}ms` }}
+                  className="ui-panel p-4 text-left flex flex-col gap-2"
                 >
                   <div className="text-sm font-bold font-mono text-text-display uppercase tracking-wider break-words">
                     {u.name}
@@ -108,12 +113,12 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u, index) => (
+                  {users.map((u) => (
                     <tr
                       key={u.id}
+                      data-motion-item
                       onClick={() => handleOpenEdit(u.id)}
-                      className="ui-table-row cursor-pointer animate-terminal-boot"
-                      style={{ animationDelay: `${index * 45}ms` }}
+                      className="ui-table-row cursor-pointer"
                     >
                       <td className="p-4 ui-table-cell font-bold">{u.name}</td>
                       <td className="p-4 ui-table-cell">{t(`role.${u.role}`)}</td>
@@ -128,7 +133,7 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
                 </tbody>
               </table>
             </div>
-          </>
+          </div>
         )}
       </div>
 

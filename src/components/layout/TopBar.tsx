@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import { Sun, Moon, Settings, LogOut, Plus } from "lucide-react";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
 import { useT } from "@/lib/i18n/client";
+import { MotionPresence } from "@/components/motion/TerminalMotion";
 
 export default function TopBar() {
   const router = useRouter();
@@ -115,51 +116,54 @@ export default function TopBar() {
               )}
             </button>
 
-            {isMenuOpen ? (
-              <div className="ui-user-dropdown absolute right-0 top-full mt-2 z-50 w-56 border border-border-visible text-xs font-mono motion-panel-in">
-                <div className="px-4 py-3 border-b border-border-visible">
-                  <div className="ui-user-dropdown-heading font-bold tracking-widest truncate whitespace-nowrap">
-                    {session?.user?.username || session?.user?.name || t("nav.guest")}
-                  </div>
-                </div>
-
-                <div className="border-b border-border-visible">
-                  <Link
-                    href="/settings"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left whitespace-nowrap tracking-widest"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>{t("nav.settings")}</span>
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                    className="ui-user-dropdown-row group flex items-center justify-between w-full px-4 py-3 text-left whitespace-nowrap cursor-pointer tracking-widest"
-                  >
-                    <div className="flex items-center gap-3">
-                      {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                      <span>{isDarkMode ? t("nav.darkMode") : t("nav.lightMode")}</span>
-                    </div>
-                    <span className="ui-user-dropdown-toggle">
-                      {isDarkMode ? t("nav.lightTag") : t("nav.darkTag")}
-                    </span>
-                  </button>
-                </div>
-
-                <div>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left whitespace-nowrap tracking-widest"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>{t("nav.logout")}</span>
-                  </button>
+            <MotionPresence
+              show={isMenuOpen}
+              preset="panel"
+              exit={{ x: 14, y: -6, scale: 0.98, duration: 0.16 }}
+              className="ui-user-dropdown absolute right-0 top-full mt-2 z-50 w-56 border border-border-visible text-xs font-mono"
+            >
+              <div className="px-4 py-3 border-b border-border-visible">
+                <div className="ui-user-dropdown-heading font-bold tracking-widest truncate whitespace-nowrap">
+                  {session?.user?.username || session?.user?.name || t("nav.guest")}
                 </div>
               </div>
-            ) : null}
+
+              <div className="border-b border-border-visible">
+                <Link
+                  href="/settings"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left whitespace-nowrap tracking-widest"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>{t("nav.settings")}</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+                  className="ui-user-dropdown-row group flex items-center justify-between w-full px-4 py-3 text-left whitespace-nowrap cursor-pointer tracking-widest"
+                >
+                  <div className="flex items-center gap-3">
+                    {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                    <span>{isDarkMode ? t("nav.darkMode") : t("nav.lightMode")}</span>
+                  </div>
+                  <span className="ui-user-dropdown-toggle">
+                    {isDarkMode ? t("nav.lightTag") : t("nav.darkTag")}
+                  </span>
+                </button>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="ui-user-dropdown-row flex items-center gap-3 w-full px-4 py-3 text-left whitespace-nowrap tracking-widest"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>{t("nav.logout")}</span>
+                </button>
+              </div>
+            </MotionPresence>
           </div>
         </div>
       </header>

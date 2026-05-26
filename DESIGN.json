@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-26T18:37:22Z",
+  "title": "Design System: projmgmt",
+  "extensions": {
+    "colorMeta": {
+      "root-black": {
+        "role": "neutral",
+        "displayName": "Root Black",
+        "canonical": "#000000",
+        "tonalRamp": ["#050505", "#121212", "#222222", "#333333", "#555555", "#777777", "#aaaaaa", "#eeeeee"]
+      },
+      "dark-background": {
+        "role": "neutral",
+        "displayName": "Dark Background",
+        "canonical": "#0a0a0a",
+        "tonalRamp": ["#050505", "#0a0a0a", "#111111", "#1a1a1a", "#222222", "#353434", "#666666", "#999999"]
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Dark Surface",
+        "canonical": "#111111",
+        "tonalRamp": ["#050505", "#0a0a0a", "#111111", "#1a1a1a", "#222222", "#333333", "#555555", "#888888"]
+      },
+      "paper-background": {
+        "role": "neutral",
+        "displayName": "Warm Paper Background",
+        "canonical": "#f4f1ea",
+        "tonalRamp": ["#24221f", "#4f4942", "#7a7166", "#a99f91", "#c7beb0", "#d8d1c4", "#ebe7dd", "#f4f1ea"]
+      },
+      "signal-red": {
+        "role": "primary",
+        "displayName": "Signal Red",
+        "canonical": "#d71921",
+        "tonalRamp": ["#260306", "#52090d", "#7f0f14", "#a9141a", "#d71921", "#e85a60", "#f39da1", "#ffd9db"]
+      },
+      "interactive-blue": {
+        "role": "secondary",
+        "displayName": "Interactive Blue",
+        "canonical": "#5b9bf6",
+        "tonalRamp": ["#071326", "#112b56", "#1c4384", "#2e63bb", "#5b9bf6", "#8bb8fb", "#bdd6fd", "#e6f0ff"]
+      },
+      "success-green": {
+        "role": "secondary",
+        "displayName": "Success Green",
+        "canonical": "#4a9e5c",
+        "tonalRamp": ["#07190b", "#12351a", "#1e5229", "#317b40", "#4a9e5c", "#7dbe8a", "#b4ddb9", "#e2f3e4"]
+      },
+      "warning-amber": {
+        "role": "secondary",
+        "displayName": "Warning Amber",
+        "canonical": "#d4a843",
+        "tonalRamp": ["#221804", "#4a350d", "#735316", "#9d7425", "#d4a843", "#e4c06d", "#f1d89f", "#fbefd4"]
+      },
+      "error-pink": {
+        "role": "secondary",
+        "displayName": "Error Pink",
+        "canonical": "#ffb4ab",
+        "tonalRamp": ["#2b0805", "#5a1510", "#8b241d", "#bd3a31", "#e86d62", "#ffb4ab", "#ffd8d3", "#fff0ee"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Dot Matrix Display",
+        "purpose": "Major terminal readouts, login hero, and rare instrument-panel values."
+      },
+      "headline": {
+        "displayName": "Operational Headline",
+        "purpose": "Large page or modal emphasis without losing product density."
+      },
+      "title": {
+        "displayName": "Product Title",
+        "purpose": "Page titles, modal titles, and major panel names."
+      },
+      "body": {
+        "displayName": "Readable Work Text",
+        "purpose": "Prose and human-readable explanatory text."
+      },
+      "caption": {
+        "displayName": "Machine Caption",
+        "purpose": "Table cells, metadata, compact values, and inputs."
+      },
+      "label": {
+        "displayName": "Command Label",
+        "purpose": "Navigation, buttons, headers, form labels, and bracket commands."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "cursor-blink",
+        "value": "blink 1s steps(1, end) infinite",
+        "purpose": "Terminal cursor presence."
+      },
+      {
+        "name": "crt-flicker",
+        "value": "crtFlicker 8s steps(2, end) infinite",
+        "purpose": "Subtle monitor presence on the app shell."
+      },
+      {
+        "name": "terminal-boot",
+        "value": "terminalBoot 260ms steps(5, end) both",
+        "purpose": "Stepped entry for data surfaces, panels, and toasts."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ],
+    "narrative": {
+      "northStar": "The Terminal Control Room",
+      "overview": "projmgmt is a self-hosted production console, not a generic SaaS surface. The visual system should feel like a terminal instrument panel used by a small video team while deadlines, shotlists, sponsor deals, drafts, analytics, and storage paths are moving at once. It is sharp, compact, high-contrast, and deliberate.",
+      "keyCharacteristics": [
+        "Dense operational surfaces with clear hierarchy and compact labels.",
+        "Sharp rectangular panels, visible borders, and semantic color tokens.",
+        "Mono-heavy labels, IDs, metrics, tags, and table data.",
+        "Mechanical stepped motion used only for state, load, or terminal presence.",
+        "Dark and light modes powered by the same semantic slots."
+      ],
+      "rules": [
+        {
+          "name": "The Token Gate Rule",
+          "body": "Components must consume semantic Tailwind tokens from src/app/globals.css, not hardcoded hex values or raw Tailwind palette classes.",
+          "section": "colors"
+        },
+        {
+          "name": "The Meaning Only Rule",
+          "body": "Accent and status colors are applied to values, controls, and state indicators. They are forbidden as decoration.",
+          "section": "colors"
+        },
+        {
+          "name": "The Light Parity Rule",
+          "body": "Every component must work through the same semantic slots in dark and light mode. If a class works only because the app is dark, it is wrong.",
+          "section": "colors"
+        },
+        {
+          "name": "The Command Voice Rule",
+          "body": "Functional copy is short, uppercase, and specific. Bracketed commands such as [ APPROVE ] and [ SCAN FOR DRAFT 2 ] are part of the system language.",
+          "section": "typography"
+        },
+        {
+          "name": "The No Display Labels Rule",
+          "body": "Doto never appears in buttons, form labels, table data, or navigation. Data-dense UI uses mono and Space Grotesk.",
+          "section": "typography"
+        },
+        {
+          "name": "The Flat Instrument Rule",
+          "body": "Panels, tables, modals, dropdowns, cards, and columns stay sharp and flat. Use ui-panel, ui-panel-raised, borders, and tokenized surfaces instead of shadows.",
+          "section": "elevation"
+        },
+        {
+          "name": "The Border Is Structure Rule",
+          "body": "Borders describe containment, table rhythm, and active state. Do not use side-stripe borders as decorative accents.",
+          "section": "elevation"
+        },
+        {
+          "name": "The Inversion Rule",
+          "body": "Hover and active states invert or tighten contrast instantly. They do not lift, scale, blur, or bounce.",
+          "section": "elevation"
+        }
+      ],
+      "dos": [
+        "Do use semantic Tailwind tokens from src/app/globals.css for all colors, borders, text, and surfaces.",
+        "Do preserve the terminal aesthetic over generic SaaS polish.",
+        "Do keep labels compact, uppercase, mono-heavy, and directly tied to action or data.",
+        "Do use existing primitives and utilities: Button, Input, Picker, Checkbox, Tag, StatusDot, Toast, controlStyles, .ui-panel, .ui-button-*, .ui-table-*, .ui-tag-muted, and .ui-bar-*.",
+        "Do keep page containers for tables and lists at h-full w-full overflow-auto p-lg.",
+        "Do compute localized dates and sponsorship currency displays through the existing helper APIs.",
+        "Do keep motion mechanical, stepped, short, and state-driven.",
+        "Do verify UI changes in the browser when feasible, especially Kanban interactions, modal state sync, and responsive table/list layouts."
+      ],
+      "donts": [
+        "Don't use corporate cards, soft shadows, decorative gradients, glassmorphism, bouncy motion, or rounded default UI.",
+        "Don't use raw Tailwind palette colors such as red-500, green-400, emerald-500, or zinc-* in components.",
+        "Don't hardcode color hex values in components. Document tokens here, but consume tokens in code.",
+        "Don't use smooth easing, spring physics, scale hovers, animated layout properties, or decorative page choreography.",
+        "Don't add side-stripe borders, gradient text, glassmorphism, the hero-metric template, identical card grids, or modal-first flows.",
+        "Don't introduce p-8 page shells, rounded cards, nested cards, decorative floating sections, or shadow-based hierarchy.",
+        "Don't duplicate workflow strings, stage logic, platform names, role names, currency lists, or content-type values outside their shared constants and helpers.",
+        "Don't replace the terminal UI with standard web defaults while fixing small bugs."
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "High-contrast command button for primary actions.",
+      "html": "<button class=\"ds-btn-primary\">NEW PROJECT</button>",
+      "css": ".ds-btn-primary { background: var(--color-text-display); color: var(--color-text-inverse); border: 1px solid var(--color-text-display); border-radius: 0; padding: 8px 24px; font-family: var(--font-label); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { background: var(--color-background); color: var(--color-text-display); outline: none; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary command button for actions that should stay visible but quiet.",
+      "html": "<button class=\"ds-btn-outline\">[ APPROVE ]</button>",
+      "css": ".ds-btn-outline { background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border-visible); border-radius: 0; padding: 8px 16px; font-family: var(--font-label); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-btn-outline:hover, .ds-btn-outline:focus-visible { background: var(--color-text-display); color: var(--color-text-inverse); border-color: var(--color-text-display); outline: none; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive command button that keeps red semantic and restrained.",
+      "html": "<button class=\"ds-btn-danger\">[ DELETE ]</button>",
+      "css": ".ds-btn-danger { background: transparent; color: var(--color-accent); border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent); border-radius: 0; padding: 8px 16px; font-family: var(--font-label); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-btn-danger:hover, .ds-btn-danger:focus-visible { background: var(--color-accent-subtle); outline: none; }"
+    },
+    {
+      "name": "Underline Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Minimal form field used in auth, settings, and compact edit flows.",
+      "html": "<label class=\"ds-input-label\" for=\"ds-title\">TITLE</label><input id=\"ds-title\" class=\"ds-input\" placeholder=\"Project title\" />",
+      "css": ".ds-input-label { display: block; margin-bottom: 8px; color: var(--color-text-secondary); font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-input { width: 100%; background: transparent; color: var(--color-text-display); border: 0; border-bottom: 1px solid var(--color-border-visible); padding: 4px 0; font-family: var(--font-caption); font-size: 12px; letter-spacing: 0.04em; } .ds-input::placeholder { color: var(--color-text-disabled); } .ds-input:focus { border-color: var(--color-text-display); outline: none; }"
+    },
+    {
+      "name": "Native Picker",
+      "kind": "input",
+      "refersTo": "picker",
+      "description": "Native select control with extracted field styling and the shared terminal chevron.",
+      "html": "<label class=\"ds-picker-label\" for=\"ds-role\">ROLE</label><div class=\"ds-picker-wrap\"><select id=\"ds-role\" class=\"ds-picker\"><option>ADMIN</option><option>MANAGER</option><option>MEMBER</option></select><svg class=\"ds-picker-icon\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\" /></svg></div>",
+      "css": ".ds-picker-label { display: block; margin-bottom: 8px; color: var(--color-text-secondary); font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-picker-wrap { position: relative; } .ds-picker { width: 100%; appearance: none; cursor: pointer; background: transparent; color: var(--color-text-display); border: 0; border-bottom: 1px solid var(--color-border-visible); padding: 4px 24px 8px 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color-scheme: dark; } .ds-picker:focus { border-color: var(--color-text-display); outline: none; } .ds-picker:disabled { opacity: 0.5; cursor: not-allowed; } .ds-picker-icon { pointer-events: none; position: absolute; right: 0; bottom: 8px; width: 12px; height: 12px; color: var(--color-text-secondary); }"
+    },
+    {
+      "name": "Terminal Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat bordered surface for cards, modals, dropdowns, and repeated dashboard panels.",
+      "html": "<section class=\"ds-panel\"><p class=\"ds-panel-kicker\">PIPELINE</p><h3 class=\"ds-panel-title\">EDITING QUEUE</h3><p class=\"ds-panel-meta\">4 ACTIVE PROJECTS</p></section>",
+      "css": ".ds-panel { background: var(--color-surface); color: var(--color-text-primary); border: 1px solid var(--color-border-visible); border-radius: 0; padding: 24px; } .ds-panel-kicker { margin: 0 0 8px; color: var(--color-text-secondary); font-family: var(--font-label); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-panel-title { margin: 0; color: var(--color-text-display); font-family: var(--font-heading); font-size: 24px; font-weight: 500; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.08em; } .ds-panel-meta { margin: 12px 0 0; color: var(--color-text-secondary); font-family: var(--font-caption); font-size: 12px; letter-spacing: 0.04em; }"
+    },
+    {
+      "name": "Terminal Tag",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Tiny uppercase metadata chip for platform, format, and state facts.",
+      "html": "<span class=\"ds-tag\">LONG FORM</span>",
+      "css": ".ds-tag { display: inline-block; background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border-visible); border-radius: 0; padding: 2px 8px; font-family: var(--font-caption); font-size: 9px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Table Row",
+      "kind": "custom",
+      "refersTo": "table-row",
+      "description": "Dense row vocabulary for Archive, Sponsorships, Team, and Analytics lists.",
+      "html": "<table class=\"ds-table\"><tbody><tr><td>PROJECT ALPHA</td><td class=\"ds-muted\">PUBLISHED</td><td class=\"ds-right\">128,402</td></tr></tbody></table>",
+      "css": ".ds-table { width: 100%; border-collapse: collapse; color: var(--color-text-primary); font-family: var(--font-caption); font-size: 14px; } .ds-table tr { border-bottom: 1px solid var(--color-border); } .ds-table tr:hover { background: var(--color-hover-surface); } .ds-table td { padding: 16px; } .ds-muted { color: var(--color-text-secondary); font-size: 12px; } .ds-right { text-align: right; }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Sharp mono navigation item with instant inversion.",
+      "html": "<a class=\"ds-nav-item\" href=\"#\"><span class=\"ds-nav-icon\">▦</span><span>PIPELINE</span></a>",
+      "css": ".ds-nav-item { display: inline-flex; align-items: center; gap: 16px; color: var(--color-text-disabled); border: 1px solid transparent; padding: 8px 12px; text-decoration: none; font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-nav-icon { font-size: 18px; line-height: 1; } .ds-nav-item:hover, .ds-nav-item:focus-visible, .ds-nav-item[aria-current='page'] { color: var(--color-text-display); background: var(--color-surface-raised); border-color: var(--color-border-visible); outline: none; }"
+    },
+    {
+      "name": "Progress Bar",
+      "kind": "custom",
+      "refersTo": "progress",
+      "description": "Flat segmented progress used for production and analytics readouts.",
+      "html": "<div class=\"ds-bar\" aria-label=\"Progress\"><span style=\"width: 64%\"></span></div>",
+      "css": ".ds-bar { height: 4px; width: 100%; background: var(--color-surface-raised); border-radius: 0; overflow: hidden; } .ds-bar span { display: block; height: 100%; background: var(--color-text-display); }"
+    }
+  ]
+}
