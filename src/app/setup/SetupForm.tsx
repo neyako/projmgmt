@@ -1,18 +1,21 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { initializeStudio } from "./actions";
 import { useT } from "@/lib/i18n/client";
 import { Wordmark } from "@/components/brand/Logo";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { useTerminalStagger } from "@/components/motion/TerminalMotion";
 
 export default function SetupForm() {
   const router = useRouter();
   const t = useT();
+  const motionRef = useRef<HTMLElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  useTerminalStagger(motionRef, [], { stagger: 0.05 });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,8 +41,14 @@ export default function SetupForm() {
 
   return (
     <div className="bg-background text-text-primary min-h-screen flex flex-col items-center justify-center overflow-hidden p-lg">
-      <main className="w-full max-w-[28rem] border border-border-visible bg-surface p-2xl flex flex-col gap-2xl">
-        <header className="flex flex-col gap-md border-b border-border-visible pb-lg">
+      <main
+        ref={motionRef}
+        className="w-full max-w-[28rem] border border-border-visible bg-surface p-2xl flex flex-col gap-2xl"
+      >
+        <header
+          data-motion-item
+          className="flex flex-col gap-md border-b border-border-visible pb-lg"
+        >
           <Wordmark size="md" weight={900} cursorBlink />
           <h2 className="text-style-label text-text-display tracking-widest">
             {t("setup.header")}
@@ -49,7 +58,11 @@ export default function SetupForm() {
           </p>
         </header>
 
-        <form className="w-full flex flex-col gap-xl" onSubmit={handleSubmit}>
+        <form
+          data-motion-item
+          className="w-full flex flex-col gap-xl"
+          onSubmit={handleSubmit}
+        >
           <Input
             id="workspaceName"
             name="workspaceName"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import type { Sponsorship } from "@prisma/client";
 import SponsorshipModal from "@/components/modals/SponsorshipModal";
 import Button from "@/components/ui/Button";
@@ -12,6 +12,10 @@ import {
 } from "@/lib/currency";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { toIntlLocale, type Locale } from "@/lib/i18n/locales";
+import {
+  MotionBlock,
+  useTerminalStagger,
+} from "@/components/motion/TerminalMotion";
 
 type TabKey = "All" | "Active" | "Pending" | "Archived";
 type SponsorshipListItem = Sponsorship & {
@@ -90,6 +94,8 @@ export default function SponsorshipsClient({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("All");
+  const summaryRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setSponsorships(initialSponsorships);
@@ -110,6 +116,13 @@ export default function SponsorshipsClient({
         return sponsorships;
     }
   }, [sponsorships, activeTab]);
+
+  useTerminalStagger(summaryRef, [summary.monthlyTotals.length], {
+    stagger: 0.04,
+  });
+  useTerminalStagger(listRef, [activeTab, filtered.length], {
+    stagger: 0.035,
+  });
 
   const selectedSponsorship = selectedId
     ? sponsorships.find((s) => s.id === selectedId) ?? null
@@ -222,10 +235,13 @@ export default function SponsorshipsClient({
 
         <section className="mb-6">
           <div className="ui-page-kicker mb-3">{t("sponsorships.atAGlance")}</div>
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-3">
+          <div
+            ref={summaryRef}
+            className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-3"
+          >
             <div
-              className="ui-panel p-4 min-w-0 animate-terminal-boot"
-              style={{ animationDelay: "0ms" }}
+              data-motion-item
+              className="ui-panel p-4 min-w-0"
             >
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
@@ -244,8 +260,8 @@ export default function SponsorshipsClient({
             </div>
 
             <div
-              className="ui-panel p-4 min-w-0 animate-terminal-boot"
-              style={{ animationDelay: "70ms" }}
+              data-motion-item
+              className="ui-panel p-4 min-w-0"
             >
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
@@ -264,8 +280,8 @@ export default function SponsorshipsClient({
             </div>
 
             <div
-              className="ui-panel p-4 min-w-0 animate-terminal-boot"
-              style={{ animationDelay: "140ms" }}
+              data-motion-item
+              className="ui-panel p-4 min-w-0"
             >
               <div className="flex items-center justify-between gap-3 border-b border-border-visible pb-3">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-text-secondary">
@@ -276,11 +292,11 @@ export default function SponsorshipsClient({
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                {summary.monthlyTotals.map((month, index) => (
+                {summary.monthlyTotals.map((month) => (
                   <div
                     key={month.key}
-                    className="border border-border-visible bg-surface-raised p-3 min-w-0 animate-terminal-boot"
-                    style={{ animationDelay: `${210 + index * 45}ms` }}
+                    data-motion-item
+                    className="border border-border-visible bg-surface-raised p-3 min-w-0"
                   >
                     <div className="text-[10px] font-mono uppercase tracking-widest text-text-secondary">
                       {month.label}
@@ -296,24 +312,21 @@ export default function SponsorshipsClient({
         </section>
 
         {filtered.length === 0 ? (
-          <div
-            className="ui-panel p-12 text-center animate-terminal-boot"
-            style={{ animationDelay: "120ms" }}
-          >
+          <MotionBlock preset="panel" delayMs={120} className="ui-panel p-12 text-center">
             <div className="ui-page-kicker">
               {t("sponsorships.noFoundFor", { tab: t(`sponsorships.tab${activeTab}`) })}
             </div>
-          </div>
+          </MotionBlock>
         ) : (
-          <>
+          <div ref={listRef} className="contents">
             <div className="md:hidden flex flex-col gap-3">
-              {filtered.map((s, index) => (
+              {filtered.map((s) => (
                 <button
                   key={s.id}
+                  data-motion-item
                   type="button"
                   onClick={() => handleOpenEdit(s.id)}
-                  className="ui-panel p-4 text-left flex flex-col gap-4 animate-terminal-boot"
-                  style={{ animationDelay: `${index * 45}ms` }}
+                  className="ui-panel p-4 text-left flex flex-col gap-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -381,12 +394,12 @@ export default function SponsorshipsClient({
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((s, index) => (
+                  {filtered.map((s) => (
                     <tr
                       key={s.id}
+                      data-motion-item
                       onClick={() => handleOpenEdit(s.id)}
-                      className="ui-table-row cursor-pointer animate-terminal-boot"
-                      style={{ animationDelay: `${index * 45}ms` }}
+                      className="ui-table-row cursor-pointer"
                     >
                       <td className="p-4 ui-table-cell font-bold">
                         {s.brandName}
@@ -418,7 +431,7 @@ export default function SponsorshipsClient({
                 </tbody>
               </table>
             </div>
-          </>
+          </div>
         )}
       </div>
 

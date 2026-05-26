@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
 import UpdateStatsModal from "@/components/modals/UpdateStatsModal";
 import { restoreProjectToPipeline } from "@/actions/projects";
 import { useToast } from "@/components/ui/Toast";
+import {
+  MotionBlock,
+  useTerminalStagger,
+} from "@/components/motion/TerminalMotion";
 import type { ProjectCardData } from "@/types";
 import { useT } from "@/lib/i18n/client";
 
@@ -45,14 +49,18 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
   const [scrappedData, setScrappedData] = useState<ArchiveProject[]>(scrapped);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [statsTargetId, setStatsTargetId] = useState<string | null>(null);
+  const motionRef = useRef<HTMLDivElement | null>(null);
+  const activeData = activeTab === "Published" ? publishedData : scrappedData;
+
+  useTerminalStagger(motionRef, [activeTab, activeData.length], {
+    stagger: 0.035,
+  });
 
   useEffect(() => {
     setPublishedData(published);
     setScrappedData(scrapped);
     setSelectedId(null);
   }, [published, scrapped]);
-
-  const activeData = activeTab === "Published" ? publishedData : scrappedData;
 
   const selectedProject = selectedId
     ? activeData.find((p) => p.id === selectedId) ?? null
@@ -128,18 +136,15 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
         </div>
 
         {activeData.length === 0 ? (
-          <div
-            className="ui-panel p-12 text-center animate-terminal-boot"
-            style={{ animationDelay: "120ms" }}
-          >
+          <MotionBlock preset="panel" delayMs={120} className="ui-panel p-12 text-center">
             <div className="ui-page-kicker">
               {t("archive.noFoundFor", { tab: t(`archive.tab${activeTab}`) })}
             </div>
-          </div>
+          </MotionBlock>
         ) : (
-          <>
+          <div ref={motionRef} className="contents">
             <div className="md:hidden flex flex-col gap-3">
-              {activeData.map((project, index) => {
+              {activeData.map((project) => {
                 const totalViews =
                   (project.youtubeViews || 0) +
                   (project.metaViews || 0) +
@@ -156,9 +161,9 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                 return (
                   <div
                     key={project.id}
+                    data-motion-item
                     onClick={() => setSelectedId(project.id)}
-                    className="ui-panel p-4 flex flex-col gap-4 cursor-pointer animate-terminal-boot"
-                    style={{ animationDelay: `${index * 45}ms` }}
+                    className="ui-panel p-4 flex flex-col gap-4 cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -255,7 +260,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                   </tr>
                 </thead>
                 <tbody>
-                  {activeData.map((project, index) => {
+                  {activeData.map((project) => {
                     const totalViews =
                       (project.youtubeViews || 0) +
                       (project.metaViews || 0) +
@@ -272,9 +277,9 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                     return (
                       <tr
                         key={project.id}
+                        data-motion-item
                         onClick={() => setSelectedId(project.id)}
-                        className="ui-table-row cursor-pointer animate-terminal-boot"
-                        style={{ animationDelay: `${index * 45}ms` }}
+                        className="ui-table-row cursor-pointer"
                       >
                         <td className="p-4 ui-table-cell">{project.title}</td>
                         <td className="p-4 ui-table-cell">
@@ -329,7 +334,7 @@ export default function ArchiveTable({ published, scrapped }: ArchiveTableProps)
                 </tbody>
               </table>
             </div>
-          </>
+          </div>
         )}
       </div>
 

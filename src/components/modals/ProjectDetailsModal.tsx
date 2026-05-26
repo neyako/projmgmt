@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
 import CopyBlock from "@/components/ui/CopyBlock";
+import { MotionBlock, useTerminalDismiss } from "@/components/motion/TerminalMotion";
 import { inputStyles, pickerStyles } from "@/components/ui/controlStyles";
 import { PickerChevron } from "@/components/ui/Picker";
 import { generateNasPaths, type NasConfig } from "@/utils/nasPaths";
@@ -1353,6 +1354,11 @@ export default function ProjectDetailsModal({
   const { showToast } = useToast();
   const t = useT();
   const locale = useLocale();
+  const {
+    ref: panelRef,
+    isDismissing,
+    requestDismiss,
+  } = useTerminalDismiss<HTMLDivElement>(onClose);
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<ProjectUser[]>([]);
   const [sponsorshipDeals, setSponsorshipDeals] = useState<SponsorshipDealOption[]>([]);
@@ -1439,11 +1445,11 @@ export default function ProjectDetailsModal({
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestDismiss();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [requestDismiss]);
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
@@ -2001,10 +2007,16 @@ export default function ProjectDetailsModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       {/* Backdrop */}
-      <div className="absolute inset-0 ui-modal-backdrop" onClick={onClose} />
+      <div className="absolute inset-0 ui-modal-backdrop" onClick={requestDismiss} />
 
       {/* Modal Container */}
-      <div className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-5xl ui-panel flex flex-col md:max-h-[90vh] motion-panel-in">
+      <MotionBlock
+        ref={panelRef}
+        preset="panel"
+        aria-hidden={isDismissing}
+        data-motion-state={isDismissing ? "exiting" : "entered"}
+        className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-5xl ui-panel flex flex-col md:max-h-[90vh]"
+      >
 
         {/* ─── HEADER ─── */}
         <div className="flex justify-between items-start p-4 md:p-6 border-b border-border-visible shrink-0">
@@ -2043,7 +2055,7 @@ export default function ProjectDetailsModal({
           </div>
 
           <div className="flex flex-col items-end ml-4 shrink-0">
-            <button onClick={onClose} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs mb-2 px-1">
+            <button onClick={requestDismiss} className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs mb-2 px-1">
               [ X ]
             </button>
             {isEditing && (
@@ -2205,7 +2217,7 @@ export default function ProjectDetailsModal({
 
                 {/* Submit */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-border-visible">
-                  <button type="button" onClick={onClose} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:bg-text-display hover:text-text-inverse hover:border-text-display">
+                  <button type="button" onClick={requestDismiss} className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-text-secondary border border-border-visible hover:bg-text-display hover:text-text-inverse hover:border-text-display">
                     {t("projectModal.cancel")}
                   </button>
                   <button type="submit" disabled={isPending} className={cn(
@@ -2987,7 +2999,7 @@ export default function ProjectDetailsModal({
             )}
           </div>
         </div>
-      </div>
+      </MotionBlock>
     </div>
   );
 }

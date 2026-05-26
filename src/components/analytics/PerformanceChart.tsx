@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import { useTerminalPathDraw } from "@/components/motion/TerminalMotion";
 
 export type DayPoint = {
   date: string; // YYYY-MM-DD
@@ -47,6 +48,7 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
   const [visible, setVisible] = useState<Set<PlatKey>>(
     new Set(["youtube", "meta", "tiktok"])
   );
+  const svgRef = useRef<SVGSVGElement | null>(null);
 
   function togglePlat(k: PlatKey) {
     setVisible((prev) => {
@@ -83,6 +85,8 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
     }
     return m === 0 ? 1 : m;
   }, [filtered, visible]);
+  const visibleKey = useMemo(() => [...visible].sort().join("|"), [visible]);
+  useTerminalPathDraw(svgRef, [range, visibleKey, filtered.length, max]);
 
   // SVG layout — Y-axis labels live in a separate HTML column outside the
   // SVG, so PAD_L only reserves space for plot stroke clearance. PAD_B is
@@ -200,6 +204,7 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
 
             <div className="relative flex-1 min-w-0">
             <svg
+              ref={svgRef}
               viewBox={`0 0 ${W} ${H}`}
               className="absolute inset-0 w-full h-full"
               preserveAspectRatio="none"
@@ -222,6 +227,7 @@ export default function PerformanceChart({ points }: { points: DayPoint[] }) {
               {PLATFORM_META.filter((m) => visible.has(m.key)).map((m) => (
                 <path
                   key={m.key}
+                  data-motion-path
                   d={linePath(m.key)}
                   fill="none"
                   stroke={m.color}

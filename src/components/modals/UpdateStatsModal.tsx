@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { updateProjectStats } from "@/actions/projects";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
+import { MotionBlock, useTerminalDismiss } from "@/components/motion/TerminalMotion";
 import { useT } from "@/lib/i18n/client";
 
 interface UpdateStatsModalProps {
@@ -37,6 +38,21 @@ export default function UpdateStatsModal({
   const { showToast } = useToast();
   const t = useT();
   const [isPending, startTransition] = useTransition();
+  const updatedStatsRef = useRef<{ views: number; likes: number; comments: number } | null>(null);
+  const handleDismissed = useCallback(() => {
+    if (updatedStatsRef.current) {
+      const stats = updatedStatsRef.current;
+      updatedStatsRef.current = null;
+      onUpdated?.(stats);
+    }
+    onClose();
+  }, [onClose, onUpdated]);
+  const {
+    ref: panelRef,
+    isDismissing,
+    requestDismiss,
+    forceDismiss,
+  } = useTerminalDismiss<HTMLDivElement>(handleDismissed, { disabled: isPending });
 
   const [views, setViews] = useState<string>(initialStatString(project.views));
   const [likes, setLikes] = useState<string>(initialStatString(project.likes));
@@ -46,11 +62,11 @@ export default function UpdateStatsModal({
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && !isPending) onClose();
+      if (e.key === "Escape") requestDismiss();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, isPending]);
+  }, [requestDismiss]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,9 +87,9 @@ export default function UpdateStatsModal({
         showToast(result.error, "error");
         return;
       }
-      onUpdated?.({ views: v, likes: l, comments: c });
+      updatedStatsRef.current = { views: v, likes: l, comments: c };
       showToast(t("statsModal.updated"), "success");
-      onClose();
+      forceDismiss();
     });
   }
 
@@ -81,10 +97,14 @@ export default function UpdateStatsModal({
     <div className="fixed inset-0 z-[100] flex items-stretch md:items-center justify-center overflow-hidden md:p-4 lg:p-6">
       <div
         className="absolute inset-0 ui-modal-backdrop"
-        onClick={() => !isPending && onClose()}
+        onClick={requestDismiss}
       />
 
-      <div
+      <MotionBlock
+        ref={panelRef}
+        preset="panel"
+        aria-hidden={isDismissing}
+        data-motion-state={isDismissing ? "exiting" : "entered"}
         className="relative w-screen h-[100dvh] max-h-[100dvh] md:w-full md:h-auto md:max-w-[28rem] ui-panel p-4 md:p-6 flex flex-col min-w-0 overflow-y-auto md:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
@@ -100,7 +120,7 @@ export default function UpdateStatsModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestDismiss}
             disabled={isPending}
             className="text-text-secondary hover:bg-text-display hover:text-text-inverse font-mono text-xs shrink-0 px-1"
           >
@@ -163,7 +183,7 @@ export default function UpdateStatsModal({
         <div className="flex flex-col md:flex-row md:justify-end gap-3 md:gap-4 mt-8 w-full">
           <Button
             type="button"
-            onClick={onClose}
+            onClick={requestDismiss}
             disabled={isPending}
             variant="outline"
             className="px-4 py-2"
@@ -180,7 +200,7 @@ export default function UpdateStatsModal({
             {isPending ? t("statsModal.saving") : t("statsModal.saveStats")}
           </Button>
         </div>
-      </div>
+      </MotionBlock>
     </div>
   );
 }

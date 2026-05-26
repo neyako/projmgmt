@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import KanbanBoard from "./KanbanBoard";
 import ProjectDetailsModal from "@/components/modals/ProjectDetailsModal";
 import PublishModal from "@/components/modals/PublishModal";
+import { MotionBlock } from "@/components/motion/TerminalMotion";
 import type { ProjectCardData } from "@/types";
 import { useT } from "@/lib/i18n/client";
 
@@ -66,7 +67,7 @@ export default function KanbanBoardWrapper({
                 <span className="text-style-label text-text-primary">{t(`stage.${stage}`)}</span>
                 <span className="text-style-label text-text-secondary">[ — ]</span>
               </div>
-              <div className="flex-1 animate-crt-flicker bg-surface-raised/10" />
+              <MotionBlock preset="crt" className="flex-1 bg-surface-raised/10" />
             </div>
           ))}
         </div>

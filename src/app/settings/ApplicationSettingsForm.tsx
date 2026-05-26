@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { saveApplicationSettings } from "@/actions/settings";
 import {
   normalizeContentTypeValue,
@@ -11,6 +11,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { useT } from "@/lib/i18n/client";
+import { useTerminalStagger } from "@/components/motion/TerminalMotion";
 
 type Row = ContentTypeOption & { localId: string };
 
@@ -37,8 +38,10 @@ export default function ApplicationSettingsForm({
   const t = useT();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const rowsRef = useRef<HTMLDivElement | null>(null);
   const [publicUrl, setPublicUrl] = useState(initialSettings.publicUrl);
   const [rows, setRows] = useState<Row[]>(() => toRows(initialSettings.contentTypes));
+  useTerminalStagger(rowsRef, [rows.length], { stagger: 0.04 });
 
   function updateRow(localId: string, patch: Partial<ContentTypeOption>) {
     setRows((current) =>
@@ -117,11 +120,12 @@ export default function ApplicationSettingsForm({
           </Button>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div ref={rowsRef} className="flex flex-col gap-3">
           {rows.map((row) => (
             <div
               key={row.localId}
-              className="grid grid-cols-1 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 border border-border-visible bg-input-surface p-3 motion-panel-in"
+              data-motion-item
+              className="grid grid-cols-1 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 border border-border-visible bg-input-surface p-3"
             >
               <Input
                 label={t("settings.contentTypeValue")}
