@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { initializeStudio } from "./actions";
 import { useT } from "@/lib/i18n/client";
 import { Wordmark } from "@/components/brand/Logo";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 
 export default function SetupForm() {
   const router = useRouter();
@@ -48,110 +50,71 @@ export default function SetupForm() {
         </header>
 
         <form className="w-full flex flex-col gap-xl" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-sm group">
-            <label
-              htmlFor="workspaceName"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
-            >
-              {t("setup.workspaceId")}
-            </label>
-            <input
-              id="workspaceName"
-              name="workspaceName"
-              type="text"
-              placeholder={t("setup.workspaceIdPlaceholder")}
-              autoComplete="off"
-              required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-            />
-          </div>
+          <Input
+            id="workspaceName"
+            name="workspaceName"
+            type="text"
+            label={t("setup.workspaceId")}
+            placeholder={t("setup.workspaceIdPlaceholder")}
+            autoComplete="off"
+            required
+          />
 
-          <div className="flex flex-col gap-sm group">
-            <label
-              htmlFor="username"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
-            >
-              {t("setup.adminUsername")}
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder={t("setup.adminUsernamePlaceholder")}
-              autoComplete="username"
-              required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-            />
-          </div>
+          <Input
+            id="username"
+            name="username"
+            type="text"
+            label={t("setup.adminUsername")}
+            placeholder={t("setup.adminUsernamePlaceholder")}
+            autoComplete="username"
+            required
+          />
 
-          <div className="flex flex-col gap-sm group">
-            <label
-              htmlFor="displayName"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
-            >
-              {t("setup.displayName")}
-            </label>
-            <input
-              id="displayName"
-              name="displayName"
-              type="text"
-              placeholder={t("setup.displayNamePlaceholder")}
-              autoComplete="name"
-              required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-            />
-          </div>
+          <Input
+            id="displayName"
+            name="displayName"
+            type="text"
+            label={t("setup.displayName")}
+            placeholder={t("setup.displayNamePlaceholder")}
+            autoComplete="name"
+            required
+          />
 
-          <div className="flex flex-col gap-sm group">
-            <label
-              htmlFor="password"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
-            >
-              {t("setup.accessKey")}
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder={t("setup.passwordPlaceholder")}
-              autoComplete="new-password"
-              minLength={8}
-              required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-            />
-          </div>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            label={t("setup.accessKey")}
+            placeholder={t("setup.passwordPlaceholder")}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
 
-          <div className="flex flex-col gap-sm group">
-            <label
-              htmlFor="confirmPassword"
-              className="text-style-label text-text-secondary tracking-widest group-focus-within:text-text-display"
-            >
-              {t("setup.confirmAccessKey")}
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder={t("setup.passwordPlaceholder")}
-              autoComplete="new-password"
-              minLength={8}
-              required
-              className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-            />
-          </div>
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            label={t("setup.confirmAccessKey")}
+            placeholder={t("setup.passwordPlaceholder")}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
 
           {errorMessage ? (
             <p className="text-style-label text-error tracking-widest text-center">{errorMessage}</p>
           ) : null}
 
           <div className="flex flex-col items-center pt-md">
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="border border-text-display bg-text-display text-text-inverse text-style-label tracking-widest px-xl py-md min-w-[240px] hover:bg-background hover:text-text-display disabled:opacity-50 disabled:cursor-not-allowed"
+              size="lg"
+              className="min-w-[240px]"
             >
               {isSubmitting ? t("setup.initializing") : t("setup.initialize")}
-            </button>
+            </Button>
           </div>
         </form>
       </main>

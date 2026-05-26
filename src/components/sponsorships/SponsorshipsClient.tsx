@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import type { Sponsorship } from "@prisma/client";
 import SponsorshipModal from "@/components/modals/SponsorshipModal";
+import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import {
   formatCurrencyAmount,
@@ -184,13 +185,14 @@ export default function SponsorshipsClient({
                 );
               })}
             </div>
-            <button
+            <Button
               onClick={handleOpenNew}
-              className="ui-button-outline px-6 py-2 flex items-center justify-center shrink-0"
+              variant="outline"
+              className="px-6 py-2 shrink-0"
             >
               <span className="material-symbols-outlined text-[14px] mr-2">add</span>
               {t("sponsorships.newSponsorship")}
-            </button>
+            </Button>
           </div>
           <div className="ui-page-meta mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
             <span>

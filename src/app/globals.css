@@ -189,6 +189,10 @@ body {
   color: var(--color-selection-text);
 }
 
+.color-scheme-dark {
+  color-scheme: dark;
+}
+
 /* ─── CUSTOM SCROLLBAR (Mechanical) ──────────────────── */
 ::-webkit-scrollbar {
   width: 6px;

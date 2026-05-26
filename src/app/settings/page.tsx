@@ -10,6 +10,8 @@ import AvatarUploadForm from "./AvatarUploadForm";
 import ChangePasswordForm from "./ChangePasswordForm";
 import LanguageForm from "./LanguageForm";
 import CurrencyPreferenceForm from "./CurrencyPreferenceForm";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 
 export const dynamic = "force-dynamic";
 
@@ -44,28 +46,22 @@ export default async function SettingsPage() {
               <AvatarUploadForm avatarUrl={user?.avatarUrl ?? null} />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                <div className="flex flex-col gap-2 w-full">
-                  <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                    {t("settings.displayName")}
-                  </label>
-                  <input
-                    type="text"
-                    value={user?.name ?? ""}
-                    readOnly
-                    className="bg-transparent border-0 border-b border-border-visible focus:outline-none px-0 py-2 text-xs font-mono text-text-display w-full"
-                  />
-                </div>
-                <div className="flex flex-col gap-2 w-full">
-                  <label className="text-[10px] font-mono text-text-secondary uppercase tracking-widest">
-                    {t("settings.emailAddress")}
-                  </label>
-                  <input
-                    type="email"
-                    value={user?.email ?? ""}
-                    readOnly
-                    className="bg-transparent border-0 border-b border-border-visible focus:outline-none px-0 py-2 text-xs font-mono text-text-display w-full"
-                  />
-                </div>
+                <Input
+                  type="text"
+                  label={t("settings.displayName")}
+                  value={user?.name ?? ""}
+                  readOnly
+                  size="sm"
+                  wrapperClassName="w-full"
+                />
+                <Input
+                  type="email"
+                  label={t("settings.emailAddress")}
+                  value={user?.email ?? ""}
+                  readOnly
+                  size="sm"
+                  wrapperClassName="w-full"
+                />
               </div>
             </div>
           </section>
@@ -93,14 +89,14 @@ export default async function SettingsPage() {
           </section>
 
           <div className="flex justify-end pt-6 pb-4 w-full">
-            <button
+            <Button
               type="submit"
               form="change-password-form"
-              className="border border-text-display bg-text-display text-text-inverse text-[10px] font-mono uppercase tracking-widest px-6 py-2 hover:bg-background hover:text-text-display flex items-center gap-2"
+              className="px-6 py-2"
             >
               <span className="material-symbols-outlined text-[16px]">save</span>
               {t("settings.saveChanges")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

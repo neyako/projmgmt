@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { publishProject } from "@/actions/projects";
+import Button from "@/components/ui/Button";
+import { inputStyles } from "@/components/ui/controlStyles";
 import { useToast } from "@/components/ui/Toast";
 import CopyBlock from "@/components/ui/CopyBlock";
 import type { ProjectCardData } from "@/types";
@@ -24,7 +26,7 @@ function todayInputValue(): string {
 }
 
 const INPUT_CLASS =
-  "w-full bg-transparent border-0 border-b border-border-visible focus:border-text-display focus:outline-none font-mono text-sm text-text-display py-2 px-0 placeholder:text-text-disabled";
+  inputStyles({ variant: "underline", size: "sm", className: "text-sm py-2" });
 
 function hashtagTokens(raw: string): string[] {
   return raw
@@ -434,24 +436,25 @@ export default function PublishModal({
         </form>
 
         <div className="flex flex-col md:flex-row md:justify-end gap-3 p-4 md:p-6 border-t border-border-visible shrink-0">
-          <button
+          <Button
             type="button"
             onClick={() =>
               step === "metadata" ? onClose() : setStep("metadata")
             }
             disabled={isPending}
-            className="ui-button-outline px-4 py-2 disabled:opacity-50"
+            variant="outline"
+            className="px-4 py-2"
           >
             {step === "metadata"
               ? t("publishModal.cancel")
               : t("publishModal.back")}
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             form="publish-form"
             disabled={isPending}
             className={cn(
-              "ui-button-primary px-6 py-2 flex items-center justify-center gap-2",
+              "px-6 py-2",
               isPending && "opacity-50 cursor-wait",
             )}
           >
@@ -461,7 +464,7 @@ export default function PublishModal({
               : step === "metadata"
                 ? t("publishModal.nextUpload")
                 : t("publishModal.confirmPublish")}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

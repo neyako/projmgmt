@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { cn } from "@/lib/utils";
 import { updateProjectStats } from "@/actions/projects";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { useT } from "@/lib/i18n/client";
 
@@ -18,9 +19,6 @@ interface UpdateStatsModalProps {
   onClose: () => void;
   onUpdated?: (stats: { views: number; likes: number; comments: number }) => void;
 }
-
-const INPUT_CLASS =
-  "w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display";
 
 function initialStatString(n: number | null | undefined): string {
   const safe = Number(n ?? 0);
@@ -115,89 +113,72 @@ export default function UpdateStatsModal({
           onSubmit={handleSubmit}
           className="flex flex-col space-y-6 w-full"
         >
-          <div className="w-full">
-            <label
-              htmlFor="stats-views"
-              className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
-            >
-              {t("statsModal.views")}
-            </label>
-            <input
-              id="stats-views"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="off"
-              value={views}
-              onChange={(e) => setViews(sanitizeDigits(e.target.value))}
-              placeholder="0"
-              className={INPUT_CLASS}
-              autoFocus
-            />
-          </div>
+          <Input
+            id="stats-views"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            label={t("statsModal.views")}
+            labelClassName="text-[10px] mb-2"
+            value={views}
+            onChange={(e) => setViews(sanitizeDigits(e.target.value))}
+            placeholder="0"
+            size="sm"
+            className="text-sm"
+            autoFocus
+          />
 
-          <div className="w-full">
-            <label
-              htmlFor="stats-likes"
-              className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
-            >
-              {t("statsModal.likes")}
-            </label>
-            <input
-              id="stats-likes"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="off"
-              value={likes}
-              onChange={(e) => setLikes(sanitizeDigits(e.target.value))}
-              placeholder="0"
-              className={INPUT_CLASS}
-            />
-          </div>
+          <Input
+            id="stats-likes"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            label={t("statsModal.likes")}
+            labelClassName="text-[10px] mb-2"
+            value={likes}
+            onChange={(e) => setLikes(sanitizeDigits(e.target.value))}
+            placeholder="0"
+            size="sm"
+            className="text-sm"
+          />
 
-          <div className="w-full">
-            <label
-              htmlFor="stats-comments"
-              className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-2 block"
-            >
-              {t("statsModal.comments")}
-            </label>
-            <input
-              id="stats-comments"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="off"
-              value={comments}
-              onChange={(e) => setComments(sanitizeDigits(e.target.value))}
-              placeholder="0"
-              className={INPUT_CLASS}
-            />
-          </div>
+          <Input
+            id="stats-comments"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            label={t("statsModal.comments")}
+            labelClassName="text-[10px] mb-2"
+            value={comments}
+            onChange={(e) => setComments(sanitizeDigits(e.target.value))}
+            placeholder="0"
+            size="sm"
+            className="text-sm"
+          />
         </form>
 
         <div className="flex flex-col md:flex-row md:justify-end gap-3 md:gap-4 mt-8 w-full">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="ui-button-outline px-4 py-2 disabled:opacity-50"
+            variant="outline"
+            className="px-4 py-2"
           >
             {t("statsModal.cancel")}
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             form="stats-form"
             disabled={isPending}
-            className={cn(
-              "ui-button-primary px-6 py-2 flex items-center justify-center gap-2",
-              isPending && "opacity-50 cursor-wait"
-            )}
+            className={isPending ? "px-6 py-2 cursor-wait" : "px-6 py-2"}
           >
             <span className="material-symbols-outlined text-[14px]">save</span>
             {isPending ? t("statsModal.saving") : t("statsModal.saveStats")}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

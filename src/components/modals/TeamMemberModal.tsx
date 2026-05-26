@@ -2,7 +2,10 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { createUser, updateUser, deleteUser, resetUserCredentials } from "@/actions/team";
+import Button from "@/components/ui/Button";
 import CopyBlock from "@/components/ui/CopyBlock";
+import Input from "@/components/ui/Input";
+import Picker from "@/components/ui/Picker";
 import { useToast } from "@/components/ui/Toast";
 import { USER_ROLES } from "@/lib/roles";
 import type { CredentialHandoff, TeamUser } from "@/types";
@@ -173,41 +176,41 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
               </div>
             )}
 
-            <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.fullName")}</label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full ui-input p-2"
-                placeholder={t("teamModal.fullNamePlaceholder")}
-              />
-            </div>
+            <Input
+              label={t("teamModal.fullName")}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              variant="panel"
+              labelClassName="text-[10px]"
+              wrapperClassName="gap-3"
+              placeholder={t("teamModal.fullNamePlaceholder")}
+            />
 
-            <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.emailAddress")}</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full ui-input p-2 color-scheme-dark"
-                placeholder={t("teamModal.emailPlaceholder")}
-              />
-            </div>
+            <Input
+              type="email"
+              label={t("teamModal.emailAddress")}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              variant="panel"
+              labelClassName="text-[10px]"
+              wrapperClassName="gap-3"
+              placeholder={t("teamModal.emailPlaceholder")}
+            />
 
-            <div>
-              <label className="text-[10px] font-mono tracking-widest text-text-secondary uppercase mb-3 block">{t("teamModal.role")}</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full ui-input p-2 appearance-none"
-              >
-                {USER_ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {t(`role.${r}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Picker
+              label={t("teamModal.role")}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              variant="panel"
+              labelClassName="text-[10px]"
+              wrapperClassName="gap-3"
+            >
+              {USER_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {t(`role.${r}`)}
+                </option>
+              ))}
+            </Picker>
 
             {isEditing && (
               <div className="border-t border-border-visible pt-6">
@@ -220,14 +223,15 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
                       {user?.hasLogin ? user.username : t("teamModal.noLoginConfigured")}
                     </div>
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={handleResetCredentials}
                     disabled={isPending}
-                    className="ui-button-outline px-4 py-2 w-full disabled:opacity-50"
+                    variant="outline"
+                    className="px-4 py-2 w-full"
                   >
                     {user?.hasLogin ? t("teamModal.resetLogin") : t("teamModal.createLogin")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -237,24 +241,24 @@ export default function TeamMemberModal({ user, onClose, onRefresh }: TeamMember
 
         <div className="flex flex-col md:flex-row md:justify-between gap-3 pt-4 md:p-6 border-t border-border-visible shrink-0">
           {isEditing ? (
-            <button type="button" onClick={handleDelete} disabled={isPending} className="ui-button-danger px-4 py-2">
+            <Button type="button" onClick={handleDelete} disabled={isPending} variant="danger" className="px-4 py-2">
               {t("teamModal.delete")}
-            </button>
+            </Button>
           ) : (
             <div />
           )}
           <div className="flex flex-col md:flex-row gap-3 md:ml-auto">
-            <button type="button" onClick={onClose} className="ui-button-outline px-4 py-2">
+            <Button type="button" onClick={onClose} variant="outline" className="px-4 py-2">
               {t("teamModal.cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               form="team-form"
               disabled={isPending || (!isEditing && !!credentialHandoff)}
-              className="ui-button-primary px-6 py-2 disabled:opacity-50"
+              className="px-6 py-2"
             >
               {isPending ? t("teamModal.saving") : t("teamModal.save")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

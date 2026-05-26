@@ -8,6 +8,8 @@ import { setLocale } from "@/lib/i18n/actions";
 import { LOCALES, type Locale } from "@/lib/i18n/locales";
 import { cn } from "@/lib/utils";
 import { Wordmark } from "@/components/brand/Logo";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -59,43 +61,27 @@ export default function LoginForm() {
 
         <form className="w-full flex flex-col gap-2xl" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-xl">
-            <div className="flex flex-col gap-sm group">
-              <label
-                htmlFor="username"
-                className="text-style-label text-text-secondary group-focus-within:text-text-display"
-              >
-                {t("login.username")}
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                placeholder={t("login.identifier")}
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-              />
-            </div>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              label={t("login.username")}
+              placeholder={t("login.identifier")}
+              autoComplete="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+            />
 
-            <div className="flex flex-col gap-sm group">
-              <label
-                htmlFor="password"
-                className="text-style-label text-text-secondary group-focus-within:text-text-display"
-              >
-                {t("login.accessKey")}
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder={t("login.passwordPlaceholder")}
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full bg-transparent border-0 border-b border-border-visible px-0 py-xs text-style-caption text-text-display placeholder:text-text-disabled focus:outline-none focus:border-text-display"
-              />
-            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              label={t("login.accessKey")}
+              placeholder={t("login.passwordPlaceholder")}
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
           </div>
 
           {errorMessage ? (
@@ -103,13 +89,15 @@ export default function LoginForm() {
           ) : null}
 
           <div className="flex flex-col items-center pt-md">
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="border border-text-display bg-text-display text-text-inverse text-style-label rounded-full px-xl py-md min-w-[160px] hover:bg-background hover:text-text-display disabled:opacity-50 disabled:cursor-not-allowed"
+              size="lg"
+              pill
+              className="min-w-[160px]"
             >
               {isSubmitting ? t("login.verifying") : t("login.login")}
-            </button>
+            </Button>
           </div>
         </form>
 

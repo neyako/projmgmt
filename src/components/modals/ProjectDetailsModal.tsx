@@ -43,6 +43,8 @@ import { cn } from "@/lib/utils";
 import { parsePlatforms } from "@/lib/utils";
 import ShotRow from "@/components/kanban/ShotRow";
 import CopyBlock from "@/components/ui/CopyBlock";
+import { inputStyles, pickerStyles } from "@/components/ui/controlStyles";
+import { PickerChevron } from "@/components/ui/Picker";
 import { generateNasPaths, type NasConfig } from "@/utils/nasPaths";
 import type { ProjectCardData, ProjectUser, ShotItem } from "@/types";
 
@@ -1293,32 +1295,25 @@ interface ProjectDetailsModalProps {
 
 type SponsorshipDealOption = Awaited<ReturnType<typeof getSponsorshipDeals>>[number];
 
+const modalInputClass = inputStyles({
+  variant: "underline",
+  size: "sm",
+  className: "text-sm pt-0 mb-4",
+});
+const sidebarInputClass = inputStyles({ variant: "underline", size: "sm" });
+const sidebarPickerClass = pickerStyles({ variant: "underline", size: "sm" });
+const sidebarDateInputClass = inputStyles({
+  variant: "underline",
+  size: "sm",
+  nativePicker: true,
+});
+
 function parseShotItems(json?: string): ShotItem[] {
   try {
     return json ? JSON.parse(json) : [];
   } catch {
     return [];
   }
-}
-
-// Custom chevron for `<select>` fields (native arrow hidden via `appearance-none`).
-function ChevronDown() {
-  return (
-    <svg
-      className="pointer-events-none absolute right-0 bottom-2 w-3 h-3 text-text-secondary"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M19 9l-7 7-7-7"
-      />
-    </svg>
-  );
 }
 
 function toDateInputValue(d?: Date | string | null): string {
@@ -2119,7 +2114,7 @@ export default function ProjectDetailsModal({
                         <select
                           value={sponsorshipId}
                           onChange={(e) => handleSponsorshipSelect(e.target.value)}
-                          className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 pr-6 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer color-scheme-dark"
+                          className={sidebarPickerClass}
                         >
                           <option value="" className="bg-surface text-text-primary">
                             {sponsorshipDeals.length > 0 ? t("projectModal.selectSponsorshipDeal") : t("projectModal.noActiveDeals")}
@@ -2133,7 +2128,7 @@ export default function ProjectDetailsModal({
                             </option>
                           ))}
                         </select>
-                        <ChevronDown />
+                        <PickerChevron />
                       </div>
                     </div>
 
@@ -2353,7 +2348,7 @@ export default function ProjectDetailsModal({
                       value={youtubeId}
                       onChange={(e) => setYoutubeId(e.target.value)}
                       placeholder="https://youtube.com/watch?v=dQw4w9WgXcQ"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
+                    className={modalInputClass}
                     />
 
                     <label
@@ -2369,7 +2364,7 @@ export default function ProjectDetailsModal({
                       value={metaId}
                       onChange={(e) => setMetaId(e.target.value)}
                       placeholder="https://facebook.com/reel/17841400000000000"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
+                      className={modalInputClass}
                     />
 
                     <label
@@ -2385,7 +2380,7 @@ export default function ProjectDetailsModal({
                       value={tiktokId}
                       onChange={(e) => setTiktokId(e.target.value)}
                       placeholder="https://tiktok.com/@account/video/7234567890123456789"
-                      className="w-full bg-transparent border-b border-border-visible pb-2 text-text-display font-mono text-sm focus:outline-none focus:border-text-display mb-4"
+                      className={modalInputClass}
                     />
 
                     <div className="flex justify-end mt-2">
@@ -2732,7 +2727,7 @@ export default function ProjectDetailsModal({
                       ""
                     }
                     placeholder="—"
-                    className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display whitespace-nowrap overflow-x-auto"
+                    className={cn(sidebarInputClass, "whitespace-nowrap overflow-x-auto")}
                   />
                 </div>
               )}
@@ -2757,7 +2752,7 @@ export default function ProjectDetailsModal({
                           setScriptingDueDate(value);
                           saveMetadata({ scriptingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
+                        className={sidebarDateInputClass}
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2774,7 +2769,7 @@ export default function ProjectDetailsModal({
                           setFilmingDueDate(value);
                           saveMetadata({ filmingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
+                        className={sidebarDateInputClass}
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2791,7 +2786,7 @@ export default function ProjectDetailsModal({
                           setEditingDueDate(value);
                           saveMetadata({ editingDueDate: value || null });
                         }}
-                        className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display color-scheme-dark"
+                        className={sidebarDateInputClass}
                         style={{ colorScheme: "dark" }}
                       />
                     </div>
@@ -2817,7 +2812,7 @@ export default function ProjectDetailsModal({
                         setEditorId(value);
                         saveMetadata({ assignedEditorId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
+                      className={sidebarPickerClass}
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2826,7 +2821,7 @@ export default function ProjectDetailsModal({
                           </option>
                         ))}
                     </select>
-                    <ChevronDown />
+                    <PickerChevron />
                   </>
                 ) : (
                   <span className="text-xs font-bold text-text-disabled uppercase tracking-wider block">
@@ -2849,7 +2844,7 @@ export default function ProjectDetailsModal({
                         setCameramanId(value);
                         saveMetadata({ assignedCameramanId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
+                      className={sidebarPickerClass}
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2858,7 +2853,7 @@ export default function ProjectDetailsModal({
                           </option>
                         ))}
                     </select>
-                    <ChevronDown />
+                    <PickerChevron />
                   </>
                 ) : (
                   <span className="text-xs font-bold text-text-display uppercase tracking-wider block">—</span>
@@ -2879,7 +2874,7 @@ export default function ProjectDetailsModal({
                         setTalentId(value);
                         saveMetadata({ assignedTalentId: value || null });
                       }}
-                      className="w-full bg-transparent border-b border-border-visible pb-2 pt-1 text-text-display font-mono text-xs uppercase outline-none focus:border-text-display appearance-none cursor-pointer pr-6"
+                      className={sidebarPickerClass}
                     >
                       <option value="" className="bg-surface">{t("common.unassigned")}</option>
                       {users.map((u) => (
@@ -2888,7 +2883,7 @@ export default function ProjectDetailsModal({
                           </option>
                         ))}
                     </select>
-                    <ChevronDown />
+                    <PickerChevron />
                   </>
                 ) : (
                   <span className="text-xs font-bold text-text-display uppercase tracking-wider block">—</span>

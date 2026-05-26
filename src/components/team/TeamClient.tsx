@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import TeamMemberModal from "@/components/modals/TeamMemberModal";
+import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import type { TeamUser } from "@/types";
 import { useT } from "@/lib/i18n/client";
@@ -47,13 +48,14 @@ export default function TeamClient({ initialUsers }: { initialUsers: TeamUser[] 
               {users.length} {users.length === 1 ? t("team.memberSingular") : t("team.memberPlural")} {t("team.active")}
             </div>
           </div>
-          <button
+          <Button
             onClick={handleOpenNew}
-            className="ui-button-outline px-6 py-2 flex items-center justify-center"
+            variant="outline"
+            className="px-6 py-2"
           >
             <span className="material-symbols-outlined text-[14px] mr-2">add</span>
             {t("team.newMember")}
-          </button>
+          </Button>
         </div>
 
         {users.length === 0 ? (

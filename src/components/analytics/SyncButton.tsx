@@ -6,6 +6,7 @@ import {
   syncMetaStats,
   syncTikTokStats,
 } from "@/actions/projects";
+import Button from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useT } from "@/lib/i18n/client";
 
@@ -77,13 +78,14 @@ export default function SyncButton({ platform }: { platform: Platform }) {
   }
 
   return (
-    <button
+    <Button
       type="button"
       onClick={handleSync}
       disabled={isPending}
-      className="ui-button-outline px-3 py-1 disabled:opacity-50 disabled:cursor-wait"
+      variant="outline"
+      className={isPending ? "px-3 py-1 cursor-wait" : "px-3 py-1"}
     >
       {isPending ? t(cfg.syncingKey) : t(cfg.labelKey)}
-    </button>
+    </Button>
   );
 }
