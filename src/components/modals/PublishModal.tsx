@@ -67,8 +67,9 @@ export default function PublishModal({
   const [tiktokId, setTiktokId] = useState("");
 
   const trimmedTitle = finalTitle.trim();
+  const baseCaptionCopy = baseCaption.trim();
   const normalizedHashtagLine = normalizeHashtags(hashtags);
-  const shortCaptionCopy = [baseCaption.trim(), normalizedHashtagLine]
+  const captionWithHashtagsCopy = [baseCaptionCopy, normalizedHashtagLine]
     .filter(Boolean)
     .join("\n\n");
   const abTitleCopy = abTitles
@@ -126,7 +127,7 @@ export default function PublishModal({
         metaId: metaId.trim() || undefined,
         tiktokId: tiktokId.trim() || undefined,
         ...(isShort && {
-          baseCaption: baseCaption.trim() || undefined,
+          baseCaption: baseCaptionCopy || undefined,
           hashtags: hashtags.trim() || undefined,
         }),
         ...(isLong && {
@@ -330,24 +331,36 @@ export default function PublishModal({
           {step === "links" && (
             <>
               <div className="flex flex-col gap-3">
-                <CopyBlock
-                  label={t("publishModal.copyTitle")}
-                  copyValue={trimmedTitle || "—"}
-                />
                 {isShort && (
-                  <CopyBlock
-                    label={t("publishModal.copyCaption")}
-                    copyValue={shortCaptionCopy || "—"}
-                  >
-                    {shortCaptionCopy || (
-                      <span className="text-text-disabled italic">
-                        {t("publishModal.noCaption")}
-                      </span>
-                    )}
-                  </CopyBlock>
+                  <>
+                    <CopyBlock
+                      label={t("publishModal.copyCaption")}
+                      copyValue={baseCaptionCopy || "—"}
+                    >
+                      {baseCaptionCopy || (
+                        <span className="text-text-disabled italic">
+                          {t("publishModal.noBaseCaption")}
+                        </span>
+                      )}
+                    </CopyBlock>
+                    <CopyBlock
+                      label={t("publishModal.copyCaptionWithHashtags")}
+                      copyValue={captionWithHashtagsCopy || "—"}
+                    >
+                      {captionWithHashtagsCopy || (
+                        <span className="text-text-disabled italic">
+                          {t("publishModal.noCaption")}
+                        </span>
+                      )}
+                    </CopyBlock>
+                  </>
                 )}
                 {isLong && (
                   <>
+                    <CopyBlock
+                      label={t("publishModal.copyTitle")}
+                      copyValue={trimmedTitle || "—"}
+                    />
                     <CopyBlock
                       label={t("publishModal.copyAbTitles")}
                       copyValue={abTitleCopy || trimmedTitle || "—"}
